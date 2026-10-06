@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -16,6 +18,7 @@ import com.example.elementspace.p7c3a91e4.ui.atom.components.AtomInfoPanel
 import com.example.elementspace.p7c3a91e4.ui.atom.components.AtomSceneSpec
 import com.example.elementspace.p7c3a91e4.ui.atom.components.AtomSceneView
 import com.example.elementspace.p7c3a91e4.ui.atom.components.AtomToolbarContent
+import com.example.elementspace.p7c3a91e4.ui.navigation.DemoMode
 import com.example.elementspace.p7c3a91e4.ui.theme.AppLocale
 import com.example.elementspace.p7c3a91e4.ui.theme.str
 import com.pico.spatial.ui.design.PicoTheme
@@ -42,6 +45,14 @@ fun AtomScreen(atomicNumber: Int, modifier: Modifier = Modifier) {
 
     // Closing the Volume frees its slot in the three-window limit.
     DisposableEffect(viewModel) { onDispose { viewModel.onEvent(AtomEvent.Closed) } }
+
+    // Demo recording only; returns at once unless the emulator setting names this atom.
+    val context = LocalContext.current
+    LaunchedEffect(state.allotropes.isNotEmpty()) {
+        if (state.element != null) {
+            DemoMode.runAtomScript(context, atomicNumber, state.allotropes.isNotEmpty(), viewModel::onEvent)
+        }
+    }
 
     AppLocale(state.language) { AtomContent(state = state, onEvent = viewModel::onEvent, modifier = modifier) }
 }

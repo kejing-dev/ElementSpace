@@ -86,4 +86,8 @@ Install and launch go through `pico-cli` (`pico-cli app install`, `pico-cli app 
   repository, OFL texts alongside) are bundled in `app/src/main/assets/fonts`. Chinese UI uses
   Noto Sans SC, English UI uses Noto Sans (`ui/theme/ElementTypography.kt`). Rendering is unverified
   on a device, and Noto Sans SC has no glyph for 𫟷 (Lv), which falls back to the system font.
+- Demo recording: `ui/navigation/DemoMode.kt` runs a scripted walkthrough when the emulator
+  global setting `elementspace_demo` lists atomic numbers (`adb shell settings put global
+  elementspace_demo 79,6`), because nobody can click in the emulator from the CLI. Off otherwise;
+  delete the setting after recording.
 - Element data was typed in for the first build and must be checked against a licensed source.

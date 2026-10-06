@@ -10,10 +10,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.elementspace.p7c3a91e4.R
+import com.example.elementspace.p7c3a91e4.ui.navigation.DemoMode
 import com.example.elementspace.p7c3a91e4.ui.navigation.WindowIds
 import com.example.elementspace.p7c3a91e4.ui.table.components.ColourControl
 import com.example.elementspace.p7c3a91e4.ui.table.components.ElementGrid
@@ -31,6 +33,15 @@ fun PeriodicTableScreen(modifier: Modifier = Modifier) {
     val viewModel: PeriodicTableViewModel = viewModel(factory = PeriodicTableViewModelFactory())
     val state by viewModel.state.collectAsStateWithLifecycle()
     val navigator = LocalSpatialNavigator.current
+
+    // Demo recording only; does nothing unless the emulator setting is present.
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        DemoMode.atoms(context).forEachIndexed { index, atomicNumber ->
+            if (index > 0) kotlinx.coroutines.delay(DemoMode.SECOND_ATOM_DELAY_MS)
+            viewModel.onEvent(PeriodicTableEvent.ElementSelected(atomicNumber))
+        }
+    }
 
     LaunchedEffect(state.windowRequest) {
         val request = state.windowRequest ?: return@LaunchedEffect
