@@ -36,3 +36,7 @@ google-services.json
 # Session scratch and tool output
 .scratch/
 .kotlin/
+
+# Built deliverables (APK, video) are attached to GitHub Releases instead
+deliverables/*.apk
+deliverables/*.mp4
