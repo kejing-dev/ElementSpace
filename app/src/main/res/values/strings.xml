@@ -1,0 +1,83 @@
+<resources>
+    <string name="app_name">Element Space</string>
+
+    <!-- Main window -->
+    <string name="table_title">Periodic Table</string>
+    <string name="search_placeholder">Search: name · symbol · number</string>
+    <string name="language">Language</string>
+    <string name="colour_by">Colour by</string>
+    <string name="colour_category">Category</string>
+    <string name="trend_radius">Atomic radius</string>
+    <string name="trend_electronegativity">Electronegativity</string>
+    <string name="trend_ionization">Ionization energy</string>
+    <string name="trend_density">Density</string>
+    <string name="trend_hint">Warmer and higher means a larger value. Grey tiles have no data.</string>
+    <string name="trend_low">Low %1$s</string>
+    <string name="trend_high">High %1$s</string>
+    <string name="filter_by_category">Filter by category</string>
+    <string name="elements_count">%1$d elements</string>
+    <string name="open_count">Open %1$d / %2$d</string>
+    <string name="hint_open">Look at a tile and pinch to open its atom volume</string>
+    <string name="no_match">No matching element</string>
+    <string name="replaced_volume">Replaced %1$s</string>
+    <string name="lanthanides_short">La–Lu</string>
+    <string name="actinides_short">Ac–Lr</string>
+    <string name="clear_search">Clear search</string>
+
+    <string name="cat_alkali_metal">Alkali metals</string>
+    <string name="cat_alkaline_earth">Alkaline earth</string>
+    <string name="cat_transition_metal">Transition</string>
+    <string name="cat_post_transition">Post-transition</string>
+    <string name="cat_metalloid">Metalloids</string>
+    <string name="cat_nonmetal">Nonmetals</string>
+    <string name="cat_halogen">Halogens</string>
+    <string name="cat_noble_gas">Noble gases</string>
+    <string name="cat_lanthanide">Lanthanides</string>
+    <string name="cat_actinide">Actinides</string>
+
+    <!-- Atom volume -->
+    <string name="view_shell">Shell</string>
+    <string name="view_nucleus">Nucleus</string>
+    <string name="view_cloud">Cloud</string>
+    <string name="view_allotrope">Allotropes</string>
+    <string name="advanced">Advanced</string>
+    <string name="advanced_collapse">Hide advanced</string>
+    <string name="pause">Pause</string>
+    <string name="play">Play</string>
+    <string name="reset_view">Reset view</string>
+    <string name="caption_shell">Bohr model · schematic</string>
+    <string name="caption_nucleus">Nucleus · enlarged</string>
+    <string name="caption_cloud">Electron cloud · approximate</string>
+    <string name="caption_allotrope">Structure · %1$s</string>
+    <string name="atomic_number">Atomic no. %1$d</string>
+    <string name="atomic_mass">Atomic mass</string>
+    <string name="configuration">Configuration</string>
+    <string name="period_group">Period %1$d · Group %2$d</string>
+    <string name="period_fblock">Period %1$d · f-block</string>
+    <string name="particles">Made of</string>
+    <string name="electron_shells">Electron shells</string>
+    <string name="properties">Properties</string>
+    <string name="ionization_first">First ionization energy</string>
+    <string name="proton">Proton</string>
+    <string name="neutron">Neutron</string>
+    <string name="electron">Electron</string>
+    <string name="isotopes">Isotopes</string>
+    <string name="abundance">Abundance %1$s%%</string>
+    <string name="trace">Trace</string>
+    <string name="stable">Stable</string>
+    <string name="radioactive">Radioactive</string>
+    <string name="half_life">Half-life %1$s</string>
+    <string name="charge">Charge</string>
+    <string name="neutral_atom">Neutral atom</string>
+    <string name="ion">Ion %1$s</string>
+    <string name="charge_decrease">Add an electron</string>
+    <string name="charge_increase">Remove an electron</string>
+    <string name="nucleus_note">Nucleus enlarged about 10⁴× so it can be seen</string>
+    <string name="allotropes">Allotropes</string>
+    <string name="no_allotrope">No structure is bundled for this element yet</string>
+    <string name="allotrope_note">Same atoms, different arrangement, different properties</string>
+    <string name="mass_number">Mass number A = %1$d p⁺ + %2$d n⁰ = %3$d</string>
+    <string name="shell_electrons">Shell %1$s · %2$d</string>
+    <string name="subshells">Subshells</string>
+    <string name="element_missing">This element could not be loaded</string>
+</resources>
