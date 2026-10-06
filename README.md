@@ -99,3 +99,8 @@ pico-cli app launch com.example.elementspace.p7c3a91e4 --activity .platform.Laun
 - Trend mode lifts tiles rather than drawing solid pillars.
 
 See `AGENTS.md` for the architecture rules and the lessons learned while building the app.
+
+## License
+
+MIT, see [LICENSE](LICENSE). The bundled Noto fonts are licensed separately under the
+SIL Open Font License 1.1 (`app/src/main/assets/fonts/OFL-*.txt`).
