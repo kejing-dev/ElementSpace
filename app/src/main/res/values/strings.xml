@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Element Space</string>
+    <string name="app_name">空间元素周期表 Element Space</string>
 
     <!-- Main window -->
     <string name="table_title">Periodic Table</string>

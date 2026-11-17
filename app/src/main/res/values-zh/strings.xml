@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">元素空间</string>
+    <string name="app_name">空间元素周期表 Element Space</string>
 
     <!-- 主窗口 -->
     <string name="table_title">元素周期表</string>
