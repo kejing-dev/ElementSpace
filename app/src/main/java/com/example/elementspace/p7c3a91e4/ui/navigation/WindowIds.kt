@@ -8,5 +8,9 @@ object WindowIds {
     const val ARG_ATOMIC_NUMBER = "atomicNumber"
 
     /** One Volume per element: the tag makes the navigator reuse an already open one. */
+    /** The single reaction Volume; what it shows comes from SessionRepository.openReaction. */
+    const val REACTION_VOLUME = "ReactionVolume"
+    const val REACTION_TAG = "reaction"
+
     fun atomTag(atomicNumber: Int): String = "atom_$atomicNumber"
 }

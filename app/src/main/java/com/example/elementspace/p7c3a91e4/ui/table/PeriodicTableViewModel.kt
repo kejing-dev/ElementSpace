@@ -54,6 +54,19 @@ class PeriodicTableViewModel(
                 sessionRepository.setLanguage(event.language)
                 _state.update { it.copy(languageMenuOpen = false) }
             }
+            is PeriodicTableEvent.HowToVisible ->
+                _state.update { it.copy(howToOpen = event.visible, exitConfirmOpen = false, languageMenuOpen = false) }
+            is PeriodicTableEvent.ExitConfirmVisible ->
+                _state.update { it.copy(exitConfirmOpen = event.visible, howToOpen = false, languageMenuOpen = false) }
+            PeriodicTableEvent.BackPressed ->
+                _state.update {
+                    when {
+                        it.exitConfirmOpen -> it.copy(exitConfirmOpen = false)
+                        it.howToOpen -> it.copy(howToOpen = false)
+                        it.languageMenuOpen -> it.copy(languageMenuOpen = false)
+                        else -> it
+                    }
+                }
             PeriodicTableEvent.WindowRequestHandled -> _state.update { it.copy(windowRequest = null) }
             PeriodicTableEvent.ReplacedNoticeShown -> _state.update { it.copy(replacedNotice = null) }
         }

@@ -24,13 +24,20 @@ data class PeriodicTableUiState(
     val trendScale: TrendScale? = null,
     val openAtoms: List<Int> = emptyList(),
     val maxOpenAtoms: Int = 3,
+    /** The settings menu under the title bar's Settings button (language, how-to, exit). */
     val languageMenuOpen: Boolean = false,
+    /** Full-window overlays opened from settings; BACK closes the topmost. */
+    val howToOpen: Boolean = false,
+    val exitConfirmOpen: Boolean = false,
     val windowRequest: AtomWindowRequest? = null,
     /** Element whose Volume was just replaced, shown once as a snackbar. */
     val replacedNotice: Element? = null,
 ) {
     val filtering: Boolean
         get() = query.isNotBlank() || category != null
+
+    val overlayOpen: Boolean
+        get() = howToOpen || exitConfirmOpen
 
     val noMatch: Boolean
         get() = filtering && matches.isEmpty()
@@ -48,6 +55,13 @@ sealed interface PeriodicTableEvent {
     data class LanguageMenuVisible(val visible: Boolean) : PeriodicTableEvent
 
     data class LanguageSelected(val language: AppLanguage) : PeriodicTableEvent
+
+    data class HowToVisible(val visible: Boolean) : PeriodicTableEvent
+
+    data class ExitConfirmVisible(val visible: Boolean) : PeriodicTableEvent
+
+    /** BACK / controller B: closes the topmost overlay or menu; never leaves the app. */
+    data object BackPressed : PeriodicTableEvent
 
     data object WindowRequestHandled : PeriodicTableEvent
 

@@ -123,4 +123,22 @@ class PeriodicTableViewModelTest {
         assertEquals(AppLanguage.EN, vm.state.value.language)
         assertFalse(vm.state.value.languageMenuOpen)
     }
+
+    @Test
+    fun `back closes exit confirm, then how-to, then the settings menu, and otherwise does nothing`() = runTest {
+        val vm = viewModel()
+        vm.onEvent(PeriodicTableEvent.HowToVisible(true))
+        assertTrue(vm.state.value.howToOpen)
+        vm.onEvent(PeriodicTableEvent.ExitConfirmVisible(true))
+        assertTrue(vm.state.value.exitConfirmOpen)
+        assertFalse(vm.state.value.howToOpen)
+        vm.onEvent(PeriodicTableEvent.BackPressed)
+        assertFalse(vm.state.value.overlayOpen)
+        vm.onEvent(PeriodicTableEvent.LanguageMenuVisible(true))
+        vm.onEvent(PeriodicTableEvent.BackPressed)
+        assertFalse(vm.state.value.languageMenuOpen)
+        val before = vm.state.value
+        vm.onEvent(PeriodicTableEvent.BackPressed)
+        assertEquals(before, vm.state.value)
+    }
 }

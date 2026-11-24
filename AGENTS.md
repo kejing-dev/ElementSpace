@@ -13,6 +13,7 @@ Volumetric window per opened element showing a rotatable 3D model of the atom.
 | Window | Declared in | Notes |
 | --- | --- | --- |
 | Periodic table | `DefaultWindowContainer` in `Main.kt`, size and glass in `AndroidManifest.xml` | Planar, 1360 x 880 dp, system glass |
+| Reaction Volume (`ReactionVolume`, v1.1.0) | `WindowContainer(form = Form.Volumetric)` in `Main.kt` | 1600 dp cube, one at a time (tag `reaction`); shows `SessionRepository.openReaction`, so picking another reaction swaps it in place |
 | Atom Volume (`AtomVolume`) | `WindowContainer(form = Form.Volumetric)` in `Main.kt` | 1600 dp cube (960 to 2700), no glass; opened with a tag per element and the atomic number in the bundle; at most 3 at once |
 
 Inside a Volume, the view switcher is a window-level `Toolbar` and the info card is an `Augment`
@@ -25,7 +26,13 @@ data/repository/   ElementRepository (bundled dataset), SessionRepository (langu
 domain/model/      Element, Isotope, Allotrope, ElectronConfiguration, Vec3 and scene geometry
 domain/usecase/    filtering, electron configuration, trend scale, nucleus packing,
                    orbital cloud sampling, allotrope lattices (all pure Kotlin, unit-tested)
-ui/table/          PeriodicTable UiState / ViewModel / Screen + components
+ui/table/          PeriodicTable UiState / ViewModel / Screen + components (settings menu, how-to, exit confirm)
+ui/reaction/       Reaction UiState / ViewModel / Screen; components: ReactionScene (ECS, flat Bohr models,
+                   GlideComponent / FlightComponent), ReactionCard (Augment), ReactionToolbar
+data/repository/ReactionRepository.kt   bundled reaction library (PEP textbooks, source per entry)
+domain/usecase/ChemicalFormula.kt       formula parser, balance / electron checks (ReactionLibraryTest)
+domain/usecase/ReactionLayout.kt        ring / slot / pair / flight geometry (pure, unit-tested)
+platform/BackKeys.kt, AppExit.kt        BACK / controller B (never exits), Exit app
 ui/atom/           Atom UiState / ViewModel / Screen + components
 ui/atom/components/AtomScene.kt       ECS entity tree, instanced meshes, OrbitSystem
 ui/atom/components/AtomSceneView.kt   SpatialView + drag-to-rotate and two-hand scale
@@ -91,3 +98,27 @@ Install and launch go through `pico-cli` (`pico-cli app install`, `pico-cli app 
   elementspace_demo 79,6`), because nobody can click in the emulator from the CLI. Off otherwise;
   delete the setting after recording.
 - Element data was typed in for the first build and must be checked against a licensed source.
+
+## v1.1.0 polish (2026-11-24): common reactions, settings
+
+- Info card section "Common reactions" lists every bundled reaction containing the element (Junior / Senior filter).
+  ▶ shows it in the reaction Volume: 4 steps, electrons that move are gold and fly along an arc; card on the right
+  explains each step, counts electrons lost / gained, shows what you see, properties and the textbook source.
+- Adding a reaction = one entry in `BundledReactionRepository.LIBRARY`. `ReactionLibraryTest` checks it is balanced,
+  conserves electrons, keeps particle ids across steps, keeps the electron total constant and that atoms do not overlap.
+- Settings (title bar): language, How to use, Exit app (confirm). BACK / B closes the topmost overlay, never exits.
+- Nuclei in the reaction Volume use model colours (`ElementColors.model`), not category colours (H and O were both blue).
+
+### Debug broadcast (debuggable builds)
+
+```bash
+adb shell am broadcast -a com.example.elementspace.p7c3a91e4.DEBUG -p com.example.elementspace.p7c3a91e4 --es cmd reaction --es arg na_cl2
+```
+
+Commands (`--es cmd`, optional `--es arg`): `atom <Z>`, `reaction na_cl2|h2_o2|fe_cuso4`, `step <1..4>`, `next`, `prev`,
+`replay`, `play`, `settings`, `howto`, `exit` (confirm card), `exit-yes` (same call as [退出]), `reset`, `lang zh|en`.
+Wait ~5 s after `reaction` before `step` (the new reaction resets to step 1), and ~5 s before a screenshot: the
+emulator's capture lags the scene by a few seconds. `logcat -s ElementSpaceRx` logs every rendered step.
+
+Screenshot list: S-set `settings`; S-howto `howto`; S-exit `exit`; S-card `atom 11` (also 1, 8, 17, 26, 29);
+S-rx-n `reaction <id>` then `step n` (3 reactions x 4 steps).

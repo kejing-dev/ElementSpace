@@ -31,6 +31,14 @@ interface SessionRepository {
     fun closeAtom(atomicNumber: Int)
 
     fun closeAll()
+
+    /** Id of the reaction shown in the single reaction Volume, or null when it is closed. */
+    val openReaction: StateFlow<String?>
+
+    /** Shows [id] in the reaction Volume; returns the id it replaced, or null. */
+    fun showReaction(id: String): String?
+
+    fun closeReaction()
 }
 
 class InMemorySessionRepository(initialLanguage: AppLanguage = AppLanguage.ZH) : SessionRepository {
@@ -67,6 +75,20 @@ class InMemorySessionRepository(initialLanguage: AppLanguage = AppLanguage.ZH) :
 
     override fun closeAll() {
         _openAtoms.value = emptyList()
+        _openReaction.value = null
+    }
+
+    private val _openReaction = MutableStateFlow<String?>(null)
+    override val openReaction: StateFlow<String?> = _openReaction.asStateFlow()
+
+    override fun showReaction(id: String): String? {
+        val previous = _openReaction.value
+        _openReaction.value = id
+        return previous?.takeIf { it != id }
+    }
+
+    override fun closeReaction() {
+        _openReaction.value = null
     }
 
     companion object {

@@ -114,7 +114,7 @@ class AtomScene {
         root.components.set(InteractableComponent())
         root.components.set(
             CollisionComponent(
-                collisionShape = listOf(ShapeResource.createSphere(1f)),
+                collisionShape = listOf(ShapeResource.createSphere(1f).also { it.toGlobal() }),
                 physicsMaterial = PhysicsMaterialResource(),
             )
         )

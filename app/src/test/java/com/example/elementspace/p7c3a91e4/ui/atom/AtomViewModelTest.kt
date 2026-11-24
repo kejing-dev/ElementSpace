@@ -1,6 +1,8 @@
 package com.example.elementspace.p7c3a91e4.ui.atom
 
 import com.example.elementspace.p7c3a91e4.data.repository.BundledElementRepository
+import com.example.elementspace.p7c3a91e4.data.repository.BundledReactionRepository
+import com.example.elementspace.p7c3a91e4.domain.model.SchoolStage
 import com.example.elementspace.p7c3a91e4.data.repository.InMemorySessionRepository
 import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
 import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
@@ -49,6 +51,7 @@ class AtomViewModelTest {
             BuildNucleusLayoutUseCase(),
             SampleOrbitalCloudUseCase(),
             BuildAllotropeLatticeUseCase(),
+            BundledReactionRepository(),
         )
 
     @Test
@@ -147,4 +150,33 @@ class AtomViewModelTest {
         vm.onEvent(AtomEvent.Closed)
         assertTrue(session.openAtoms.value.isEmpty())
     }
+
+    @Test
+    fun `sodium lists its common reactions and opening one shows it in the reaction Volume`() = runTest {
+        val vm = viewModel(11)
+        assertEquals(listOf("na_cl2"), vm.state.value.reactions.map { it.id })
+        vm.onEvent(AtomEvent.ReactionOpened("na_cl2"))
+        assertEquals("na_cl2", session.openReaction.value)
+    }
+
+    @Test
+    fun `the stage filter keeps only reactions taught in that stage`() = runTest {
+        val vm = viewModel(11)
+        vm.onEvent(AtomEvent.ReactionStageSelected(SchoolStage.JUNIOR))
+        assertTrue(vm.state.value.shownReactions.isEmpty())
+        vm.onEvent(AtomEvent.ReactionStageSelected(SchoolStage.SENIOR))
+        assertEquals(1, vm.state.value.shownReactions.size)
+        vm.onEvent(AtomEvent.ReactionStageSelected(null))
+        assertEquals(1, vm.state.value.shownReactions.size)
+    }
+
+    @Test
+    fun `every element of the three sample reactions lists them and helium lists none`() = runTest {
+        mapOf(1 to "h2_o2", 8 to "h2_o2", 17 to "na_cl2", 26 to "fe_cuso4", 29 to "fe_cuso4", 16 to "fe_cuso4").forEach { (z, id) ->
+            assertTrue("Z=$z", vm(z).contains(id))
+        }
+        assertTrue(viewModel(2).state.value.reactions.isEmpty())
+    }
+
+    private fun vm(z: Int) = viewModel(z).state.value.reactions.map { it.id }
 }

@@ -70,6 +70,7 @@ fun AtomSceneView(
             modifier =
                 Modifier.fillMaxSize()
                     .pointerInput(Unit) {
+                        // gate:allow board-input drag only turns the whole model; nothing in 3D is picked or hit-tested
                         detectSpatialDragGesture(context, targetedToEntity = TargetEntity.any()) {
                             yaw += it.dragAmount.x * RADIANS_PER_PIXEL
                             pitch = (pitch + it.dragAmount.y * RADIANS_PER_PIXEL).coerceIn(-MAX_PITCH, MAX_PITCH)

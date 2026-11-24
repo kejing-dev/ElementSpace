@@ -3,6 +3,7 @@ package com.example.elementspace.p7c3a91e4.ui.atom
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.elementspace.p7c3a91e4.data.repository.ElementRepository
+import com.example.elementspace.p7c3a91e4.data.repository.ReactionRepository
 import com.example.elementspace.p7c3a91e4.data.repository.SessionRepository
 import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
 import com.example.elementspace.p7c3a91e4.domain.model.ElementCategory
@@ -24,6 +25,7 @@ class AtomViewModel(
     private val buildNucleus: BuildNucleusLayoutUseCase,
     private val sampleCloud: SampleOrbitalCloudUseCase,
     private val buildLattice: BuildAllotropeLatticeUseCase,
+    reactionRepository: ReactionRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AtomUiState())
@@ -42,6 +44,7 @@ class AtomViewModel(
                         allotropes = elementRepository.allotropes(atomicNumber),
                         maxCharge = maxCharge(element.category, valence, atomicNumber),
                         minCharge = minCharge(element.category, valence, atomicNumber),
+                        reactions = reactionRepository.forSymbol(element.symbol),
                     )
                 )
         }
@@ -70,6 +73,11 @@ class AtomViewModel(
                     val hidden = it.hiddenSubshells
                     it.copy(hiddenSubshells = if (event.label in hidden) hidden - event.label else hidden + event.label)
                 }
+            is AtomEvent.ReactionStageSelected -> _state.update { it.copy(reactionStage = event.stage) }
+            is AtomEvent.ReactionOpened -> {
+                sessionRepository.touchAtom(atomicNumber)
+                sessionRepository.showReaction(event.id)
+            }
             AtomEvent.PauseToggled -> _state.update { it.copy(paused = !it.paused) }
             AtomEvent.ResetView -> _state.update { it.copy(resetToken = it.resetToken + 1) }
             AtomEvent.Touched -> sessionRepository.touchAtom(atomicNumber)

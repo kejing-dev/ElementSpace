@@ -50,6 +50,7 @@ fun ColourControl(
             maxLines = 1,
         )
         // SegmentControl fills the row unless it is given a width.
+        // gate:allow tabs-segment switches what the tiles are coloured by on the same page; it is not page navigation
         SegmentControl(modifier = Modifier.width(SegmentWidth * TrendProperty.entries.size)) {
             TrendProperty.entries.forEach { option ->
                 SegmentItem(

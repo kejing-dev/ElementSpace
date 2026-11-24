@@ -3,6 +3,7 @@ package com.example.elementspace.p7c3a91e4.ui.atom
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.elementspace.p7c3a91e4.data.repository.BundledElementRepository
+import com.example.elementspace.p7c3a91e4.data.repository.BundledReactionRepository
 import com.example.elementspace.p7c3a91e4.data.repository.InMemorySessionRepository
 import com.example.elementspace.p7c3a91e4.domain.usecase.BuildAllotropeLatticeUseCase
 import com.example.elementspace.p7c3a91e4.domain.usecase.BuildNucleusLayoutUseCase
@@ -20,6 +21,7 @@ class AtomViewModelFactory(private val atomicNumber: Int) : ViewModelProvider.Fa
             buildNucleus = BuildNucleusLayoutUseCase(),
             sampleCloud = SampleOrbitalCloudUseCase(),
             buildLattice = BuildAllotropeLatticeUseCase(),
+            reactionRepository = BundledReactionRepository.shared,
         )
             as T
 }

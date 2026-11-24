@@ -2,6 +2,7 @@ package com.example.elementspace.p7c3a91e4.ui.table
 
 import android.os.Bundle
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +16,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.elementspace.p7c3a91e4.R
+import com.example.elementspace.p7c3a91e4.data.repository.InMemorySessionRepository
+import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
+import com.example.elementspace.p7c3a91e4.platform.AppExit
+import com.example.elementspace.p7c3a91e4.platform.BackKeys
+import com.example.elementspace.p7c3a91e4.ui.navigation.DebugBus
 import com.example.elementspace.p7c3a91e4.ui.navigation.DemoMode
+import com.example.elementspace.p7c3a91e4.ui.table.components.ExitConfirmOverlay
+import com.example.elementspace.p7c3a91e4.ui.table.components.HowToOverlay
 import com.example.elementspace.p7c3a91e4.ui.navigation.WindowIds
 import com.example.elementspace.p7c3a91e4.ui.table.components.ColourControl
 import com.example.elementspace.p7c3a91e4.ui.table.components.ElementGrid
@@ -54,8 +62,37 @@ fun PeriodicTableScreen(modifier: Modifier = Modifier) {
         viewModel.onEvent(PeriodicTableEvent.WindowRequestHandled)
     }
 
+    // BACK / controller B closes the topmost overlay or menu; it never leaves the app (D60).
+    LaunchedEffect(Unit) { BackKeys.presses.collect { viewModel.onEvent(PeriodicTableEvent.BackPressed) } }
+
+    // QA screenshots: see DebugBus / AGENTS.md.
+    DebugBus.Collect { command ->
+        when (command.cmd) {
+            "atom" -> command.number?.let { viewModel.onEvent(PeriodicTableEvent.ElementSelected(it)) }
+            "reaction" ->
+                command.arg?.let { id ->
+                    InMemorySessionRepository.shared.showReaction(id)
+                    runCatching { navigator.openWindowContainer(WindowIds.REACTION_VOLUME, tag = WindowIds.REACTION_TAG) }
+                }
+            "settings" -> viewModel.onEvent(PeriodicTableEvent.LanguageMenuVisible(true))
+            "howto" -> viewModel.onEvent(PeriodicTableEvent.HowToVisible(true))
+            "exit" -> viewModel.onEvent(PeriodicTableEvent.ExitConfirmVisible(true))
+            "lang" -> viewModel.onEvent(PeriodicTableEvent.LanguageSelected(if (command.arg == "en") AppLanguage.EN else AppLanguage.ZH))
+            "reset" -> repeat(3) { viewModel.onEvent(PeriodicTableEvent.BackPressed) }
+            // Same call as the [退出] button on the confirm card (the emulator CLI cannot tap in 3D).
+            "exit-yes" -> AppExit.exit(context, navigator)
+        }
+    }
+
     AppLocale(state.language) {
-        SnackbarHost { PeriodicTableContent(state = state, onEvent = viewModel::onEvent, modifier = modifier) }
+        SnackbarHost {
+            PeriodicTableContent(
+                state = state,
+                onEvent = viewModel::onEvent,
+                onExit = { AppExit.exit(context, navigator) },
+                modifier = modifier,
+            )
+        }
     }
 }
 
@@ -63,6 +100,7 @@ fun PeriodicTableScreen(modifier: Modifier = Modifier) {
 internal fun PeriodicTableContent(
     state: PeriodicTableUiState,
     onEvent: (PeriodicTableEvent) -> Unit,
+    onExit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snackbar = LocalSnackbarHostState.current
@@ -75,7 +113,8 @@ internal fun PeriodicTableContent(
         }
     }
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         TableTitleBar(
             query = state.query,
             onQueryChange = { onEvent(PeriodicTableEvent.QueryChanged(it)) },
@@ -83,6 +122,8 @@ internal fun PeriodicTableContent(
             languageMenuOpen = state.languageMenuOpen,
             onLanguageMenuVisible = { onEvent(PeriodicTableEvent.LanguageMenuVisible(it)) },
             onLanguageSelected = { onEvent(PeriodicTableEvent.LanguageSelected(it)) },
+            onHowTo = { onEvent(PeriodicTableEvent.HowToVisible(true)) },
+            onExit = { onEvent(PeriodicTableEvent.ExitConfirmVisible(true)) },
         )
         Column(
             modifier = Modifier.fillMaxSize().padding(start = 32.dp, end = 32.dp, bottom = 24.dp),
@@ -114,5 +155,8 @@ internal fun PeriodicTableContent(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+    }
+    if (state.howToOpen) HowToOverlay(onClose = { onEvent(PeriodicTableEvent.HowToVisible(false)) })
+    if (state.exitConfirmOpen) ExitConfirmOverlay(onCancel = { onEvent(PeriodicTableEvent.ExitConfirmVisible(false)) }, onExit = onExit)
     }
 }

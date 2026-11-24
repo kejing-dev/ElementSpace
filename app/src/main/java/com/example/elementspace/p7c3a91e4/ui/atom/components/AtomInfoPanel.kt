@@ -31,9 +31,12 @@ import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
 import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
 import com.example.elementspace.p7c3a91e4.domain.model.Element
 import com.example.elementspace.p7c3a91e4.domain.model.Isotope
+import com.example.elementspace.p7c3a91e4.domain.model.SchoolStage
 import com.example.elementspace.p7c3a91e4.domain.model.Subshell
 import com.example.elementspace.p7c3a91e4.ui.atom.AtomEvent
 import com.example.elementspace.p7c3a91e4.ui.atom.AtomUiState
+import com.example.elementspace.p7c3a91e4.ui.reaction.components.EquationLine
+import com.example.elementspace.p7c3a91e4.ui.reaction.components.TypeTags
 import com.example.elementspace.p7c3a91e4.ui.table.components.labelRes
 import com.example.elementspace.p7c3a91e4.ui.theme.ElementColors
 import com.example.elementspace.p7c3a91e4.ui.theme.str
@@ -43,6 +46,8 @@ import com.pico.spatial.ui.design.ListItem
 import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.design.Switch
 import com.pico.spatial.ui.design.Text
+import com.pico.spatial.ui.design.ToggleButton
+import androidx.compose.ui.focus.focusProperties
 import java.util.Locale
 
 private const val SUPERSCRIPT_DIGITS = "⁰¹²³⁴⁵⁶⁷⁸⁹"
@@ -111,7 +116,55 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
         if (state.advancedExpanded && state.view != AtomViewMode.ALLOTROPE) {
             ChargeStepper(state, element, onEvent)
         }
+        if (state.reactions.isNotEmpty()) ReactionsSection(state, onEvent)
         Section(str(R.string.properties)) { PropertyTable(element) }
+    }
+}
+
+private val NoFocus = Modifier.focusProperties { canFocus = false }
+
+/** Common school reactions with this element; ▶ shows one in the reaction Volume. */
+@Composable
+private fun ReactionsSection(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
+    Section(str(R.string.formulas, state.reactions.size)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            listOf(null to R.string.formulas_all, SchoolStage.JUNIOR to R.string.formulas_junior, SchoolStage.SENIOR to R.string.formulas_senior)
+                .forEach { (stage, label) ->
+                    ToggleButton(
+                        checked = state.reactionStage == stage,
+                        onCheckedChange = { onEvent(AtomEvent.ReactionStageSelected(stage)) },
+                        modifier = NoFocus,
+                    ) {
+                        Text(str(label), maxLines = 1)
+                    }
+                }
+        }
+        val shown = state.shownReactions
+        if (shown.isEmpty()) {
+            Text(str(R.string.formulas_none_stage), style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary)
+        }
+        shown.forEach { reaction ->
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(PicoTheme.colorScheme.fillTertiary)
+                        .then(NoFocus)
+                        .clickable { onEvent(AtomEvent.ReactionOpened(reaction.id)) }
+                        .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                // gate:allow button-gap equation and tag lines of one row; the only button is the trailing ▶
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    EquationLine(reaction, state.language, big = false)
+                    TypeTags(reaction, state.language)
+                }
+                IconButton(onClick = { onEvent(AtomEvent.ReactionOpened(reaction.id)) }, modifier = NoFocus) {
+                    Icon(painterResource(R.drawable.ic_player_play), contentDescription = str(R.string.open_reaction))
+                }
+            }
+        }
     }
 }
 
@@ -298,7 +351,7 @@ private fun SectionTitle(text: String) {
 
 @Composable
 private fun IsotopeList(state: AtomUiState, element: Element, onEvent: (AtomEvent) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         SectionTitle(str(R.string.isotopes))
         state.isotopes.forEachIndexed { index, isotope ->
             ListItem(
@@ -336,7 +389,7 @@ private fun formatAbundance(value: Double): String =
 
 @Composable
 private fun AllotropeList(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         SectionTitle(str(R.string.allotropes))
         if (state.allotropes.isEmpty()) {
             Text(str(R.string.no_allotrope), style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary)
@@ -370,7 +423,7 @@ private fun ChargeStepper(state: AtomUiState, element: Element, onEvent: (AtomEv
                 color = PicoTheme.colorScheme.labelSecondary,
             )
         }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             IconButton(onClick = { onEvent(AtomEvent.ChargeStepped(-1)) }, enabled = state.charge > state.minCharge) {
                 Icon(painterResource(R.drawable.ic_minus), contentDescription = str(R.string.charge_decrease))
             }

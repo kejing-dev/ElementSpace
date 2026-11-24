@@ -37,6 +37,35 @@ object ElementColors {
     val LatticeAtom = Color(0xFF737986) // design-style: fixed-figma-color Lattice atom
     val LatticeBond = Color(0xFFE8ECF0) // design-style: fixed-figma-color Lattice bond
 
+    // Reaction Volume. Gold marks an electron that moved from one atom to another (sample M1).
+    val ElectronTransferred = Color(0xFFFFB020) // design-style: fixed-sample-color Reaction/transferred electron
+    val IonPositive = Color(0xFFFF6B5E) // design-style: fixed-sample-color Reaction/cation halo
+    val IonNegative = Color(0xFF5A8CFF) // design-style: fixed-sample-color Reaction/anion halo
+    val OverlayCard = Color(0xFFF3F4F6) // design-style: fixed-sample-color Settings card, light like the system glass
+    val ClusterArm = Color(0xFFE5483B) // design-style: fixed-sample-color Reaction/oxygen in a spectator ion (model O)
+
+    fun clusterCentre(symbol: String): Color = MODEL[symbol] ?: LatticeAtom // design-style: fixed-sample-color Reaction/sulfur
+
+    /**
+     * Nucleus colours in the reaction Volume: the ball-and-stick colours of school models (H white,
+     * O red, Cl green, …). Category colours could not be used there: H and O are both non-metals and
+     * came out the same blue (emulator check v1.1.0).
+     */
+    private val MODEL = mapOf(
+        "H" to Color(0xFFF2F4F7), // design-style: fixed-sample-color model/H
+        "O" to Color(0xFFE5483B), // design-style: fixed-sample-color model/O
+        "Na" to Color(0xFF9B6BE0), // design-style: fixed-sample-color model/Na
+        "Cl" to Color(0xFF39C26B), // design-style: fixed-sample-color model/Cl
+        "Fe" to Color(0xFF9AA6B8), // design-style: fixed-sample-color model/Fe
+        "Cu" to Color(0xFFD9803F), // design-style: fixed-sample-color model/Cu
+        "S" to Color(0xFFE8CF4A), // design-style: fixed-sample-color model/S
+        "C" to Color(0xFF4A4F58), // design-style: fixed-sample-color model/C
+        "N" to Color(0xFF4F7BEA), // design-style: fixed-sample-color model/N
+        "Mg" to Color(0xFF6FCF6A), // design-style: fixed-sample-color model/Mg
+    )
+
+    fun model(symbol: String, category: ElementCategory): Color = MODEL[symbol] ?: category(category)
+
     fun category(category: ElementCategory): Color =
         when (category) {
             ElementCategory.ALKALI_METAL -> CategoryAlkaliMetal

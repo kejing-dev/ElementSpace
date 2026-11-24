@@ -19,6 +19,8 @@ import com.example.elementspace.p7c3a91e4.ui.atom.components.AtomSceneSpec
 import com.example.elementspace.p7c3a91e4.ui.atom.components.AtomSceneView
 import com.example.elementspace.p7c3a91e4.ui.atom.components.AtomToolbarContent
 import com.example.elementspace.p7c3a91e4.ui.navigation.DemoMode
+import com.example.elementspace.p7c3a91e4.ui.navigation.WindowIds
+import com.pico.spatial.ui.platform.containers.LocalSpatialNavigator
 import com.example.elementspace.p7c3a91e4.ui.theme.AppLocale
 import com.example.elementspace.p7c3a91e4.ui.theme.str
 import com.pico.spatial.ui.design.PicoTheme
@@ -54,7 +56,16 @@ fun AtomScreen(atomicNumber: Int, modifier: Modifier = Modifier) {
         }
     }
 
-    AppLocale(state.language) { AtomContent(state = state, onEvent = viewModel::onEvent, modifier = modifier) }
+    // Picking a reaction shows it in the single reaction Volume, opening the window if needed.
+    val navigator = LocalSpatialNavigator.current
+    val onEvent: (AtomEvent) -> Unit = { event ->
+        viewModel.onEvent(event)
+        if (event is AtomEvent.ReactionOpened) {
+            runCatching { navigator.openWindowContainer(WindowIds.REACTION_VOLUME, tag = WindowIds.REACTION_TAG) }
+        }
+    }
+
+    AppLocale(state.language) { AtomContent(state = state, onEvent = onEvent, modifier = modifier) }
 }
 
 @Composable

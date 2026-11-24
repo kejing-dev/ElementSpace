@@ -9,6 +9,8 @@ import com.example.elementspace.p7c3a91e4.domain.model.Isotope
 import com.example.elementspace.p7c3a91e4.domain.model.Lattice
 import com.example.elementspace.p7c3a91e4.domain.model.NucleusLayout
 import com.example.elementspace.p7c3a91e4.domain.model.OrbitalCloud
+import com.example.elementspace.p7c3a91e4.domain.model.Reaction
+import com.example.elementspace.p7c3a91e4.domain.model.SchoolStage
 
 data class AtomUiState(
     val element: Element? = null,
@@ -33,7 +35,14 @@ data class AtomUiState(
     val nucleus: NucleusLayout? = null,
     val clouds: List<OrbitalCloud> = emptyList(),
     val lattice: Lattice? = null,
+    /** Common reactions that contain this element (info card section). */
+    val reactions: List<Reaction> = emptyList(),
+    /** Junior / Senior filter of that section; null = all. */
+    val reactionStage: SchoolStage? = null,
 ) {
+    val shownReactions: List<Reaction>
+        get() = reactionStage?.let { stage -> reactions.filter { stage in it.stages } } ?: reactions
+
     val isotope: Isotope?
         get() = isotopes.getOrNull(isotopeIndex)
 
@@ -69,6 +78,11 @@ sealed interface AtomEvent {
     data class AllotropeSelected(val index: Int) : AtomEvent
 
     data class SubshellToggled(val label: String) : AtomEvent
+
+    data class ReactionStageSelected(val stage: SchoolStage?) : AtomEvent
+
+    /** Shows the reaction in the reaction Volume; the screen opens the window. */
+    data class ReactionOpened(val id: String) : AtomEvent
 
     data object PauseToggled : AtomEvent
 

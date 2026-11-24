@@ -80,4 +80,57 @@
     <string name="shell_electrons">%1$s 层 · %2$d</string>
     <string name="subshells">亚层</string>
     <string name="element_missing">无法加载该元素</string>
+
+    <!-- v1.1.0: settings, how-to, reactions -->
+    <string name="settings">设置</string>
+    <string name="exit_app">退出应用</string>
+    <string name="exit_confirm_title">退出空间元素周期表？</string>
+    <string name="exit_confirm_line">打开的原子窗口和反应窗口会一起关闭。</string>
+    <string name="cancel">取消</string>
+    <string name="exit_yes">退出</string>
+    <string name="close">关闭</string>
+    <string name="how_to_title">怎么操作</string>
+    <string name="how_to_col_action">想做什么</string>
+    <string name="how_to_col_hand">手</string>
+    <string name="how_to_col_controller">手柄</string>
+    <string name="how_to_open">打开一个元素</string>
+    <string name="how_to_open_hand">看着格子，两指一捏</string>
+    <string name="how_to_open_ctrl">射线指格子，按扳机</string>
+    <string name="how_to_rotate">转动原子 / 反应</string>
+    <string name="how_to_rotate_hand">捏住拖动</string>
+    <string name="how_to_rotate_ctrl">扳机按住拖动</string>
+    <string name="how_to_scale">放大缩小</string>
+    <string name="how_to_scale_hand">两只手捏住拉开 / 合拢</string>
+    <string name="how_to_scale_ctrl">两个手柄扳机按住拉开</string>
+    <string name="how_to_reaction">看一条反应</string>
+    <string name="how_to_reaction_both">信息卡「常用化学式」里点 ▶</string>
+    <string name="how_to_play">播放 / 下一步</string>
+    <string name="how_to_play_both">反应窗口下方工具条：⏮ ▶ ⏭ ↺</string>
+    <string name="how_to_close">关掉一个窗口</string>
+    <string name="how_to_close_hand">窗口下方的 ×</string>
+    <string name="how_to_close_ctrl">B 键 / 返回键</string>
+    <string name="how_to_hint">金色的电子 = 从一个原子转到另一个原子（或两者共用）的电子。</string>
+    <string name="formulas">常用化学式 · %1$d</string>
+    <string name="formulas_all">全部</string>
+    <string name="formulas_junior">初中</string>
+    <string name="formulas_senior">高中</string>
+    <string name="open_reaction">打开反应</string>
+    <string name="formulas_none_stage">这个学段还没有</string>
+    <string name="stage_junior">初中</string>
+    <string name="stage_senior">高中</string>
+    <string name="step_previous">上一步</string>
+    <string name="step_next">下一步</string>
+    <string name="replay">重放</string>
+    <string name="step_of">%1$d / %2$d</string>
+    <string name="rx_steps">步骤</string>
+    <string name="rx_why">为什么</string>
+    <string name="rx_electrons">电子</string>
+    <string name="rx_property">性质</string>
+    <string name="rx_phenomenon">现象</string>
+    <string name="rx_source">出自：%1$s</string>
+    <string name="rx_legend">图例</string>
+    <string name="rx_empty">在原子信息卡的「常用化学式」里选一条反应。</string>
+    <string name="rx_legend_gold">转移 / 共用的电子</string>
+    <string name="rx_legend_vacancy">空位</string>
+    <string name="rx_legend_ion">红光 + · 蓝光 −</string>
 </resources>
