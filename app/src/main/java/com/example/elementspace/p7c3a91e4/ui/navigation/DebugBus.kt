@@ -34,7 +34,7 @@ data class DebugCommand(val cmd: String, val arg: String?) {
 /**
  * Debug broadcast for QA screenshots (debuggable builds only). Usage, see AGENTS.md:
  * `adb shell am broadcast -a com.example.elementspace.p7c3a91e4.DEBUG --es cmd reaction --es arg na_cl2`
- * Commands: atom <Z>, reaction <id>, step <n>, next, prev, replay, play, settings, howto, exit (shows the confirm), exit-yes (= [退出]), reset, lang zh|en.
+ * Commands: atom <Z>, reaction <id>, molecule <id>, compare <id|none>, mmode ball|fill, angles, groups, step <n>, next, prev, replay, play, settings, howto, exit (shows the confirm), exit-yes (= [退出]), reset, lang zh|en.
  */
 object DebugBus {
     const val ACTION = "com.example.elementspace.p7c3a91e4.DEBUG"

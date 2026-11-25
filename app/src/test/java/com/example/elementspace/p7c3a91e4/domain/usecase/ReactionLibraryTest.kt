@@ -4,6 +4,7 @@ import com.example.elementspace.p7c3a91e4.data.repository.BundledElementReposito
 import com.example.elementspace.p7c3a91e4.data.repository.BundledReactionRepository
 import com.example.elementspace.p7c3a91e4.domain.model.ChargeTint
 import com.example.elementspace.p7c3a91e4.domain.model.ReactionFrame
+import com.example.elementspace.p7c3a91e4.domain.model.ReactionKind
 import com.example.elementspace.p7c3a91e4.domain.model.Term
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -39,7 +40,8 @@ class ReactionLibraryTest {
 
     @Test
     fun `electrons lost equal electrons gained`() {
-        library.forEach { assertTrue(it.id, ChemicalFormula.electronsConserved(it)) }
+        // Organic reactions (ReactionKind.BONDS) are taught through bonds breaking and forming, not electron transfer.
+        library.filter { it.kind == ReactionKind.ELECTRONS }.forEach { assertTrue(it.id, ChemicalFormula.electronsConserved(it)) }
     }
 
     @Test

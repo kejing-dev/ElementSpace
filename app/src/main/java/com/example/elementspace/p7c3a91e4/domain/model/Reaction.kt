@@ -9,8 +9,11 @@ data class L10n(val zh: String, val en: String) {
         }
 }
 
-/** One side of an equation: a coefficient and a formula such as "CuSO4" or "Ca(OH)2". */
-data class Term(val coefficient: Int, val formula: String)
+/**
+ * One side of an equation: a coefficient and a formula such as "CuSO4" or "Ca(OH)2". [shown] is
+ * an optional way to print it (e.g. "CH2=CH2"); [formula] is what gets counted.
+ */
+data class Term(val coefficient: Int, val formula: String, val shown: String? = null)
 
 enum class ReactionType(val zh: String, val en: String) {
     COMBINATION("化合反应", "Combination"),
@@ -20,7 +23,13 @@ enum class ReactionType(val zh: String, val en: String) {
     REDOX("氧化还原", "Redox"),
     IONIC_BOND("离子键", "Ionic bond"),
     COVALENT_BOND("共价键", "Covalent bond"),
+    SUBSTITUTION("取代反应", "Substitution"),
+    ADDITION("加成反应", "Addition"),
+    ESTERIFICATION("酯化反应", "Esterification"),
 }
+
+/** How the reaction Volume animates a reaction: electrons moving between Bohr models, or bonds in ball-and-stick molecules. */
+enum class ReactionKind { ELECTRONS, BONDS }
 
 /** School stage the reaction is taught in, used by the Junior / Senior filter. */
 enum class SchoolStage { JUNIOR, SENIOR }
@@ -66,10 +75,29 @@ data class SharedPair(val a: String, val b: String, val bias: Float = 0.5f, val 
 /** Electrons flying from the outer ring of [from] to the outer ring of [to] during a step. */
 data class ElectronFlight(val from: String, val to: String, val count: Int = 1)
 
+/** How a bond in a ball-and-stick frame is marked. */
+enum class BondMark {
+    NONE,
+    /** About to break: drawn red and dashed. */
+    BREAK,
+    /** One bond of a double bond about to open (addition): one red dashed stick beside a normal one. */
+    BREAK_ONE,
+    /** Formed in this reaction: drawn gold. */
+    NEW,
+}
+
+/** One atom of a ball-and-stick frame; [id] stays the same across steps so the atom glides. */
+data class FrameAtom(val id: String, val symbol: String, val position: Vec3, val faded: Boolean = false)
+
+data class FrameBond(val a: String, val b: String, val order: Int = 1, val mark: BondMark = BondMark.NONE)
+
 data class ReactionFrame(
-    val particles: List<FrameParticle>,
+    val particles: List<FrameParticle> = emptyList(),
     val pairs: List<SharedPair> = emptyList(),
     val flights: List<ElectronFlight> = emptyList(),
+    /** Ball-and-stick atoms and bonds ([ReactionKind.BONDS]); positions in scene units. */
+    val atoms: List<FrameAtom> = emptyList(),
+    val bonds: List<FrameBond> = emptyList(),
 )
 
 data class ReactionStep(
@@ -96,4 +124,7 @@ data class Reaction(
     val property: L10n,
     val phenomenon: L10n,
     val source: L10n,
+    val kind: ReactionKind = ReactionKind.ELECTRONS,
+    /** Drawn with ⇌ instead of ⟶. */
+    val reversible: Boolean = false,
 )

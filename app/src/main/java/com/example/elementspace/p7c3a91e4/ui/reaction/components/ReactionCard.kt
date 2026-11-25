@@ -30,6 +30,7 @@ import com.example.elementspace.p7c3a91e4.R
 import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
 import com.example.elementspace.p7c3a91e4.domain.model.Element
 import com.example.elementspace.p7c3a91e4.domain.model.Reaction
+import com.example.elementspace.p7c3a91e4.domain.model.ReactionKind
 import com.example.elementspace.p7c3a91e4.domain.model.ReactionType
 import com.example.elementspace.p7c3a91e4.domain.usecase.ChemicalFormula
 import com.example.elementspace.p7c3a91e4.ui.reaction.ReactionEvent
@@ -51,7 +52,7 @@ fun EquationLine(reaction: Reaction, language: AppLanguage, big: Boolean, modifi
             reaction.condition?.let {
                 Text(it.get(language), style = PicoTheme.typography.labelSmall, color = PicoTheme.colorScheme.labelSecondary, maxLines = 1)
             }
-            Text("⟶", style = main, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
+            Text(if (reaction.reversible) "⇌" else "⟶", style = main, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
         }
         Text(ChemicalFormula.sideText(reaction.products), style = main, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
     }
@@ -127,10 +128,21 @@ fun ReactionCard(
         Block(str(R.string.rx_why)) {
             Text(step.why.get(language), style = PicoTheme.typography.bodyLargeMultiline, color = PicoTheme.colorScheme.labelPrimary)
         }
-        Block(str(R.string.rx_electrons)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Counter(step.moved, reaction.loseLabel.get(language), Modifier.weight(1f))
-                Counter(step.moved, reaction.gainLabel.get(language), Modifier.weight(1f))
+        if (reaction.kind == ReactionKind.BONDS) {
+            // Bond reactions move no electrons between atoms; count atoms on each side instead.
+            Block(str(R.string.rx_atoms)) {
+                val left = ChemicalFormula.side(reaction.reactants)
+                val right = ChemicalFormula.side(reaction.products)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    left.keys.forEach { symbol -> Counter("${left[symbol]} / ${right[symbol] ?: 0}", symbol, Modifier.weight(1f)) }
+                }
+            }
+        } else {
+            Block(str(R.string.rx_electrons)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Counter(step.moved.toString(), reaction.loseLabel.get(language), Modifier.weight(1f))
+                    Counter(step.moved.toString(), reaction.gainLabel.get(language), Modifier.weight(1f))
+                }
             }
         }
         Block(str(R.string.rx_phenomenon)) { Body(reaction.phenomenon.get(language)) }
@@ -157,12 +169,12 @@ private fun Body(text: String) {
 }
 
 @Composable
-private fun Counter(value: Int, label: String, modifier: Modifier) {
+private fun Counter(value: String, label: String, modifier: Modifier) {
     Column(
         modifier = modifier.clip(RoundedCornerShape(18.dp)).background(PicoTheme.colorScheme.fillTertiary).padding(horizontal = 12.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(value.toString(), style = PicoTheme.typography.headlineSmall, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
+        Text(value, style = PicoTheme.typography.headlineSmall, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
         Text(label, style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary, maxLines = 1)
     }
 }
@@ -171,7 +183,9 @@ private fun Counter(value: Int, label: String, modifier: Modifier) {
 @Composable
 private fun Legend(reaction: Reaction, elements: Map<String, Element>, colors: Map<String, Color>, language: AppLanguage) {
     val symbols = (reaction.reactants + reaction.products).flatMap { ChemicalFormula.count(it.formula).keys }.distinct()
-    val shown = symbols.filter { symbol -> reaction.steps.any { st -> st.frame.particles.any { it.symbol == symbol && it.cluster.isEmpty() } } }
+    val shown =
+        if (reaction.kind == ReactionKind.BONDS) symbols
+        else symbols.filter { symbol -> reaction.steps.any { st -> st.frame.particles.any { it.symbol == symbol && it.cluster.isEmpty() } } }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             shown.forEach { symbol ->
@@ -181,6 +195,17 @@ private fun Legend(reaction: Reaction, elements: Map<String, Element>, colors: M
                     Text(if (name != null && language == AppLanguage.ZH) "$symbol $name" else symbol, style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
                 }
             }
+        }
+        if (reaction.kind == ReactionKind.BONDS) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Box(Modifier.size(width = 22.dp, height = 4.dp).background(ElementColors.BondBreak))
+                Text(str(R.string.rx_legend_break), style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary, maxLines = 1)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Box(Modifier.size(width = 22.dp, height = 5.dp).background(ElementColors.ElectronTransferred))
+                Text(str(R.string.rx_legend_new), style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary, maxLines = 1)
+            }
+            return@Column
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Box(Modifier.size(14.dp).clip(CircleShape).background(ElementColors.ElectronTransferred))

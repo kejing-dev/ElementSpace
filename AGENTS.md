@@ -101,7 +101,7 @@ Install and launch go through `pico-cli` (`pico-cli app install`, `pico-cli app 
 
 ## v1.1.0 polish (2026-11-24): common reactions, settings
 
-- Info card section "Common reactions" lists every bundled reaction containing the element (Junior / Senior filter).
+- Info card section "Common reactions" lists every bundled reaction containing the element (no school-stage filter since v1.2.0: the app ships abroad too).
   ▶ shows it in the reaction Volume: 4 steps, electrons that move are gold and fly along an arc; card on the right
   explains each step, counts electrons lost / gained, shows what you see, properties and the textbook source.
 - Adding a reaction = one entry in `BundledReactionRepository.LIBRARY`. `ReactionLibraryTest` checks it is balanced,
@@ -122,3 +122,19 @@ emulator's capture lags the scene by a few seconds. `logcat -s ElementSpaceRx` l
 
 Screenshot list: S-set `settings`; S-howto `howto`; S-exit `exit`; S-card `atom 11` (also 1, 8, 17, 26, 29);
 S-rx-n `reaction <id>` then `step n` (3 reactions x 4 steps).
+
+## v1.2.0 polish (2026-11-24): organic molecules (C, H, O)
+
+- Molecule library `BundledMoleculeRepository` (14: methane, ethane, butane, isobutane, ethylene, acetylene, cyclohexane,
+  benzene, ethanol, dimethyl ether, acetic acid, ethyl acetate, CO2, H2O). Geometry is built by `MoleculeBuilder` from
+  textbook bond lengths / angles; `MoleculeLibraryTest` checks formula vs atoms, valence (C 4, H 1, O 2), bond lengths,
+  labelled angles, no overlaps, flat / linear shapes, comparisons and linked reactions.
+- C / H / O info cards: "How carbon bonds" (C only) and "Molecules" grouped by skeleton (chain / branched / ring / inorganic).
+  ▶ opens the molecule Volume (`MOLECULE_VOLUME`, one at a time): ball-and-stick / space-filling, bond-angle arcs,
+  functional-group highlight, "compare with …" puts two molecules side by side (each turns about its own centre).
+- Organic reactions (`OrganicReactions`: CH4 + Cl2, C2H4 + Br2, esterification) use `ReactionKind.BONDS`: ball-and-stick
+  frames with stable atom ids; red dashed = about to break, gold = new bond; the card counts atoms left / right.
+- No school-system labels in the UI (no junior / senior / compulsory / elective tags); the textbook source line stays.
+
+Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `angles`, `groups`,
+`reaction ch4_cl2|c2h4_br2|esterification`. `logcat -s ElementSpaceMol` logs every molecule render.

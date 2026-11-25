@@ -74,6 +74,7 @@ fun HowToOverlay(onClose: () -> Unit) {
             Triple(R.string.how_to_rotate, R.string.how_to_rotate_hand, R.string.how_to_rotate_ctrl),
             Triple(R.string.how_to_scale, R.string.how_to_scale_hand, R.string.how_to_scale_ctrl),
             Triple(R.string.how_to_reaction, R.string.how_to_reaction_both, 0),
+            Triple(R.string.how_to_molecule, R.string.how_to_molecule_both, 0),
             Triple(R.string.how_to_play, R.string.how_to_play_both, 0),
             Triple(R.string.how_to_close, R.string.how_to_close_hand, R.string.how_to_close_ctrl),
         )

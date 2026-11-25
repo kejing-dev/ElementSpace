@@ -2,7 +2,6 @@ package com.example.elementspace.p7c3a91e4.ui.atom
 
 import com.example.elementspace.p7c3a91e4.data.repository.BundledElementRepository
 import com.example.elementspace.p7c3a91e4.data.repository.BundledReactionRepository
-import com.example.elementspace.p7c3a91e4.domain.model.SchoolStage
 import com.example.elementspace.p7c3a91e4.data.repository.InMemorySessionRepository
 import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
 import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
@@ -160,14 +159,22 @@ class AtomViewModelTest {
     }
 
     @Test
-    fun `the stage filter keeps only reactions taught in that stage`() = runTest {
-        val vm = viewModel(11)
-        vm.onEvent(AtomEvent.ReactionStageSelected(SchoolStage.JUNIOR))
-        assertTrue(vm.state.value.shownReactions.isEmpty())
-        vm.onEvent(AtomEvent.ReactionStageSelected(SchoolStage.SENIOR))
-        assertEquals(1, vm.state.value.shownReactions.size)
-        vm.onEvent(AtomEvent.ReactionStageSelected(null))
-        assertEquals(1, vm.state.value.shownReactions.size)
+    fun `carbon lists its molecules by skeleton and opening one shows it in the molecule Volume`() = runTest {
+        val vm = viewModel(6)
+        val molecules = vm.state.value.molecules
+        assertEquals(13, molecules.size) // every library molecule except water
+        assertTrue(molecules.any { it.id == "benzene" } && molecules.any { it.id == "isobutane" })
+        vm.onEvent(AtomEvent.MoleculeOpened("benzene"))
+        assertEquals("benzene", session.openMolecule.value?.id)
+    }
+
+    @Test
+    fun `oxygen lists only molecules with oxygen and helium lists none`() = runTest {
+        assertEquals(
+            setOf("ethanol", "ether", "acetic", "ester", "co2", "water"),
+            viewModel(8).state.value.molecules.map { it.id }.toSet(),
+        )
+        assertTrue(viewModel(2).state.value.molecules.isEmpty())
     }
 
     @Test

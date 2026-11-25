@@ -14,6 +14,9 @@ data class OpenAtomResult(
     val replaced: Int?,
 )
 
+/** What the molecule Volume shows: [id], and [compare] beside it when comparing. */
+data class MoleculeView(val id: String, val compare: String? = null)
+
 /** App-wide state shared by the main window and every atom Volume. */
 interface SessionRepository {
     val language: StateFlow<AppLanguage>
@@ -39,6 +42,17 @@ interface SessionRepository {
     fun showReaction(id: String): String?
 
     fun closeReaction()
+
+    /** The single molecule Volume's content, or null when it is closed. */
+    val openMolecule: StateFlow<MoleculeView?>
+
+    /** Shows molecule [id] (leaving any comparison). */
+    fun showMolecule(id: String)
+
+    /** Puts [id] beside the current molecule; null goes back to the single molecule. */
+    fun compareMolecule(id: String?)
+
+    fun closeMolecule()
 }
 
 class InMemorySessionRepository(initialLanguage: AppLanguage = AppLanguage.ZH) : SessionRepository {
@@ -76,6 +90,22 @@ class InMemorySessionRepository(initialLanguage: AppLanguage = AppLanguage.ZH) :
     override fun closeAll() {
         _openAtoms.value = emptyList()
         _openReaction.value = null
+        _openMolecule.value = null
+    }
+
+    private val _openMolecule = MutableStateFlow<MoleculeView?>(null)
+    override val openMolecule: StateFlow<MoleculeView?> = _openMolecule.asStateFlow()
+
+    override fun showMolecule(id: String) {
+        _openMolecule.value = MoleculeView(id)
+    }
+
+    override fun compareMolecule(id: String?) {
+        _openMolecule.update { current -> current?.copy(compare = id?.takeIf { it != current.id }) }
+    }
+
+    override fun closeMolecule() {
+        _openMolecule.value = null
     }
 
     private val _openReaction = MutableStateFlow<String?>(null)

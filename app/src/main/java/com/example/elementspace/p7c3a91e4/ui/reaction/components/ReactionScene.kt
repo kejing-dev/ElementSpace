@@ -1,7 +1,10 @@
 package com.example.elementspace.p7c3a91e4.ui.reaction.components
 
 import androidx.compose.ui.graphics.Color
+import com.example.elementspace.p7c3a91e4.data.repository.OrganicReactions
+import com.example.elementspace.p7c3a91e4.domain.model.BondMark
 import com.example.elementspace.p7c3a91e4.domain.model.ChargeTint
+import com.example.elementspace.p7c3a91e4.ui.molecule.components.BallStick
 import com.example.elementspace.p7c3a91e4.domain.model.FrameParticle
 import com.example.elementspace.p7c3a91e4.domain.model.ReactionFrame
 import com.example.elementspace.p7c3a91e4.domain.model.Vec3
@@ -43,6 +46,14 @@ data class ReactionSceneSpec(
     val nucleusColors: Map<String, Color>,
 )
 
+/** Keeps an entity hidden (scale 0) for [delay] seconds, then shows it; used for bonds that form after atoms glide. */
+class RevealComponent(val delay: Float = 0.9f) : Component() {
+    var time: Float = 0f
+    var shown: Boolean = false
+
+    override fun clone(): Component = RevealComponent(delay)
+}
+
 /** Moves an entity from [from] to [to] once, eased; driven by [ReactionMotionSystem]. */
 class GlideComponent(val from: Vec3 = Vec3.ZERO, val to: Vec3 = Vec3.ZERO, val duration: Float = 0.9f) : Component() {
     var time: Float = 0f
@@ -76,6 +87,15 @@ class ReactionMotionSystem : System() {
             glide.time = (glide.time + dt).coerceAtMost(glide.duration)
             val t = ReactionLayout.ease(glide.time / glide.duration)
             entity.components[TransformComponent::class.java]?.setPosition(lerp(glide.from, glide.to, t).v3())
+        }
+        for (entity in context.scene.queryEntity(EntityQueryCondition.hasComponent(RevealComponent::class.java))) {
+            val reveal = entity.components[RevealComponent::class.java] ?: continue
+            if (reveal.shown) continue
+            reveal.time += dt
+            if (reveal.time >= reveal.delay) {
+                reveal.shown = true
+                entity.components[TransformComponent::class.java]?.setScaleVector(Vector3(1f))
+            }
         }
         for (entity in context.scene.queryEntity(EntityQueryCondition.hasComponent(FlightComponent::class.java))) {
             val flight = entity.components[FlightComponent::class.java] ?: continue
@@ -115,6 +135,10 @@ class ReactionScene {
 
     private fun cube() = cubeMesh ?: MeshResource.createBox(Vector3(1f, 1f, 1f)).also { cubeMesh = it }
 
+    private var cylinderMesh: MeshResource? = null
+
+    private fun cylinder() = cylinderMesh ?: MeshResource.createCylinder(1f, 1f).also { cylinderMesh = it }
+
     init {
         ensureRegistered()
         root.components.set(InteractableComponent())
@@ -148,7 +172,9 @@ class ReactionScene {
         flights.clear()
         sphereMesh = null
         cubeMesh = null
+        cylinderMesh = null
         val next = Entity()
+        if (newSpec.frame.atoms.isNotEmpty()) buildBonds(next, newSpec, previous)
         val frame = newSpec.frame
         val before = previous?.particles?.associateBy { it.id }.orEmpty()
         frame.particles.forEach { particle ->
@@ -185,6 +211,73 @@ class ReactionScene {
     }
 
     // ---- builders -------------------------------------------------------------------------
+
+    /**
+     * Ball-and-stick frame ([ReactionKind.BONDS]): every atom glides from where it was in the
+     * frame drawn last; a bond appears at once when neither end moves, otherwise once the atoms
+     * have arrived. Red dashed = about to break, gold = newly formed.
+     */
+    private fun buildBonds(next: Entity, spec: ReactionSceneSpec, previous: ReactionFrame?) {
+        val s = OrganicReactions.SCALE
+        val frame = spec.frame
+        val before = previous?.atoms?.associateBy { it.id }.orEmpty()
+        val moved = frame.atoms.filter { a -> before[a.id]?.let { it.position != a.position } ?: false }.map { it.id }.toSet()
+        frame.atoms.forEach { atom ->
+            val color = spec.nucleusColors[atom.symbol] ?: Color.Gray
+            val material = if (atom.faded) halo(color, 0.3f) else lit(color)
+            val ball = instanced("atom_${atom.id}", sphere(), material, listOf(Vec3.ZERO), BallStick.ball(atom.symbol) * s)
+            next.addChild(gliding(ball, before[atom.id]?.position ?: atom.position, atom.position))
+        }
+        val at = frame.atoms.associateBy { it.id }
+        val groups = frame.bonds.groupBy { (it.a in moved || it.b in moved) to it.mark }
+        groups.forEach { (key, bonds) ->
+            val (late, mark) = key
+            val sticks =
+                bonds.flatMap { bond ->
+                    val a = at.getValue(bond.a).position
+                    val b = at.getValue(bond.b).position
+                    when (bond.mark) {
+                        BondMark.BREAK -> BallStick.sticks(a, b, bond.order, dashed = true, spread = 0.16f * s)
+                        // One stick of a double bond stays, the other is red and dashed.
+                        BondMark.BREAK_ONE -> BallStick.sticks(a, b, 2, spread = 0.16f * s).take(1)
+                        else -> BallStick.sticks(a, b, bond.order, spread = 0.16f * s)
+                    }
+                }
+            val extra =
+                if (mark == BondMark.BREAK_ONE) {
+                    bonds.flatMap { bond -> BallStick.sticks(at.getValue(bond.a).position, at.getValue(bond.b).position, 2, dashed = true, spread = 0.16f * s).drop(4) }
+                } else {
+                    emptyList()
+                }
+            val name = "bonds_${mark.name}_$late"
+            val color =
+                when (mark) {
+                    BondMark.NEW -> ElementColors.ElectronTransferred
+                    BondMark.BREAK -> ElementColors.BondBreak
+                    else -> ElementColors.MoleculeBond
+                }
+            val radius = BallStick.STICK * s * if (mark == BondMark.NEW) 1.3f else 1f
+            val entities = listOfNotNull(
+                sticks.takeIf { it.isNotEmpty() }?.let { BallStick.stickEntity(name, cylinder(), if (mark == BondMark.NEW) glow(color) else lit(color), it, radius) },
+                extra.takeIf { it.isNotEmpty() }?.let { BallStick.stickEntity("${name}_red", cylinder(), lit(ElementColors.BondBreak), it, radius) },
+            )
+            entities.forEach { entity ->
+                if (late) {
+                    entity.components[TransformComponent::class.java]?.setScaleVector(Vector3(0f))
+                    entity.components.set(RevealComponent())
+                }
+                next.addChild(entity)
+            }
+        }
+    }
+
+    private fun glow(color: Color): Material =
+        PhysicallyBasedMaterial.create().apply {
+            setBaseColor(color.c4())
+            setRoughness(0.3f)
+            setMetallic(0f)
+            setEmissiveColor(Color4(color.red * 0.6f, color.green * 0.6f, color.blue * 0.6f, 1f))
+        }
 
     private fun particleEntity(particle: FrameParticle, from: Vec3, colors: Map<String, Color>): Entity {
         val holder = gliding(Entity(), from, particle.position)
@@ -297,6 +390,7 @@ class ReactionScene {
             if (registered) return
             registerComponent<GlideComponent>()
             registerComponent<FlightComponent>()
+            registerComponent<RevealComponent>()
             registerSystem<ReactionMotionSystem>()
             registered = true
         }

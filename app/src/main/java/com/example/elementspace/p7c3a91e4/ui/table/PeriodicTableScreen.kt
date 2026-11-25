@@ -74,6 +74,12 @@ fun PeriodicTableScreen(modifier: Modifier = Modifier) {
                     InMemorySessionRepository.shared.showReaction(id)
                     runCatching { navigator.openWindowContainer(WindowIds.REACTION_VOLUME, tag = WindowIds.REACTION_TAG) }
                 }
+            "molecule" ->
+                command.arg?.let { id ->
+                    InMemorySessionRepository.shared.showMolecule(id)
+                    runCatching { navigator.openWindowContainer(WindowIds.MOLECULE_VOLUME, tag = WindowIds.MOLECULE_TAG) }
+                }
+            "compare" -> InMemorySessionRepository.shared.compareMolecule(command.arg?.takeIf { it != "none" })
             "settings" -> viewModel.onEvent(PeriodicTableEvent.LanguageMenuVisible(true))
             "howto" -> viewModel.onEvent(PeriodicTableEvent.HowToVisible(true))
             "exit" -> viewModel.onEvent(PeriodicTableEvent.ExitConfirmVisible(true))

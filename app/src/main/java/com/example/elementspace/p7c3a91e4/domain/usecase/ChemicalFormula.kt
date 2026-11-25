@@ -56,7 +56,7 @@ object ChemicalFormula {
         return out
     }
 
-    fun termText(term: Term): String = (if (term.coefficient == 1) "" else term.coefficient.toString()) + display(term.formula)
+    fun termText(term: Term): String = (if (term.coefficient == 1) "" else term.coefficient.toString()) + display(term.shown ?: term.formula)
 
     fun sideText(terms: List<Term>): String = terms.joinToString(" + ") { termText(it) }
 

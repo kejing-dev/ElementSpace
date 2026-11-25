@@ -31,10 +31,10 @@ import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
 import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
 import com.example.elementspace.p7c3a91e4.domain.model.Element
 import com.example.elementspace.p7c3a91e4.domain.model.Isotope
-import com.example.elementspace.p7c3a91e4.domain.model.SchoolStage
 import com.example.elementspace.p7c3a91e4.domain.model.Subshell
 import com.example.elementspace.p7c3a91e4.ui.atom.AtomEvent
 import com.example.elementspace.p7c3a91e4.ui.atom.AtomUiState
+import com.example.elementspace.p7c3a91e4.ui.molecule.components.formulaLine
 import com.example.elementspace.p7c3a91e4.ui.reaction.components.EquationLine
 import com.example.elementspace.p7c3a91e4.ui.reaction.components.TypeTags
 import com.example.elementspace.p7c3a91e4.ui.table.components.labelRes
@@ -117,6 +117,8 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
             ChargeStepper(state, element, onEvent)
         }
         if (state.reactions.isNotEmpty()) ReactionsSection(state, onEvent)
+        if (element.symbol == "C") CarbonBondingSection()
+        if (state.molecules.isNotEmpty()) MoleculesSection(state, onEvent)
         Section(str(R.string.properties)) { PropertyTable(element) }
     }
 }
@@ -127,23 +129,7 @@ private val NoFocus = Modifier.focusProperties { canFocus = false }
 @Composable
 private fun ReactionsSection(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
     Section(str(R.string.formulas, state.reactions.size)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            listOf(null to R.string.formulas_all, SchoolStage.JUNIOR to R.string.formulas_junior, SchoolStage.SENIOR to R.string.formulas_senior)
-                .forEach { (stage, label) ->
-                    ToggleButton(
-                        checked = state.reactionStage == stage,
-                        onCheckedChange = { onEvent(AtomEvent.ReactionStageSelected(stage)) },
-                        modifier = NoFocus,
-                    ) {
-                        Text(str(label), maxLines = 1)
-                    }
-                }
-        }
-        val shown = state.shownReactions
-        if (shown.isEmpty()) {
-            Text(str(R.string.formulas_none_stage), style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary)
-        }
-        shown.forEach { reaction ->
+        state.reactions.forEach { reaction ->
             Row(
                 modifier =
                     Modifier.fillMaxWidth()
@@ -162,6 +148,69 @@ private fun ReactionsSection(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
                 }
                 IconButton(onClick = { onEvent(AtomEvent.ReactionOpened(reaction.id)) }, modifier = NoFocus) {
                     Icon(painterResource(R.drawable.ic_player_play), contentDescription = str(R.string.open_reaction))
+                }
+            }
+        }
+    }
+}
+
+/** Four facts about how carbon bonds, as a 2 x 2 grid of small tiles. */
+@Composable
+private fun CarbonBondingSection() {
+    val facts =
+        listOf(
+            R.string.carbon_bond_four to R.string.carbon_bond_four_line,
+            R.string.carbon_bond_orders to R.string.carbon_bond_orders_line,
+            R.string.carbon_bond_chain to R.string.carbon_bond_chain_line,
+            R.string.carbon_bond_ring to R.string.carbon_bond_ring_line,
+        )
+    Section(str(R.string.carbon_bonding)) {
+        facts.chunked(2).forEach { row ->
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                row.forEach { (title, line) ->
+                    Column(
+                        modifier = Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(PicoTheme.colorScheme.fillTertiary).padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(str(title), style = PicoTheme.typography.titleSmall, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
+                        Text(str(line), style = PicoTheme.typography.bodySmall, color = PicoTheme.colorScheme.labelSecondary)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Molecules with this element, grouped by carbon skeleton; ▶ shows one in the molecule Volume. */
+@Composable
+private fun MoleculesSection(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
+    Section(str(R.string.molecules, state.molecules.size)) {
+        state.molecules.groupBy { it.skeleton }.toSortedMap().forEach { (skeleton, molecules) ->
+            Text(
+                if (state.language == AppLanguage.ZH) skeleton.zh else skeleton.en,
+                style = PicoTheme.typography.labelMedium,
+                color = PicoTheme.colorScheme.labelSecondary,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+            molecules.forEach { molecule ->
+                Row(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(PicoTheme.colorScheme.fillTertiary)
+                            .then(NoFocus)
+                            .clickable { onEvent(AtomEvent.MoleculeOpened(molecule.id)) }
+                            .padding(start = 16.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    // gate:allow button-gap name and formula lines of one row; the only button is the trailing ▶
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(molecule.name.get(state.language), style = PicoTheme.typography.titleSmall, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
+                        Text(molecule.formulaLine(), style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary, maxLines = 1)
+                    }
+                    IconButton(onClick = { onEvent(AtomEvent.MoleculeOpened(molecule.id)) }, modifier = NoFocus) {
+                        Icon(painterResource(R.drawable.ic_player_play), contentDescription = str(R.string.open_molecule))
+                    }
                 }
             }
         }

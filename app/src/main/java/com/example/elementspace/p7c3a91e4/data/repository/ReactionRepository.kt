@@ -391,6 +391,6 @@ class BundledReactionRepository : ReactionRepository {
                     ),
             )
 
-        val LIBRARY: List<Reaction> = listOf(NA_CL2, H2_O2, FE_CUSO4)
+        val LIBRARY: List<Reaction> = listOf(NA_CL2, H2_O2, FE_CUSO4) + OrganicReactions.ALL
     }
 }

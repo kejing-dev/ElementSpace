@@ -12,5 +12,9 @@ object WindowIds {
     const val REACTION_VOLUME = "ReactionVolume"
     const val REACTION_TAG = "reaction"
 
+    /** The single molecule Volume; what it shows comes from SessionRepository.openMolecule. */
+    const val MOLECULE_VOLUME = "MoleculeVolume"
+    const val MOLECULE_TAG = "molecule"
+
     fun atomTag(atomicNumber: Int): String = "atom_$atomicNumber"
 }

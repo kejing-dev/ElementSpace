@@ -41,6 +41,9 @@ object ElementColors {
     val ElectronTransferred = Color(0xFFFFB020) // design-style: fixed-sample-color Reaction/transferred electron
     val IonPositive = Color(0xFFFF6B5E) // design-style: fixed-sample-color Reaction/cation halo
     val IonNegative = Color(0xFF5A8CFF) // design-style: fixed-sample-color Reaction/anion halo
+    val MoleculeBond = Color(0xFFD5D9E0) // design-style: fixed-sample-color Molecule/stick (M2 sample)
+    val BondAngle = Color(0xFF2F6FE0) // design-style: fixed-sample-color Molecule/bond-angle arc (M2 sample)
+    val BondBreak = Color(0xFFE0453A) // design-style: fixed-sample-color Reaction/bond about to break (M2 sample)
     val OverlayCard = Color(0xFFF3F4F6) // design-style: fixed-sample-color Settings card, light like the system glass
     val ClusterArm = Color(0xFFE5483B) // design-style: fixed-sample-color Reaction/oxygen in a spectator ion (model O)
 
@@ -62,6 +65,7 @@ object ElementColors {
         "C" to Color(0xFF4A4F58), // design-style: fixed-sample-color model/C
         "N" to Color(0xFF4F7BEA), // design-style: fixed-sample-color model/N
         "Mg" to Color(0xFF6FCF6A), // design-style: fixed-sample-color model/Mg
+        "Br" to Color(0xFFA0412A), // design-style: fixed-sample-color model/Br (dark red-brown, M2 sample)
     )
 
     fun model(symbol: String, category: ElementCategory): Color = MODEL[symbol] ?: category(category)
