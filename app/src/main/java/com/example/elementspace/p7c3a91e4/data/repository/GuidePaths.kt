@@ -71,6 +71,16 @@ object GuidePaths {
                 ),
                 L10n("氦不反应、不会燃烧，也比空气轻得多，所以气球和飞艇用氦气更安全。", "Helium does not react or burn and is much lighter than air, so it is the safe choice for balloons and airships."),
             ),
+            GuidePath(
+                "firework_colours",
+                L10n("焰火的颜色从哪来", "Where firework colours come from"),
+                listOf(
+                    step("先做个实验：点燃酒精灯，再换几种盐，看火焰的颜色。", "Start with an experiment: light the lamp, then try several salts and watch the flame.", "打开焰色试验", "Open the flame test", GuideAction.Lab("flame_test")),
+                    step("红色的焰火里有锶。看看锶原子：38 个电子，分五层。", "Red fireworks contain strontium. Look at its atom: 38 electrons in five shells.", "打开锶", "Open strontium", GuideAction.OpenAtom(38)),
+                    step("绿色的焰火里常有钡或铜。再看看铜。", "Green fireworks usually contain barium or copper. Now look at copper.", "打开铜", "Open copper", GuideAction.OpenAtom(29)),
+                ),
+                L10n("金属原子受热时，电子吸收能量跳到离核更远的地方，再跳回来时把能量变成光放出来。每种元素的电子能量不同，放出的光颜色就不同。", "When a metal atom is heated its electrons absorb energy and jump further from the nucleus; falling back, they give the energy out as light. Each element's electrons have their own energies, so each gives its own colour."),
+            ),
         )
 
     fun path(id: String): GuidePath? = ALL.firstOrNull { it.id == id }

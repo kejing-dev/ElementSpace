@@ -274,3 +274,10 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
   beaker, gasjar = Tripo Smart Mesh, untextured, glass material in code. Crucible tongs were
   generated but unusable and are not in the app.
 - Debug: `lab <id>`, `lnext`, `lreset`, `lchoice <n>`, `lpower 0|1|2`.
+
+## v1.9.1 (2026-11-26)
+
+- Four more experiments on the same beaker: iron nail in copper sulfate, zinc + dilute sulfuric acid,
+  marble + dilute hydrochloric acid, carbon dioxide into limewater (12 in all).
+- Sixth guided path, "焰火的颜色从哪来", which opens the flame test (`GuideAction.Lab`).
+- The content depth chosen in Settings is saved (`SharedPreferences element_space/level`).

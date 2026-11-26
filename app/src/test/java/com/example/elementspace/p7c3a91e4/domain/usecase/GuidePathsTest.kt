@@ -32,6 +32,7 @@ class GuidePathsTest {
                     }
                     is GuideAction.Reaction -> assertNotNull("${path.id} ${a.id}", reactions.reaction(a.id))
                     is GuideAction.Molecule -> assertNotNull("${path.id} ${a.id}", molecules.molecule(a.id))
+                    is GuideAction.Lab -> assertNotNull("${path.id} ${a.id}", com.example.elementspace.p7c3a91e4.data.repository.Experiments.experiment(a.id))
                     is GuideAction.Collide -> {
                         assertNotNull(elements.element(a.a))
                         assertNotNull(elements.element(a.b))

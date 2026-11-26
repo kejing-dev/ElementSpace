@@ -10,7 +10,7 @@ import com.example.elementspace.p7c3a91e4.domain.model.LabStep
 import com.example.elementspace.p7c3a91e4.domain.model.Vec3
 
 /**
- * The lab bench (v1.9.0): eight experiments chosen for what you see. Every observation is worded
+ * The lab bench (v1.9.0, twelve experiments since v1.9.1), chosen for what you see. Every observation is worded
  * after the PEP textbooks (九年级 units 2, 5, 8, 10; 必修第一册 ch. 2; 必修第二册 ch. 8) and each
  * experiment links to its reaction in the library for the atom-level view. Positions are scene
  * units above the bench top (y = 0), x to the right, z toward the viewer.
@@ -22,6 +22,7 @@ object Experiments {
 
     private val J2 = L10n("人教版九年级《化学》第二单元「我们周围的空气」", "PEP Chemistry Grade 9, Unit 2 (The air around us)")
     private val J5 = L10n("人教版九年级《化学》第五单元「化学方程式」", "PEP Chemistry Grade 9, Unit 5 (Chemical equations)")
+    private val J6 = L10n("人教版九年级《化学》第六单元「碳和碳的氧化物」", "PEP Chemistry Grade 9, Unit 6 (Carbon and its oxides)")
     private val J8 = L10n("人教版九年级《化学》第八单元「金属和金属材料」", "PEP Chemistry Grade 9, Unit 8 (Metals)")
     private val J10 = L10n("人教版九年级《化学》第十单元「酸和碱」", "PEP Chemistry Grade 9, Unit 10 (Acids and bases)")
     private val S1_21 = L10n("人教版高中《化学》必修第一册 第二章第一节「钠及其化合物」", "PEP High-school Chemistry Book 1, Ch. 2 §1 (Sodium and its compounds)")
@@ -302,6 +303,129 @@ object Experiments {
                     ),
                 reactionId = "al_4",
                 source = S2_81,
+            ),
+            Experiment(
+                id = "fe_cuso4",
+                name = L10n("铁钉和硫酸铜：湿法炼铜", "Iron nail in copper sulfate"),
+                setup = L10n("烧杯里是蓝色的硫酸铜溶液，旁边有一根打磨光亮的铁钉。", "A beaker of blue copper sulfate solution, and a polished iron nail."),
+                props = listOf(beaker()),
+                start = listOf(liquid(c(0.16f, 0.5f, 1f, 0.5f))),
+                steps =
+                    listOf(
+                        LabStep(
+                            L10n("放入铁钉", "Put in the iron nail"),
+                            L10n("铁钉表面覆盖一层红色的物质，溶液由蓝色逐渐变成浅绿色。", "A red coating covers the nail, and the blue solution gradually turns pale green."),
+                            listOf(
+                                liquid(c(0.62f, 0.9f, 0.68f, 0.42f), seconds = 14f),
+                                LabEffect.Solid(v(0.02f, 0.2f), Vec3(0.014f, 0.36f, 0.014f), c(0.45f, 0.46f, 0.5f), metal = true),
+                                LabEffect.Crystals(v(0.02f, 0.03f), 0.19f, COPPER, 14f),
+                            ),
+                        ),
+                        LabStep(
+                            L10n("为什么会这样", "Why this happens"),
+                            L10n("铁比铜活泼，把铜从硫酸铜溶液里置换出来；红色的是铜，浅绿色是硫酸亚铁溶液。Fe + CuSO₄ = FeSO₄ + Cu。我国古代就用这个办法炼铜。", "Iron is more reactive than copper and displaces it: the red coating is copper, the pale green is iron(II) sulfate. Fe + CuSO₄ = FeSO₄ + Cu. Ancient China smelted copper this way."),
+                            listOf(
+                                liquid(c(0.62f, 0.9f, 0.68f, 0.42f)),
+                                LabEffect.Solid(v(0.02f, 0.2f), Vec3(0.014f, 0.36f, 0.014f), c(0.45f, 0.46f, 0.5f), metal = true),
+                                LabEffect.Crystals(v(0.02f, 0.03f), 0.19f, COPPER, 0f),
+                            ),
+                        ),
+                    ),
+                reactionId = "fe_cuso4",
+                source = J8,
+            ),
+            Experiment(
+                id = "zn_h2so4",
+                name = L10n("锌和稀硫酸：制氢气", "Zinc and dilute sulfuric acid: making hydrogen"),
+                setup = L10n("烧杯里是稀硫酸，旁边有几颗锌粒。", "A beaker of dilute sulfuric acid, and a few zinc granules."),
+                props = listOf(beaker()),
+                start = listOf(liquid(WATER)),
+                steps =
+                    listOf(
+                        LabStep(
+                            L10n("放入锌粒", "Drop in the zinc"),
+                            L10n("锌粒表面产生大量气泡，锌粒逐渐变小。", "Bubbles stream off the zinc, and the granules slowly shrink."),
+                            listOf(
+                                liquid(WATER),
+                                LabEffect.Solid(v(-0.05f, 0.035f, 0.02f), Vec3(0.05f, 0.04f, 0.05f), c(0.6f, 0.62f, 0.66f), round = true, metal = true),
+                                LabEffect.Solid(v(0.06f, 0.035f, -0.03f), Vec3(0.045f, 0.035f, 0.045f), c(0.6f, 0.62f, 0.66f), round = true, metal = true),
+                                LabEffect.Solid(v(0.01f, 0.035f, 0.07f), Vec3(0.04f, 0.035f, 0.04f), c(0.6f, 0.62f, 0.66f), round = true, metal = true),
+                                LabEffect.Bubbles(v(0f, 0.06f), LEVEL, 45f, 0.09f),
+                            ),
+                        ),
+                        LabStep(
+                            L10n("放出的是什么气体", "What gas is it"),
+                            L10n("是氢气：锌把酸里的氢置换了出来。Zn + H₂SO₄ = ZnSO₄ + H₂↑。实验室常用这个反应制氢气。", "Hydrogen: zinc displaces it from the acid. Zn + H₂SO₄ = ZnSO₄ + H₂↑. This is the usual laboratory way to make hydrogen."),
+                            listOf(
+                                liquid(WATER),
+                                LabEffect.Solid(v(-0.05f, 0.03f, 0.02f), Vec3(0.03f, 0.025f, 0.03f), c(0.6f, 0.62f, 0.66f), round = true, metal = true),
+                                LabEffect.Solid(v(0.06f, 0.03f, -0.03f), Vec3(0.028f, 0.022f, 0.028f), c(0.6f, 0.62f, 0.66f), round = true, metal = true),
+                                LabEffect.Bubbles(v(0f, 0.05f), LEVEL, 22f, 0.09f),
+                            ),
+                        ),
+                    ),
+                reactionId = "zn_1",
+                source = J8,
+            ),
+            Experiment(
+                id = "caco3_hcl",
+                name = L10n("大理石和稀盐酸：制二氧化碳", "Marble and dilute hydrochloric acid: making carbon dioxide"),
+                setup = L10n("烧杯里是稀盐酸，旁边有几块大理石（主要成分是碳酸钙）。", "A beaker of dilute hydrochloric acid, and a few lumps of marble (mostly calcium carbonate)."),
+                props = listOf(beaker()),
+                start = listOf(liquid(WATER)),
+                steps =
+                    listOf(
+                        LabStep(
+                            L10n("放入大理石", "Drop in the marble"),
+                            L10n("大理石表面产生大量气泡，固体逐渐减少。", "The marble fizzes with bubbles and slowly dissolves away."),
+                            listOf(
+                                liquid(WATER),
+                                LabEffect.Solid(v(-0.04f, 0.045f, 0.03f), Vec3(0.08f, 0.06f, 0.07f), c(0.93f, 0.93f, 0.9f), round = true),
+                                LabEffect.Solid(v(0.06f, 0.04f, -0.03f), Vec3(0.06f, 0.05f, 0.06f), c(0.93f, 0.93f, 0.9f), round = true),
+                                LabEffect.Bubbles(v(0f, 0.07f), LEVEL, 50f, 0.1f),
+                            ),
+                        ),
+                        LabStep(
+                            L10n("放出的是什么气体", "What gas is it"),
+                            L10n("是二氧化碳。CaCO₃ + 2HCl = CaCl₂ + H₂O + CO₂↑。实验室用这个反应制二氧化碳；鸡蛋壳、水垢遇到酸冒泡也是这个道理。", "Carbon dioxide. CaCO₃ + 2HCl = CaCl₂ + H₂O + CO₂↑. This is how the gas is made in the lab; eggshell and limescale fizz in acid for the same reason."),
+                            listOf(
+                                liquid(WATER),
+                                LabEffect.Solid(v(-0.04f, 0.035f, 0.03f), Vec3(0.05f, 0.04f, 0.045f), c(0.93f, 0.93f, 0.9f), round = true),
+                                LabEffect.Bubbles(v(0f, 0.06f), LEVEL, 24f, 0.1f),
+                            ),
+                        ),
+                    ),
+                reactionId = "ca_1",
+                source = J6,
+            ),
+            Experiment(
+                id = "limewater_co2",
+                name = L10n("二氧化碳通入澄清石灰水", "Carbon dioxide into limewater"),
+                setup = L10n("烧杯里是澄清的石灰水（氢氧化钙溶液），一根玻璃导管伸到液面下。", "A beaker of clear limewater (calcium hydroxide solution), with a glass tube dipping below the surface."),
+                props = listOf(beaker()),
+                start = listOf(liquid(WATER), LabEffect.Solid(v(0.05f, 0.32f), Vec3(0.012f, 0.5f, 0.012f), c(0.85f, 0.93f, 1f))),
+                steps =
+                    listOf(
+                        LabStep(
+                            L10n("通入二氧化碳", "Bubble in carbon dioxide"),
+                            L10n("澄清的石灰水变浑浊。", "The clear limewater turns cloudy."),
+                            listOf(
+                                liquid(c(0.96f, 0.96f, 0.93f, 0.8f), seconds = 9f),
+                                LabEffect.Solid(v(0.05f, 0.32f), Vec3(0.012f, 0.5f, 0.012f), c(0.85f, 0.93f, 1f)),
+                                LabEffect.Bubbles(v(0.05f, 0.08f), LEVEL, 26f, 0.03f),
+                            ),
+                        ),
+                        LabStep(
+                            L10n("为什么变浑浊", "Why it turns cloudy"),
+                            L10n("生成了不溶于水的碳酸钙小颗粒。Ca(OH)₂ + CO₂ = CaCO₃↓ + H₂O。这个现象常用来检验二氧化碳。", "Tiny particles of insoluble calcium carbonate form. Ca(OH)₂ + CO₂ = CaCO₃↓ + H₂O. This is the usual test for carbon dioxide."),
+                            listOf(
+                                liquid(c(0.96f, 0.96f, 0.93f, 0.8f)),
+                                LabEffect.Solid(v(0.05f, 0.32f), Vec3(0.012f, 0.5f, 0.012f), c(0.85f, 0.93f, 1f)),
+                            ),
+                        ),
+                    ),
+                reactionId = "ca_4",
+                source = J6,
             ),
         )
 

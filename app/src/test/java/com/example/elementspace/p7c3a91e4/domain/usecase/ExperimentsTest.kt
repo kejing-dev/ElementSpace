@@ -13,11 +13,11 @@ class ExperimentsTest {
     private val models = File("src/main/assets/models/lab")
 
     @Test
-    fun `eight experiments, each with steps, both languages, a source and existing equipment`() {
+    fun `twelve experiments, each with steps, both languages, a source and existing equipment`() {
         val index = File(models, "index.json").readText()
         assertTrue(File(models, "bench.glb").length() > 1000)
-        assertEquals(8, Experiments.ALL.size)
-        assertEquals(8, Experiments.ALL.map { it.id }.toSet().size)
+        assertEquals(12, Experiments.ALL.size)
+        assertEquals(12, Experiments.ALL.map { it.id }.toSet().size)
         Experiments.ALL.forEach { e ->
             assertTrue(e.id, e.steps.size in 1..4)
             assertTrue(e.id, e.name.zh.isNotBlank() && e.name.en.isNotBlank() && e.setup.zh.isNotBlank() && e.setup.en.isNotBlank())
@@ -38,6 +38,7 @@ class ExperimentsTest {
             mapOf(
                 "mg_burn" to "2Mg + O₂", "fe_o2" to "3Fe + 2O₂", "na_water" to "2Na + 2H₂O", "cu_agno3" to "Cu + 2AgNO₃",
                 "cuso4_naoh" to "CuSO₄ + 2NaOH", "h2o2" to "2H₂O₂", "thermite" to "2Al + Fe₂O₃",
+                "fe_cuso4" to "Fe + CuSO₄", "zn_h2so4" to "Zn + H₂SO₄", "caco3_hcl" to "CaCO₃ + 2HCl", "limewater_co2" to "Ca(OH)₂ + CO₂",
             )
         Experiments.ALL.forEach { e ->
             val id = e.reactionId ?: return@forEach

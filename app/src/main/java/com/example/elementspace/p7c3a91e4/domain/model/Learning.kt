@@ -30,6 +30,9 @@ sealed interface GuideAction {
     data class Molecule(val id: String) : GuideAction
 
     data class Collide(val a: Int, val b: Int) : GuideAction
+
+    /** Opens the lab bench on an experiment. */
+    data class Lab(val id: String) : GuideAction
 }
 
 /** One step: what to notice ([text]), and the single button that makes it happen. */

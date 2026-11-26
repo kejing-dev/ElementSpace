@@ -74,10 +74,16 @@ fun PeriodicTableScreen(modifier: Modifier = Modifier) {
     // First launch only: a card with three things to try (v1.7.0).
     LaunchedEffect(Unit) {
         val prefs = context.getSharedPreferences("element_space", android.content.Context.MODE_PRIVATE)
+        // The content depth picked in Settings is kept between launches (v1.9.1).
+        LearningLevel.entries.firstOrNull { it.name == prefs.getString("level", null) }?.let { viewModel.onEvent(PeriodicTableEvent.LevelSelected(it)) }
         if (!prefs.getBoolean("first_run_done", false)) {
             prefs.edit().putBoolean("first_run_done", true).apply()
             viewModel.onEvent(PeriodicTableEvent.FirstRunVisible(true))
         }
+    }
+
+    LaunchedEffect(state.level) {
+        context.getSharedPreferences("element_space", android.content.Context.MODE_PRIVATE).edit().putString("level", state.level.name).apply()
     }
 
     LaunchedEffect(state.windowRequest) {

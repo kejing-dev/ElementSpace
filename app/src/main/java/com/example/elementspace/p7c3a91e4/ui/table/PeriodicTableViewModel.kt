@@ -126,6 +126,10 @@ class PeriodicTableViewModel(
                 sessionRepository.showMolecule(action.id)
                 _state.update { it.copy(auxWindow = AuxWindow.MOLECULE) }
             }
+            is GuideAction.Lab -> {
+                sessionRepository.showExperiment(action.id)
+                _state.update { it.copy(auxWindow = AuxWindow.LAB) }
+            }
             is GuideAction.Collide -> {
                 val a = elementRepository.element(action.a)
                 val b = elementRepository.element(action.b)
