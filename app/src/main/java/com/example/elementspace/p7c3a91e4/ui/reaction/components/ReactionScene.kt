@@ -3,7 +3,12 @@ package com.example.elementspace.p7c3a91e4.ui.reaction.components
 import androidx.compose.ui.graphics.Color
 import com.example.elementspace.p7c3a91e4.data.repository.OrganicReactions
 import com.example.elementspace.p7c3a91e4.domain.model.BondMark
+import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
 import com.example.elementspace.p7c3a91e4.domain.model.ChargeTint
+import com.example.elementspace.p7c3a91e4.domain.model.ConditionKind
+import com.example.elementspace.p7c3a91e4.domain.model.ConditionVisual
+import com.example.elementspace.p7c3a91e4.domain.usecase.AtomLabelText
+import com.example.elementspace.p7c3a91e4.ui.common.SceneLabels
 import com.example.elementspace.p7c3a91e4.ui.molecule.components.BallStick
 import com.example.elementspace.p7c3a91e4.domain.model.FrameParticle
 import com.example.elementspace.p7c3a91e4.domain.model.ReactionFrame
@@ -44,7 +49,33 @@ data class ReactionSceneSpec(
     val frame: ReactionFrame,
     /** Nucleus colour per element symbol (category colour, as on the table). */
     val nucleusColors: Map<String, Color>,
+    /** Conditions acting in this step (light, heat, ...), drawn around the molecules. */
+    val conditions: List<ConditionVisual> = emptyList(),
+    val language: AppLanguage = AppLanguage.ZH,
+    /** Atomic number per symbol, for the charge printed on ions. */
+    val atomicNumbers: Map<String, Int> = emptyMap(),
 )
+
+/** Scales an entity's y by a flicker around [base]; flames. */
+class FlickerComponent(val base: Vec3 = Vec3(1f, 1f, 1f), val phase: Float = 0f) : Component() {
+    var time: Float = 0f
+
+    override fun clone(): Component = FlickerComponent(base, phase)
+}
+
+/** Breathes an entity's uniform scale around [base]; the glow of the sun. */
+class PulseComponent(val base: Float = 1f) : Component() {
+    var time: Float = 0f
+
+    override fun clone(): Component = PulseComponent(base)
+}
+
+/** Turns an entity about its y axis; sparks around an ignition flame. */
+class SpinComponent(val speed: Float = 2f) : Component() {
+    var angle: Float = 0f
+
+    override fun clone(): Component = SpinComponent(speed)
+}
 
 /** Keeps an entity hidden (scale 0) for [delay] seconds, then shows it; used for bonds that form after atoms glide. */
 class RevealComponent(val delay: Float = 0.9f) : Component() {
@@ -97,6 +128,24 @@ class ReactionMotionSystem : System() {
                 entity.components[TransformComponent::class.java]?.setScaleVector(Vector3(1f))
             }
         }
+        for (entity in context.scene.queryEntity(EntityQueryCondition.hasComponent(FlickerComponent::class.java))) {
+            val flicker = entity.components[FlickerComponent::class.java] ?: continue
+            flicker.time += dt
+            val t = flicker.time + flicker.phase
+            val k = 1f + 0.09f * sin(t * 9f) + 0.05f * sin(t * 14.3f)
+            val w = 1f - 0.04f * sin(t * 11f)
+            entity.components[TransformComponent::class.java]?.setScaleVector(Vector3(flicker.base.x * w, flicker.base.y * k, flicker.base.z * w))
+        }
+        for (entity in context.scene.queryEntity(EntityQueryCondition.hasComponent(PulseComponent::class.java))) {
+            val pulse = entity.components[PulseComponent::class.java] ?: continue
+            pulse.time += dt
+            entity.components[TransformComponent::class.java]?.setScaleVector(Vector3(pulse.base * (1f + 0.12f * sin(pulse.time * 3f))))
+        }
+        for (entity in context.scene.queryEntity(EntityQueryCondition.hasComponent(SpinComponent::class.java))) {
+            val spin = entity.components[SpinComponent::class.java] ?: continue
+            spin.angle += dt * spin.speed
+            entity.components[TransformComponent::class.java]?.setQuaternion(Quat(0f, sin(spin.angle / 2f), 0f, cos(spin.angle / 2f)))
+        }
         for (entity in context.scene.queryEntity(EntityQueryCondition.hasComponent(FlightComponent::class.java))) {
             val flight = entity.components[FlightComponent::class.java] ?: continue
             if (flight.paused) continue
@@ -126,6 +175,7 @@ class ReactionScene {
     private var spec: ReactionSceneSpec? = null
     private var paused = false
     private val flights = ArrayList<FlightComponent>()
+    private val labels = SceneLabels()
 
     // Created per rebuild, never kept across rebuilds (see AtomScene for the crash this avoids).
     private var sphereMesh: MeshResource? = null
@@ -136,6 +186,9 @@ class ReactionScene {
     private fun cube() = cubeMesh ?: MeshResource.createBox(Vector3(1f, 1f, 1f)).also { cubeMesh = it }
 
     private var cylinderMesh: MeshResource? = null
+    private var coneMesh: MeshResource? = null
+
+    private fun cone() = coneMesh ?: MeshResource.createCone(1f, 1f).also { coneMesh = it }
 
     private fun cylinder() = cylinderMesh ?: MeshResource.createCylinder(1f, 1f).also { cylinderMesh = it }
 
@@ -155,6 +208,7 @@ class ReactionScene {
             setScaleVector(Vector3(radiusMeters * zoom))
             setQuaternion(axisAngle(1f, 0f, 0f, pitch) * axisAngle(0f, 1f, 0f, yaw))
         }
+        labels.setRotation(yaw, pitch)
     }
 
     fun setPaused(value: Boolean) {
@@ -170,9 +224,11 @@ class ReactionScene {
         android.util.Log.i("ElementSpaceRx", "RENDER ${newSpec.reactionId} step ${newSpec.step + 1} glideFrom=${previous != null}")
         content?.destroy(true)
         flights.clear()
+        labels.reset()
         sphereMesh = null
         cubeMesh = null
         cylinderMesh = null
+        coneMesh = null
         val next = Entity()
         if (newSpec.frame.atoms.isNotEmpty()) buildBonds(next, newSpec, previous)
         val frame = newSpec.frame
@@ -200,6 +256,7 @@ class ReactionScene {
                 next.addChild(electron)
             }
         }
+        if (newSpec.conditions.isNotEmpty()) buildConditions(next, newSpec)
         root.addChild(next)
         content = next
         setPaused(paused)
@@ -207,6 +264,7 @@ class ReactionScene {
 
     fun destroy() {
         flights.clear()
+        labels.reset()
         root.destroy(true)
     }
 
@@ -225,8 +283,11 @@ class ReactionScene {
         frame.atoms.forEach { atom ->
             val color = spec.nucleusColors[atom.symbol] ?: Color.Gray
             val material = if (atom.faded) halo(color, 0.3f) else lit(color)
-            val ball = instanced("atom_${atom.id}", sphere(), material, listOf(Vec3.ZERO), BallStick.ball(atom.symbol) * s)
-            next.addChild(gliding(ball, before[atom.id]?.position ?: atom.position, atom.position))
+            val radius = BallStick.ball(atom.symbol) * s
+            val holder = Entity()
+            holder.addChild(instanced("atom_${atom.id}", sphere(), material, listOf(Vec3.ZERO), radius))
+            if (!atom.faded) holder.addChild(labels.label(atom.symbol, Vec3.ZERO, height = radius * 1.15f, lift = radius * 1.04f))
+            next.addChild(gliding(holder, before[atom.id]?.position ?: atom.position, atom.position))
         }
         val at = frame.atoms.associateBy { it.id }
         val groups = frame.bonds.groupBy { (it.a in moved || it.b in moved) to it.mark }
@@ -269,6 +330,97 @@ class ReactionScene {
                 next.addChild(entity)
             }
         }
+    }
+
+    // ---- reaction conditions (v1.3.0) ---------------------------------------------------------
+
+    /** Where the drawn particles are, with their radii, to place condition props around them. */
+    private fun bodies(frame: ReactionFrame): List<Pair<Vec3, Float>> =
+        frame.atoms.map { it.position to BallStick.ball(it.symbol) * OrganicReactions.SCALE } +
+            frame.particles.map { it.position to ReactionLayout.particleRadius(it) }
+
+    private fun buildConditions(next: Entity, spec: ReactionSceneSpec) {
+        val bodies = bodies(spec.frame)
+        if (bodies.isEmpty()) return
+        val centre = bodies.fold(Vec3.ZERO) { a, (p, _) -> a + p } * (1f / bodies.size)
+        val bottom = bodies.minOf { (p, r) -> p.y - r }
+        val right = bodies.maxOf { (p, r) -> p.x + r }
+        val floor = (bottom - 0.08f).coerceAtLeast(-0.86f)
+        var tagY = floor - 0.02f
+        spec.conditions.forEach { visual ->
+            val text = "${visual.kind.icon} ${visual.label.get(spec.language)}"
+            when (visual.kind) {
+                ConditionKind.LIGHT -> {
+                    val sun = Vec3(-0.7f, 0.66f, 0.18f)
+                    val target = lightTarget(spec.frame) ?: centre
+                    val glowBall = instanced("sun_halo", sphere(), halo(ElementColors.Sun, 0.35f), listOf(Vec3.ZERO), 1f) // gate:allow primitive-hero schematic light mark in a textbook diagram (M3 sample), not a scene sun
+                    glowBall.components.set(PulseComponent(0.13f))
+                    val sunHolder = Entity().also { it.components[TransformComponent::class.java]?.setPosition(sun.v3()) }
+                    sunHolder.addChild(instanced("sun", sphere(), glow(ElementColors.Sun), listOf(Vec3.ZERO), 0.065f)) // gate:allow primitive-hero schematic light mark (M3 sample)
+                    sunHolder.addChild(glowBall)
+                    next.addChild(sunHolder)
+                    val dir = target - sun
+                    val side = BallStick.perpendicular(dir * (1f / dir.length())) * 0.05f
+                    val rays = listOf(-1f, 0f, 1f).map { k -> BallStick.Stick(sun + dir * 0.14f + side * k, sun + dir * 0.92f + side * (k * 1.6f)) }
+                    next.addChild(BallStick.stickEntity("rays", cylinder(), halo(ElementColors.Sun, 0.5f), rays, 0.007f))
+                    next.addChild(labels.label(text, sun + Vec3(0f, -0.14f, 0f), height = 0.07f, lift = 0.02f, style = SceneLabels.Style.TAG))
+                }
+                ConditionKind.HEAT -> {
+                    val at = Vec3(centre.x, floor - 0.16f, 0f)
+                    val burner = ModelEntity(cube(), lit(ElementColors.Burner))
+                    burner.components[TransformComponent::class.java]?.apply {
+                        setPosition((at + Vec3(0f, -0.035f, 0f)).v3())
+                        setScaleVector(Vector3(0.2f, 0.06f, 0.12f))
+                    }
+                    next.addChild(burner)
+                    next.addChild(flame(at, 0.13f, 0.055f))
+                    next.addChild(labels.label(text, Vec3(at.x + 0.3f, at.y + 0.04f, 0f), height = 0.07f, lift = 0.05f, style = SceneLabels.Style.TAG))
+                    tagY = at.y - 0.06f
+                }
+                ConditionKind.IGNITE -> {
+                    // Where the reactants meet, if that spot is free; otherwise under them.
+                    val free = bodies.all { (p, r) -> (p - centre).length() > r + 0.12f }
+                    val at = if (free) centre + Vec3(0f, -0.06f, 0.05f) else Vec3(centre.x, floor - 0.1f, 0.05f)
+                    next.addChild(flame(at, 0.1f, 0.04f))
+                    val sparks = Entity().also { it.components[TransformComponent::class.java]?.setPosition((at + Vec3(0f, 0.07f, 0f)).v3()) }
+                    val points = (0 until 6).map { i -> val a = i * 1.047f; Vec3(0.085f * cos(a), 0.02f * sin(i * 2.1f), 0.085f * sin(a)) }
+                    sparks.addChild(instanced("sparks", sphere(), glow(ElementColors.FlameInner), points, 0.009f))
+                    sparks.components.set(SpinComponent(2.4f))
+                    next.addChild(sparks)
+                    next.addChild(labels.label(text, Vec3(at.x + 0.24f, at.y + 0.04f, 0.05f), height = 0.07f, lift = 0.05f, style = SceneLabels.Style.TAG))
+                }
+                ConditionKind.CATALYST -> {
+                    next.addChild(labels.label(text, Vec3((centre.x + 0.36f).coerceAtMost(right), tagY, 0f), height = 0.065f, lift = 0.05f, style = SceneLabels.Style.TAG))
+                }
+            }
+        }
+    }
+
+    /** The bond light breaks: the first red bond between two atoms of the same element (Cl–Cl), else any red bond. */
+    private fun lightTarget(frame: ReactionFrame): Vec3? {
+        val at = frame.atoms.associateBy { it.id }
+        val broken = frame.bonds.filter { it.mark == BondMark.BREAK }
+        val bond = broken.firstOrNull { at[it.a]?.symbol == at[it.b]?.symbol } ?: broken.firstOrNull() ?: return null
+        val a = at[bond.a]?.position ?: return null
+        val b = at[bond.b]?.position ?: return null
+        return (a + b) * 0.5f
+    }
+
+    /** Two nested cones (orange outside, yellow inside) standing on [base], flickering. */
+    private fun flame(base: Vec3, height: Float, radius: Float): Entity {
+        val holder = Entity().also { it.components[TransformComponent::class.java]?.setPosition(base.v3()) }
+        listOf(Triple(ElementColors.FlameOuter, 1f, 0.75f), Triple(ElementColors.FlameInner, 0.55f, 0.95f)).forEachIndexed { i, (color, k, alpha) ->
+            val h = height * k
+            val r = radius * k
+            val cone = ModelEntity(cone(), UnlitMaterial.create(BlendingMode.TRANSPARENT).apply { setBaseColor(color.c4(alpha)) })
+            cone.components[TransformComponent::class.java]?.apply {
+                setPosition(Vector3(0f, h / 2f, 0f))
+                setScaleVector(Vector3(r, h, r))
+            }
+            cone.components.set(FlickerComponent(Vec3(r, h, r), phase = i * 0.7f))
+            holder.addChild(cone)
+        }
+        return holder
     }
 
     private fun glow(color: Color): Material =
@@ -319,6 +471,9 @@ class ReactionScene {
             }
         }
         tintHalo(particle.tint, ReactionLayout.particleRadius(particle))?.let { holder.addChild(it) }
+        // An ion's charge halo is a transparent sphere that hides anything inside it: sit in front of it.
+        val lift = if (particle.tint == ChargeTint.NONE) NUCLEUS + 0.03f else ReactionLayout.particleRadius(particle) + 0.05f
+        holder.addChild(labels.label(AtomLabelText.particle(particle, spec?.atomicNumbers?.get(particle.symbol)), Vec3.ZERO, height = 0.085f, lift = lift))
         return holder
     }
 
@@ -328,6 +483,7 @@ class ReactionScene {
         holder.addChild(instanced("cluster_c_${particle.id}", sphere(), lit(ElementColors.clusterCentre(centre)), listOf(Vec3.ZERO), 0.05f))
         holder.addChild(instanced("cluster_a_${particle.id}", sphere(), lit(ElementColors.ClusterArm), ReactionLayout.tetrahedron(0.075f).take(arms.size), 0.036f))
         tintHalo(particle.tint, 0.13f)?.let { holder.addChild(it) }
+        holder.addChild(labels.label(AtomLabelText.particle(particle, null), Vec3(0f, -0.17f, 0f), height = 0.07f, lift = 0.12f))
     }
 
     private fun tintHalo(tint: ChargeTint, radius: Float): Entity? {
@@ -391,6 +547,9 @@ class ReactionScene {
             registerComponent<GlideComponent>()
             registerComponent<FlightComponent>()
             registerComponent<RevealComponent>()
+            registerComponent<FlickerComponent>()
+            registerComponent<PulseComponent>()
+            registerComponent<SpinComponent>()
             registerSystem<ReactionMotionSystem>()
             registered = true
         }

@@ -37,6 +37,9 @@ fun RowScope.MoleculeToolbarContent(state: MoleculeUiState, onEvent: (MoleculeEv
     ToggleButton(checked = state.showGroups && sticks, onCheckedChange = { onEvent(MoleculeEvent.GroupsToggled) }, enabled = sticks, modifier = NoFocus) {
         Text(str(R.string.mol_groups), maxLines = 1)
     }
+    ToggleButton(checked = state.showLabels, onCheckedChange = { onEvent(MoleculeEvent.LabelsToggled) }, modifier = NoFocus) {
+        Text(str(R.string.mol_labels), maxLines = 1)
+    }
     VerticalDivider(modifier = Modifier.size(width = 1.dp, height = 32.dp))
     IconButton(onClick = { onEvent(MoleculeEvent.ResetView) }, modifier = NoFocus) {
         Icon(painter = painterResource(R.drawable.ic_rotate), contentDescription = str(R.string.mol_reset))

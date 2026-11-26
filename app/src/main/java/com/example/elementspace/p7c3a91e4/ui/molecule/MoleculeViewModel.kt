@@ -31,6 +31,8 @@ data class MoleculeUiState(
     val mode: MoleculeMode = MoleculeMode.BALL_AND_STICK,
     val showAngles: Boolean = true,
     val showGroups: Boolean = true,
+    /** Element symbols printed on the atoms (v1.3.0). */
+    val showLabels: Boolean = true,
     /** Bumped to ask the 3D view to return to its starting orientation and scale. */
     val resetToken: Int = 0,
 ) {
@@ -48,6 +50,8 @@ sealed interface MoleculeEvent {
     data object AnglesToggled : MoleculeEvent
 
     data object GroupsToggled : MoleculeEvent
+
+    data object LabelsToggled : MoleculeEvent
 
     data object ResetView : MoleculeEvent
 
@@ -94,6 +98,7 @@ class MoleculeViewModel(
             is MoleculeEvent.ModeSelected -> _state.update { it.copy(mode = event.mode) }
             MoleculeEvent.AnglesToggled -> _state.update { it.copy(showAngles = !it.showAngles) }
             MoleculeEvent.GroupsToggled -> _state.update { it.copy(showGroups = !it.showGroups) }
+            MoleculeEvent.LabelsToggled -> _state.update { it.copy(showLabels = !it.showLabels) }
             MoleculeEvent.ResetView -> _state.update { it.copy(resetToken = it.resetToken + 1) }
             is MoleculeEvent.CompareOpened -> session.compareMolecule(event.id)
             MoleculeEvent.CompareClosed -> session.compareMolecule(null)

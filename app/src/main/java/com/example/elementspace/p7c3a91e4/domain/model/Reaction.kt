@@ -100,6 +100,20 @@ data class ReactionFrame(
     val bonds: List<FrameBond> = emptyList(),
 )
 
+/** What a reaction condition looks like in the Volume (v1.3.0). */
+enum class ConditionKind(val icon: String) {
+    /** A small glowing sun with rays on the molecule whose bond light breaks. */
+    LIGHT("☀"),
+    /** A burner flame under the molecules. */
+    HEAT("🔥"),
+    /** A small flame with sparks where the reactants meet. */
+    IGNITE("🔥"),
+    /** A label only: a catalyst is not a reactant and is not counted. */
+    CATALYST("⚗"),
+}
+
+data class ConditionVisual(val kind: ConditionKind, val label: L10n)
+
 data class ReactionStep(
     val title: L10n,
     val why: L10n,
@@ -127,4 +141,9 @@ data class Reaction(
     val kind: ReactionKind = ReactionKind.ELECTRONS,
     /** Drawn with ⇌ instead of ⟶. */
     val reversible: Boolean = false,
-)
+    /** The [condition] drawn in the Volume; shown on [conditionSteps] (0-based), the steps it acts in. */
+    val visuals: List<ConditionVisual> = emptyList(),
+    val conditionSteps: Set<Int> = setOf(1, 2),
+) {
+    fun conditionsAt(step: Int): List<ConditionVisual> = if (step in conditionSteps) visuals else emptyList()
+}

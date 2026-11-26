@@ -2,7 +2,6 @@ package com.example.elementspace.p7c3a91e4.ui.atom
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -14,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.elementspace.p7c3a91e4.R
+import com.example.elementspace.p7c3a91e4.ui.common.SideCard
 import com.example.elementspace.p7c3a91e4.ui.atom.components.AtomInfoPanel
 import com.example.elementspace.p7c3a91e4.ui.atom.components.AtomSceneSpec
 import com.example.elementspace.p7c3a91e4.ui.atom.components.AtomSceneView
@@ -26,17 +26,7 @@ import com.example.elementspace.p7c3a91e4.ui.theme.str
 import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.design.Text
 import com.pico.spatial.ui.design.windows.Toolbar
-import com.pico.spatial.ui.foundation.geometry.DpOffset3D
-import com.pico.spatial.ui.foundation.geometry.NormalizedPoint3D
-import com.pico.spatial.ui.foundation.window.Augment
-import com.pico.spatial.ui.foundation.window.AugmentContentAlignment
 
-// The info panel is an Augment rather than a Subwindow: a Subwindow is always as tall as its
-// window, which beside a 1600 dp Volume made a strip far longer than its content. An Augment is
-// sized by its content, so the panel can be a reading-sized card beside the model.
-private val PanelWidth = 420.dp
-private val PanelHeight = 880.dp
-private val PanelGap = 32.dp
 
 /** One atom Volume: a rotatable 3D model, a toolbar below it and an info card beside it. */
 @Composable
@@ -119,14 +109,6 @@ internal fun AtomContent(
                 onReset = { onEvent(AtomEvent.ResetView) },
             )
         }
-        Augment(
-            anchor = NormalizedPoint3D.Right,
-            alignment = AugmentContentAlignment.CenterLeft,
-            offset = DpOffset3D(PanelGap, 0.dp, 0.dp),
-        ) {
-            Box(modifier = Modifier.size(PanelWidth, PanelHeight)) {
-                AtomInfoPanel(state = state, onEvent = onEvent)
-            }
-        }
+        SideCard { AtomInfoPanel(state = state, onEvent = onEvent) }
     }
 }

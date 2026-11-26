@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.elementspace.p7c3a91e4.R
+import com.example.elementspace.p7c3a91e4.ui.common.PagedCard
 import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
 import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
 import com.example.elementspace.p7c3a91e4.domain.model.Element
@@ -74,52 +76,77 @@ private const val SHELL_BAR_FULL = 32f
 @Composable
 fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Modifier = Modifier) {
     val element = state.element ?: return
-    Column(
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
-    ) {
-        ElementHero(element, state.language)
-        ViewNote(state)
-        when (state.view) {
-            AtomViewMode.SHELL -> {
-                Section(str(R.string.particles)) { ParticleCounts(state) }
-                state.configuration?.let { Section(str(R.string.electron_shells)) { ShellBars(it.shells) } }
-                IsotopeList(state, element, onEvent)
-            }
-            AtomViewMode.NUCLEUS -> {
-                Section(str(R.string.particles)) {
-                    ParticleCounts(state)
-                    MassNumberLine(state)
-                }
-                IsotopeList(state, element, onEvent)
-            }
-            AtomViewMode.CLOUD -> {
-                state.configuration?.let { configuration ->
-                    Section(str(R.string.subshells)) {
-                        SubshellToggles(
-                            subshells = configuration.subshells,
-                            hidden = state.hiddenSubshells,
-                            onToggle = { onEvent(AtomEvent.SubshellToggled(it)) },
-                        )
-                    }
-                    Section(str(R.string.configuration)) {
-                        Text(
-                            text = configuration.notation(),
-                            style = PicoTheme.typography.bodyLargeMultiline,
-                            color = PicoTheme.colorScheme.labelPrimary,
-                        )
-                    }
-                }
-            }
-            AtomViewMode.ALLOTROPE -> AllotropeList(state, onEvent)
+    // One kind of content per page (v1.3.0); pages without content are left out.
+    val pages =
+        buildList {
+            add(AtomPage.STRUCTURE)
+            if (state.reactions.isNotEmpty()) add(AtomPage.REACTIONS)
+            if (state.molecules.isNotEmpty()) add(AtomPage.MOLECULES)
+            add(AtomPage.PROPERTIES)
         }
-        if (state.advancedExpanded && state.view != AtomViewMode.ALLOTROPE) {
-            ChargeStepper(state, element, onEvent)
+    val tabs =
+        pages.map { page ->
+            when (page) {
+                AtomPage.STRUCTURE -> str(R.string.tab_structure)
+                AtomPage.REACTIONS -> str(R.string.tab_reactions, state.reactions.size)
+                AtomPage.MOLECULES -> str(R.string.tab_molecules, state.molecules.size)
+                AtomPage.PROPERTIES -> str(R.string.tab_properties)
+            }
         }
-        if (state.reactions.isNotEmpty()) ReactionsSection(state, onEvent)
-        if (element.symbol == "C") CarbonBondingSection()
-        if (state.molecules.isNotEmpty()) MoleculesSection(state, onEvent)
-        Section(str(R.string.properties)) { PropertyTable(element) }
+    PagedCard(key = element.atomicNumber, tabs = tabs, modifier = modifier, header = { ElementHero(element, state.language) }) { index ->
+        when (pages[index]) {
+            AtomPage.STRUCTURE -> StructurePage(state, element, onEvent)
+            AtomPage.REACTIONS -> ReactionsSection(state, onEvent)
+            AtomPage.MOLECULES -> {
+                if (element.symbol == "C") CarbonBondingSection()
+                MoleculesSection(state, onEvent)
+            }
+            AtomPage.PROPERTIES -> Section(str(R.string.properties)) { PropertyTable(element) }
+        }
+    }
+}
+
+private enum class AtomPage { STRUCTURE, REACTIONS, MOLECULES, PROPERTIES }
+
+/** What the atom is made of; the sections follow the selected view. */
+@Composable
+private fun StructurePage(state: AtomUiState, element: Element, onEvent: (AtomEvent) -> Unit) {
+    ViewNote(state)
+    when (state.view) {
+        AtomViewMode.SHELL -> {
+            Section(str(R.string.particles)) { ParticleCounts(state) }
+            state.configuration?.let { Section(str(R.string.electron_shells)) { ShellBars(it.shells) } }
+            IsotopeList(state, element, onEvent)
+        }
+        AtomViewMode.NUCLEUS -> {
+            Section(str(R.string.particles)) {
+                ParticleCounts(state)
+                MassNumberLine(state)
+            }
+            IsotopeList(state, element, onEvent)
+        }
+        AtomViewMode.CLOUD -> {
+            state.configuration?.let { configuration ->
+                Section(str(R.string.subshells)) {
+                    SubshellToggles(
+                        subshells = configuration.subshells,
+                        hidden = state.hiddenSubshells,
+                        onToggle = { onEvent(AtomEvent.SubshellToggled(it)) },
+                    )
+                }
+                Section(str(R.string.configuration)) {
+                    Text(
+                        text = configuration.notation(),
+                        style = PicoTheme.typography.bodyLargeMultiline,
+                        color = PicoTheme.colorScheme.labelPrimary,
+                    )
+                }
+            }
+        }
+        AtomViewMode.ALLOTROPE -> AllotropeList(state, onEvent)
+    }
+    if (state.advancedExpanded && state.view != AtomViewMode.ALLOTROPE) {
+        ChargeStepper(state, element, onEvent)
     }
 }
 
@@ -128,7 +155,7 @@ private val NoFocus = Modifier.focusProperties { canFocus = false }
 /** Common school reactions with this element; ▶ shows one in the reaction Volume. */
 @Composable
 private fun ReactionsSection(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
-    Section(str(R.string.formulas, state.reactions.size)) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         state.reactions.forEach { reaction ->
             Row(
                 modifier =
@@ -137,7 +164,7 @@ private fun ReactionsSection(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
                         .background(PicoTheme.colorScheme.fillTertiary)
                         .then(NoFocus)
                         .clickable { onEvent(AtomEvent.ReactionOpened(reaction.id)) }
-                        .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+                        .padding(start = 20.dp, end = 8.dp, top = 14.dp, bottom = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -154,7 +181,7 @@ private fun ReactionsSection(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
     }
 }
 
-/** Four facts about how carbon bonds, as a 2 x 2 grid of small tiles. */
+/** Four facts about how carbon bonds, one row each. */
 @Composable
 private fun CarbonBondingSection() {
     val facts =
@@ -165,17 +192,13 @@ private fun CarbonBondingSection() {
             R.string.carbon_bond_ring to R.string.carbon_bond_ring_line,
         )
     Section(str(R.string.carbon_bonding)) {
-        facts.chunked(2).forEach { row ->
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                row.forEach { (title, line) ->
-                    Column(
-                        modifier = Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(PicoTheme.colorScheme.fillTertiary).padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Text(str(title), style = PicoTheme.typography.titleSmall, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
-                        Text(str(line), style = PicoTheme.typography.bodySmall, color = PicoTheme.colorScheme.labelSecondary)
-                    }
-                }
+        facts.forEach { (title, line) ->
+            Column(
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(PicoTheme.colorScheme.fillTertiary).padding(horizontal = 20.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(str(title), style = PicoTheme.typography.titleMedium, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
+                Text(str(line), style = PicoTheme.typography.bodyLargeMultiline, color = PicoTheme.colorScheme.labelSecondary)
             }
         }
     }
@@ -184,13 +207,13 @@ private fun CarbonBondingSection() {
 /** Molecules with this element, grouped by carbon skeleton; ▶ shows one in the molecule Volume. */
 @Composable
 private fun MoleculesSection(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
-    Section(str(R.string.molecules, state.molecules.size)) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         state.molecules.groupBy { it.skeleton }.toSortedMap().forEach { (skeleton, molecules) ->
             Text(
                 if (state.language == AppLanguage.ZH) skeleton.zh else skeleton.en,
-                style = PicoTheme.typography.labelMedium,
+                style = PicoTheme.typography.titleMedium,
                 color = PicoTheme.colorScheme.labelSecondary,
-                modifier = Modifier.padding(top = 4.dp),
+                modifier = Modifier.padding(top = 12.dp),
             )
             molecules.forEach { molecule ->
                 Row(
@@ -200,13 +223,14 @@ private fun MoleculesSection(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
                             .background(PicoTheme.colorScheme.fillTertiary)
                             .then(NoFocus)
                             .clickable { onEvent(AtomEvent.MoleculeOpened(molecule.id)) }
-                            .padding(start = 16.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+                            .heightIn(min = 72.dp)
+                            .padding(start = 20.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     // gate:allow button-gap name and formula lines of one row; the only button is the trailing ▶
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(molecule.name.get(state.language), style = PicoTheme.typography.titleSmall, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
-                        Text(molecule.formulaLine(), style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary, maxLines = 1)
+                        Text(molecule.name.get(state.language), style = PicoTheme.typography.titleMedium, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
+                        Text(molecule.formulaLine(), style = PicoTheme.typography.bodyLarge, color = PicoTheme.colorScheme.labelSecondary, maxLines = 1)
                     }
                     IconButton(onClick = { onEvent(AtomEvent.MoleculeOpened(molecule.id)) }, modifier = NoFocus) {
                         Icon(painterResource(R.drawable.ic_player_play), contentDescription = str(R.string.open_molecule))
@@ -227,7 +251,7 @@ private fun ViewNote(state: AtomUiState) {
             AtomViewMode.CLOUD -> str(R.string.caption_cloud)
             AtomViewMode.ALLOTROPE -> str(R.string.allotrope_note)
         }
-    Text(caption, style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary)
+    Text(caption, style = PicoTheme.typography.bodyLarge, color = PicoTheme.colorScheme.labelSecondary)
 }
 
 /** The one-line sum that ties the nucleus picture to the mass number. */
@@ -235,7 +259,7 @@ private fun ViewNote(state: AtomUiState) {
 private fun MassNumberLine(state: AtomUiState) {
     Text(
         text = str(R.string.mass_number, state.protons, state.neutrons, state.protons + state.neutrons),
-        style = PicoTheme.typography.titleSmall,
+        style = PicoTheme.typography.titleMedium,
         color = PicoTheme.colorScheme.labelPrimary,
     )
 }
@@ -268,41 +292,31 @@ private fun Section(title: String, content: @Composable ColumnScope.() -> Unit) 
     }
 }
 
-/** The element drawn as one large periodic-table cell across the full width of the panel. */
+/** The element as a compact periodic-table cell: symbol on the left, name and numbers beside it. */
 @Composable
 private fun ElementHero(element: Element, language: AppLanguage) {
     val tint = ElementColors.category(element.category)
     val sheen = PicoTheme.colorScheme.labelPrimaryLight
     val onTint = PicoTheme.colorScheme.labelPrimaryLight
-    Column(
+    Row(
         modifier =
             Modifier.fillMaxWidth()
                 .clip(RoundedCornerShape(28.dp))
                 .background(tint.copy(alpha = 0.8f))
                 .background(Brush.verticalGradient(0f to sheen.copy(alpha = 0.22f), 0.6f to sheen.copy(alpha = 0.04f), 1f to Color.Transparent))
-                .padding(horizontal = 24.dp, vertical = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
-            Text(element.atomicNumber.toString(), style = PicoTheme.typography.headlineSmall, color = onTint)
-            Column(horizontalAlignment = Alignment.End) {
-                Text(String.format(Locale.US, "%.3f", element.atomicMass), style = PicoTheme.typography.titleMedium, color = onTint)
-                Text(str(R.string.atomic_mass), style = PicoTheme.typography.labelMedium, color = onTint.copy(alpha = 0.8f))
-            }
+        Text(element.symbol, style = PicoTheme.typography.displayMedium, color = onTint, maxLines = 1)
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("${element.name(language)} · ${element.atomicNumber}", style = PicoTheme.typography.headlineSmall, color = onTint, maxLines = 1)
+            val english = if (language != AppLanguage.EN) "${element.nameEn} · " else ""
+            Text(english + String.format(Locale.US, "%.3f", element.atomicMass), style = PicoTheme.typography.bodyLarge, color = onTint.copy(alpha = 0.9f), maxLines = 1)
+            val group = element.group
+            val place = if (group != null) str(R.string.period_group, element.period, group) else str(R.string.period_fblock, element.period)
+            Text("${str(element.category.labelRes())} · $place", style = PicoTheme.typography.bodyLarge, color = onTint.copy(alpha = 0.9f), maxLines = 1)
         }
-        Text(element.symbol, style = PicoTheme.typography.displayLarge, color = onTint, maxLines = 1)
-        Text(element.name(language), style = PicoTheme.typography.headlineSmall, color = onTint, maxLines = 1)
-        if (language != AppLanguage.EN) {
-            Text(element.nameEn, style = PicoTheme.typography.bodyLarge, color = onTint.copy(alpha = 0.9f), maxLines = 1)
-        }
-        val group = element.group
-        val place = if (group != null) str(R.string.period_group, element.period, group) else str(R.string.period_fblock, element.period)
-        Text(
-            text = "${str(element.category.labelRes())} · $place",
-            style = PicoTheme.typography.bodyMedium,
-            color = onTint.copy(alpha = 0.9f),
-            modifier = Modifier.padding(top = 8.dp),
-        )
     }
 }
 
@@ -329,7 +343,7 @@ private fun ParticleCell(symbol: String, count: Int, label: String, color: Color
             }
         }
         Text(count.toString(), style = PicoTheme.typography.headlineSmall, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
-        Text(label, style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary, maxLines = 1)
+        Text(label, style = PicoTheme.typography.bodyLarge, color = PicoTheme.colorScheme.labelSecondary, maxLines = 1)
     }
 }
 
@@ -341,7 +355,7 @@ private fun ShellBars(shells: List<Int>) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     text = SHELL_NAMES.getOrNull(index)?.toString() ?: (index + 1).toString(),
-                    style = PicoTheme.typography.titleSmall,
+                    style = PicoTheme.typography.titleMedium,
                     color = PicoTheme.colorScheme.labelSecondary,
                     modifier = Modifier.width(20.dp),
                 )
@@ -356,7 +370,7 @@ private fun ShellBars(shells: List<Int>) {
                 }
                 Text(
                     text = electrons.toString(),
-                    style = PicoTheme.typography.titleSmall,
+                    style = PicoTheme.typography.titleMedium,
                     color = PicoTheme.colorScheme.labelPrimary,
                     textAlign = TextAlign.End,
                     modifier = Modifier.width(28.dp),
@@ -383,11 +397,11 @@ private fun PropertyTable(element: Element) {
 @Composable
 private fun PropertyRow(label: String, value: String?, unit: String) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary, maxLines = 1)
+        Text(label, style = PicoTheme.typography.bodyLarge, color = PicoTheme.colorScheme.labelSecondary, maxLines = 1)
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(value ?: "—", style = PicoTheme.typography.titleMedium, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
             if (value != null && unit.isNotEmpty()) {
-                Text(unit, style = PicoTheme.typography.labelMedium, color = PicoTheme.colorScheme.labelTertiary, maxLines = 1)
+                Text(unit, style = PicoTheme.typography.labelLarge, color = PicoTheme.colorScheme.labelTertiary, maxLines = 1)
             }
         }
     }
@@ -407,7 +421,7 @@ private fun IsotopeList(state: AtomUiState, element: Element, onEvent: (AtomEven
                 modifier = Modifier.fillMaxWidth().clickable { onEvent(AtomEvent.IsotopeSelected(index)) },
                 headlineContent = { Text("${element.name(state.language)}-${isotope.massNumber}", maxLines = 1) },
                 supportingContent = { IsotopeDetail(isotope, state.language) },
-                leadingContent = { Text(superscript(isotope.massNumber) + element.symbol, style = PicoTheme.typography.titleSmall) },
+                leadingContent = { Text(superscript(isotope.massNumber) + element.symbol, style = PicoTheme.typography.titleMedium) },
                 trailingContent = { if (index == state.isotopeIndex) SelectedMark() },
             )
         }
@@ -441,7 +455,7 @@ private fun AllotropeList(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         SectionTitle(str(R.string.allotropes))
         if (state.allotropes.isEmpty()) {
-            Text(str(R.string.no_allotrope), style = PicoTheme.typography.bodyMedium, color = PicoTheme.colorScheme.labelSecondary)
+            Text(str(R.string.no_allotrope), style = PicoTheme.typography.bodyLarge, color = PicoTheme.colorScheme.labelSecondary)
         }
         state.allotropes.forEachIndexed { index, allotrope ->
             val zh = state.language == AppLanguage.ZH
@@ -449,7 +463,7 @@ private fun AllotropeList(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
                 modifier = Modifier.fillMaxWidth().clickable { onEvent(AtomEvent.AllotropeSelected(index)) },
                 headlineContent = { Text(if (zh) allotrope.nameZh else allotrope.nameEn, maxLines = 1) },
                 supportingContent = { Text(if (zh) allotrope.noteZh else allotrope.noteEn, maxLines = 2) },
-                leadingContent = { Text(allotrope.badge, style = PicoTheme.typography.titleSmall) },
+                leadingContent = { Text(allotrope.badge, style = PicoTheme.typography.titleMedium) },
                 trailingContent = { if (index == state.allotropeIndex) SelectedMark() },
             )
         }
@@ -468,7 +482,7 @@ private fun ChargeStepper(state: AtomUiState, element: Element, onEvent: (AtomEv
             Text(str(R.string.charge), style = PicoTheme.typography.titleMedium, color = PicoTheme.colorScheme.labelPrimary)
             Text(
                 text = if (state.charge == 0) str(R.string.neutral_atom) else str(R.string.ion, ionSymbol(element.symbol, state.charge)),
-                style = PicoTheme.typography.bodyMedium,
+                style = PicoTheme.typography.bodyLarge,
                 color = PicoTheme.colorScheme.labelSecondary,
             )
         }

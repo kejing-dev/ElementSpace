@@ -138,3 +138,23 @@ S-rx-n `reaction <id>` then `step n` (3 reactions x 4 steps).
 
 Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `angles`, `groups`,
 `reaction ch4_cl2|c2h4_br2|esterification`. `logcat -s ElementSpaceMol` logs every molecule render.
+
+## v1.3.0 polish (2026-11-25): readable cards, card placement, conditions, atom symbols
+
+- Side cards (`ui/common/SideCard.kt`, `CardKit.kt`): 560 x 920 dp, anchored at x = 0.8 of the Volume
+  (just past the drawn model) + 24 dp, turned 20° about their left edge towards a viewer in front,
+  `followViewpoints = ViewPoint.All`. Every card is a `PagedCard`: fixed header, tabs, one kind of
+  content per page. Body text never below bodyLarge; section titles titleMedium; source bodyMedium.
+  Atom: 结构 / 化学式 / 分子 / 性质 (empty pages left out). Reaction: 这一步 / 现象与原理. Molecule:
+  结构 / 性质 (comparison stays one page). Debug: `tab <n>` picks a page on every open card.
+- Atom symbols (`ui/common/SceneLabels.kt`): a bitmap texture on `MeshResource.createPlane` (already an
+  XY plane facing +Z), always facing the front: the label undoes the parent's Rx(pitch) * Ry(yaw) and
+  is pushed towards the viewer by the ball radius. Ions print their charge (`AtomLabelText`: protons -
+  drawn electrons for full ions only; sulfate cluster SO₄²⁻). An ion's label sits in front of its
+  transparent charge halo, which hides anything inside it. Molecule Volume: toolbar 符号 toggle
+  (debug `labels`), on by default.
+- Conditions (`Reaction.visuals`, `conditionSteps` default {1, 2}: off for reactants and products):
+  LIGHT = glowing sun + 3 rays aimed at the bond light breaks + 「光照」tag; HEAT = burner + two
+  flickering cones (`createCone(1, 1)` scaled (r, h, r), pivot at its centre) + 「加热」; IGNITE = small
+  flame with spinning sparks where the reactants meet (under them if that spot is taken) + 「点燃」;
+  CATALYST = tag only (浓硫酸 · 催化剂), never drawn as a molecule or counted.

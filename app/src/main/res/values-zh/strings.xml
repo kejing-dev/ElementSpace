@@ -169,4 +169,15 @@
     <string name="rx_legend_new">金色：新形成的键</string>
     <string name="how_to_molecule">看分子</string>
     <string name="how_to_molecule_both">C / H / O 信息卡 → 组成的分子 → ▶</string>
+    <string name="tab_structure">结构</string>
+    <string name="tab_reactions">化学式 %1$d</string>
+    <string name="tab_molecules">分子 %1$d</string>
+    <string name="tab_properties">性质</string>
+    <string name="tab_this_step">这一步</string>
+    <string name="tab_about">现象与原理</string>
+    <string name="rx_condition">反应条件</string>
+    <string name="cond_light">光照</string>
+    <string name="cond_heat">加热</string>
+    <string name="cond_ignite">点燃</string>
+    <string name="mol_labels">符号</string>
 </resources>

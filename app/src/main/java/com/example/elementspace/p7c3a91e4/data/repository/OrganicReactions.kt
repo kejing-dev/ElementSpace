@@ -1,6 +1,8 @@
 package com.example.elementspace.p7c3a91e4.data.repository
 
 import com.example.elementspace.p7c3a91e4.domain.model.BondMark
+import com.example.elementspace.p7c3a91e4.domain.model.ConditionKind
+import com.example.elementspace.p7c3a91e4.domain.model.ConditionVisual
 import com.example.elementspace.p7c3a91e4.domain.model.FrameAtom
 import com.example.elementspace.p7c3a91e4.domain.model.FrameBond
 import com.example.elementspace.p7c3a91e4.domain.model.L10n
@@ -87,6 +89,7 @@ object OrganicReactions {
             reactants = listOf(Term(1, "CH4"), Term(1, "Cl2")),
             products = listOf(Term(1, "CH3Cl"), Term(1, "HCl")),
             condition = L10n("光照", "light"),
+            visuals = listOf(ConditionVisual(ConditionKind.LIGHT, L10n("光照", "light"))),
             types = listOf(ReactionType.SUBSTITUTION),
             stages = setOf(SchoolStage.SENIOR),
             redox = emptyList(),
@@ -227,6 +230,11 @@ object OrganicReactions {
             reactants = listOf(Term(1, "CH3COOH"), Term(1, "CH3CH2OH")),
             products = listOf(Term(1, "CH3COOCH2CH3"), Term(1, "H2O")),
             condition = L10n("浓硫酸、△", "conc. H₂SO₄, heat"),
+            visuals =
+                listOf(
+                    ConditionVisual(ConditionKind.HEAT, L10n("加热", "heat")),
+                    ConditionVisual(ConditionKind.CATALYST, L10n("浓硫酸 · 催化剂", "conc. H₂SO₄ · catalyst")),
+                ),
             types = listOf(ReactionType.ESTERIFICATION, ReactionType.SUBSTITUTION),
             stages = setOf(SchoolStage.SENIOR),
             redox = emptyList(),

@@ -1,6 +1,8 @@
 package com.example.elementspace.p7c3a91e4.data.repository
 
 import com.example.elementspace.p7c3a91e4.domain.model.ChargeTint
+import com.example.elementspace.p7c3a91e4.domain.model.ConditionKind
+import com.example.elementspace.p7c3a91e4.domain.model.ConditionVisual
 import com.example.elementspace.p7c3a91e4.domain.model.ElectronFlight
 import com.example.elementspace.p7c3a91e4.domain.model.FrameParticle
 import com.example.elementspace.p7c3a91e4.domain.model.L10n
@@ -50,6 +52,7 @@ class BundledReactionRepository : ReactionRepository {
         private fun v(x: Float, y: Float) = Vec3(x, y, 0f)
 
         private val IGNITE = L10n("点燃", "ignite")
+        private val IGNITE_VISUAL = listOf(ConditionVisual(ConditionKind.IGNITE, IGNITE))
 
         // ---- 2Na + Cl2 = 2NaCl ------------------------------------------------------------
         private val NA_CL2 =
@@ -58,6 +61,7 @@ class BundledReactionRepository : ReactionRepository {
                 reactants = listOf(Term(2, "Na"), Term(1, "Cl2")),
                 products = listOf(Term(2, "NaCl")),
                 condition = IGNITE,
+                visuals = IGNITE_VISUAL,
                 types = listOf(ReactionType.COMBINATION, ReactionType.REDOX, ReactionType.IONIC_BOND),
                 stages = setOf(SchoolStage.SENIOR),
                 redox = listOf(RedoxChange("Na", 0, 1, 2), RedoxChange("Cl", 0, -1, 2)),
@@ -191,6 +195,7 @@ class BundledReactionRepository : ReactionRepository {
                 reactants = listOf(Term(2, "H2"), Term(1, "O2")),
                 products = listOf(Term(2, "H2O")),
                 condition = IGNITE,
+                visuals = IGNITE_VISUAL,
                 types = listOf(ReactionType.COMBINATION, ReactionType.REDOX, ReactionType.COVALENT_BOND),
                 stages = setOf(SchoolStage.JUNIOR, SchoolStage.SENIOR),
                 redox = listOf(RedoxChange("H", 0, 1, 4), RedoxChange("O", 0, -2, 2)),

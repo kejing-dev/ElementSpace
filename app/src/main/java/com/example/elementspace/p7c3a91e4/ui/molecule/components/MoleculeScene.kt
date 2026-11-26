@@ -7,6 +7,7 @@ import com.example.elementspace.p7c3a91e4.domain.model.Vec3
 import com.example.elementspace.p7c3a91e4.ui.molecule.components.BallStick.v3
 import com.example.elementspace.p7c3a91e4.ui.theme.ElementColors
 import com.pico.spatial.core.ecs.CollisionComponent
+import com.example.elementspace.p7c3a91e4.ui.common.SceneLabels
 import com.pico.spatial.core.ecs.Entity
 import com.pico.spatial.core.ecs.InteractableComponent
 import com.pico.spatial.core.ecs.TransformComponent
@@ -29,6 +30,7 @@ data class MoleculeSceneSpec(
     val mode: MoleculeMode,
     val showAngles: Boolean,
     val showGroups: Boolean,
+    val showLabels: Boolean = true,
     val colors: Map<String, Color>,
 )
 
@@ -61,6 +63,7 @@ class MoleculeScene {
     }
 
     private val holders = ArrayList<Entity>()
+    private val labels = SceneLabels()
     private var rotation = BallStick.axisAngle(0f, 1f, 0f, 0f)
 
     /** Zoom scales the whole Volume; rotation turns each molecule about its own centre, so a compared pair never swings into each other. */
@@ -68,6 +71,7 @@ class MoleculeScene {
         root.components[TransformComponent::class.java]?.setScaleVector(Vector3(radiusMeters * zoom))
         rotation = BallStick.axisAngle(1f, 0f, 0f, pitch) * BallStick.axisAngle(0f, 1f, 0f, yaw)
         holders.forEach { it.components[TransformComponent::class.java]?.setQuaternion(rotation) }
+        labels.setRotation(yaw, pitch)
     }
 
     fun render(newSpec: MoleculeSceneSpec) {
@@ -76,6 +80,7 @@ class MoleculeScene {
         android.util.Log.i("ElementSpaceMol", "RENDER ${newSpec.molecules.joinToString { it.id }} ${newSpec.mode} angles=${newSpec.showAngles} groups=${newSpec.showGroups}")
         content?.destroy(true)
         holders.clear()
+        labels.reset()
         sphereMesh = null
         cylinderMesh = null
         val next = Entity()
@@ -114,6 +119,9 @@ class MoleculeScene {
             val radius = if (fill) BallStick.fill(symbol) else BallStick.ball(symbol)
             val color = spec.colors[symbol] ?: Color.Gray
             holder.addChild(BallStick.sphereEntity("atom_${index}_$symbol", sphere(), lit(color), atoms.map { it.value.position }, radius))
+            if (spec.showLabels) {
+                atoms.forEach { holder.addChild(labels.label(symbol, it.value.position, height = radius * if (fill) 0.6f else 1.15f, lift = radius * 1.04f)) }
+            }
         }
         if (fill) return holder
 

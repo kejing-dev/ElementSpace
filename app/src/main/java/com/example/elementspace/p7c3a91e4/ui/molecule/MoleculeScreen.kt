@@ -2,7 +2,6 @@ package com.example.elementspace.p7c3a91e4.ui.molecule
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -12,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.elementspace.p7c3a91e4.R
+import com.example.elementspace.p7c3a91e4.ui.common.SideCard
 import com.example.elementspace.p7c3a91e4.data.repository.BundledElementRepository
 import com.example.elementspace.p7c3a91e4.ui.molecule.components.MoleculeCard
 import com.example.elementspace.p7c3a91e4.ui.molecule.components.MoleculeMode
@@ -26,16 +26,8 @@ import com.example.elementspace.p7c3a91e4.ui.theme.str
 import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.design.Text
 import com.pico.spatial.ui.design.windows.Toolbar
-import com.pico.spatial.ui.foundation.geometry.DpOffset3D
-import com.pico.spatial.ui.foundation.geometry.NormalizedPoint3D
-import com.pico.spatial.ui.foundation.window.Augment
-import com.pico.spatial.ui.foundation.window.AugmentContentAlignment
 import com.pico.spatial.ui.platform.containers.LocalSpatialNavigator
 
-// Same card size and gap as the atom and reaction Volumes.
-private val CardWidth = 440.dp
-private val CardHeight = 880.dp
-private val CardGap = 32.dp
 
 /** The molecule Volume: 3D molecule(s) in the middle, view toggles below, facts on the right. */
 @Composable
@@ -56,6 +48,7 @@ fun MoleculeScreen(modifier: Modifier = Modifier) {
             "mmode" -> viewModel.onEvent(MoleculeEvent.ModeSelected(if (command.arg == "fill") MoleculeMode.SPACE_FILLING else MoleculeMode.BALL_AND_STICK))
             "angles" -> viewModel.onEvent(MoleculeEvent.AnglesToggled)
             "groups" -> viewModel.onEvent(MoleculeEvent.GroupsToggled)
+            "labels" -> viewModel.onEvent(MoleculeEvent.LabelsToggled)
         }
     }
 
@@ -78,19 +71,14 @@ fun MoleculeScreen(modifier: Modifier = Modifier) {
                         mode = state.mode,
                         showAngles = state.showAngles,
                         showGroups = state.showGroups,
+                        showLabels = state.showLabels,
                         colors = colors,
                     ),
                 resetToken = state.resetToken,
                 modifier = Modifier.fillMaxSize(),
             )
             Toolbar { MoleculeToolbarContent(state, onEvent) }
-            Augment(
-                anchor = NormalizedPoint3D.Right,
-                alignment = AugmentContentAlignment.CenterLeft,
-                offset = DpOffset3D(CardGap, 0.dp, 0.dp),
-            ) {
-                Box(modifier = Modifier.size(CardWidth, CardHeight)) { MoleculeCard(state, onEvent) }
-            }
+            SideCard { MoleculeCard(state, onEvent) }
         }
     }
 }

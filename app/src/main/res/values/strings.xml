@@ -169,4 +169,15 @@
     <string name="rx_legend_new">Gold: new bond</string>
     <string name="how_to_molecule">See a molecule</string>
     <string name="how_to_molecule_both">C / H / O info card → Molecules → ▶</string>
+    <string name="tab_structure">Structure</string>
+    <string name="tab_reactions">Reactions %1$d</string>
+    <string name="tab_molecules">Molecules %1$d</string>
+    <string name="tab_properties">Properties</string>
+    <string name="tab_this_step">This step</string>
+    <string name="tab_about">What and why</string>
+    <string name="rx_condition">Condition</string>
+    <string name="cond_light">Light</string>
+    <string name="cond_heat">Heat</string>
+    <string name="cond_ignite">Ignite</string>
+    <string name="mol_labels">Symbols</string>
 </resources>

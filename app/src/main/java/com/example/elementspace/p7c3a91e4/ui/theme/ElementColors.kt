@@ -44,6 +44,12 @@ object ElementColors {
     val MoleculeBond = Color(0xFFD5D9E0) // design-style: fixed-sample-color Molecule/stick (M2 sample)
     val BondAngle = Color(0xFF2F6FE0) // design-style: fixed-sample-color Molecule/bond-angle arc (M2 sample)
     val BondBreak = Color(0xFFE0453A) // design-style: fixed-sample-color Reaction/bond about to break (M2 sample)
+    val ConditionInk = Color(0xFFB25A00) // design-style: fixed-sample-color Reaction condition chip text (M3 sample)
+    val ConditionChip = Color(0xFFFFF1E0) // design-style: fixed-sample-color Reaction condition chip
+    val Sun = Color(0xFFFFD34D) // design-style: fixed-sample-color Light condition: sun and rays
+    val FlameOuter = Color(0xFFFF7A1A) // design-style: fixed-sample-color Heat / ignite: outer flame
+    val FlameInner = Color(0xFFFFE08A) // design-style: fixed-sample-color Heat / ignite: inner flame
+    val Burner = Color(0xFF4A4F58) // design-style: fixed-sample-color Heat: burner body
     val OverlayCard = Color(0xFFF3F4F6) // design-style: fixed-sample-color Settings card, light like the system glass
     val ClusterArm = Color(0xFFE5483B) // design-style: fixed-sample-color Reaction/oxygen in a spectator ion (model O)
 
