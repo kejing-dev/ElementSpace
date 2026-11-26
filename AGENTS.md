@@ -311,3 +311,8 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
 
 - Experiments are reachable from where the user already is: `Experiments.ELEMENTS` (experiment id -> element symbols; every new experiment must be added, a test checks) feeds a "到实验台上做" section on the element card's 生活里 page (`AtomEvent.ExperimentOpened`); the collide result offers the experiment when `Experiments.forReaction(reactionId)` finds one.
 - Debug: `tab <n>` switches the page of every PagedCard (1-based), useful for card screenshots.
+
+## v1.13.0 (2026-11-26)
+
+- Guided paths `oxygen`, `carbon_dioxide`, `metal_activity` (11 paths): each step opens a bench experiment. The guide list is two columns (one column of eleven ran off the window).
+- Lab solids move when a step is taken (LabScene `movedFrom`): the same piece at a new position glides there (a wire or splint being lowered); a `LabEffect.Solid(drops = true)` falls in from above. Mark `drops` on the step where a reagent is first put in.

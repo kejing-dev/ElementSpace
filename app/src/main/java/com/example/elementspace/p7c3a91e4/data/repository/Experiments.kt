@@ -191,7 +191,7 @@ object Experiments {
                             L10n("铜丝表面慢慢长出银白色的固体，溶液由无色逐渐变成蓝色。", "A silvery solid slowly grows on the copper, and the colourless solution gradually turns blue."),
                             listOf(
                                 liquid(c(0.22f, 0.52f, 1f, 0.5f), seconds = 14f),
-                                LabEffect.Solid(v(0f, 0.2f), Vec3(0.008f, 0.38f, 0.008f), COPPER, metal = true),
+                                LabEffect.Solid(v(0f, 0.2f), Vec3(0.008f, 0.38f, 0.008f), COPPER, metal = true, drops = true),
                                 LabEffect.Crystals(v(0f, 0.03f), 0.19f, SILVER, 14f),
                             ),
                         ),
@@ -318,7 +318,7 @@ object Experiments {
                             L10n("铁钉表面覆盖一层红色的物质，溶液由蓝色逐渐变成浅绿色。", "A red coating covers the nail, and the blue solution gradually turns pale green."),
                             listOf(
                                 liquid(c(0.62f, 0.9f, 0.68f, 0.42f), seconds = 14f),
-                                LabEffect.Solid(v(0.02f, 0.2f), Vec3(0.014f, 0.36f, 0.014f), c(0.45f, 0.46f, 0.5f), metal = true),
+                                LabEffect.Solid(v(0.02f, 0.2f), Vec3(0.014f, 0.36f, 0.014f), c(0.45f, 0.46f, 0.5f), metal = true, drops = true),
                                 LabEffect.Crystals(v(0.02f, 0.03f), 0.19f, COPPER, 14f),
                             ),
                         ),
@@ -348,9 +348,9 @@ object Experiments {
                             L10n("锌粒表面产生大量气泡，锌粒逐渐变小。", "Bubbles stream off the zinc, and the granules slowly shrink."),
                             listOf(
                                 liquid(WATER),
-                                LabEffect.Solid(v(-0.05f, 0.035f, 0.02f), Vec3(0.05f, 0.04f, 0.05f), c(0.6f, 0.62f, 0.66f), round = true, metal = true),
-                                LabEffect.Solid(v(0.06f, 0.035f, -0.03f), Vec3(0.045f, 0.035f, 0.045f), c(0.6f, 0.62f, 0.66f), round = true, metal = true),
-                                LabEffect.Solid(v(0.01f, 0.035f, 0.07f), Vec3(0.04f, 0.035f, 0.04f), c(0.6f, 0.62f, 0.66f), round = true, metal = true),
+                                LabEffect.Solid(v(-0.05f, 0.035f, 0.02f), Vec3(0.05f, 0.04f, 0.05f), c(0.6f, 0.62f, 0.66f), round = true, metal = true, drops = true),
+                                LabEffect.Solid(v(0.06f, 0.035f, -0.03f), Vec3(0.045f, 0.035f, 0.045f), c(0.6f, 0.62f, 0.66f), round = true, metal = true, drops = true),
+                                LabEffect.Solid(v(0.01f, 0.035f, 0.07f), Vec3(0.04f, 0.035f, 0.04f), c(0.6f, 0.62f, 0.66f), round = true, metal = true, drops = true),
                                 LabEffect.Bubbles(v(0f, 0.06f), LEVEL, 45f, 0.09f),
                             ),
                         ),
@@ -381,8 +381,8 @@ object Experiments {
                             L10n("大理石表面产生大量气泡，固体逐渐减少。", "The marble fizzes with bubbles and slowly dissolves away."),
                             listOf(
                                 liquid(WATER),
-                                LabEffect.Solid(v(-0.04f, 0.045f, 0.03f), Vec3(0.08f, 0.06f, 0.07f), c(0.93f, 0.93f, 0.9f), round = true),
-                                LabEffect.Solid(v(0.06f, 0.04f, -0.03f), Vec3(0.06f, 0.05f, 0.06f), c(0.93f, 0.93f, 0.9f), round = true),
+                                LabEffect.Solid(v(-0.04f, 0.045f, 0.03f), Vec3(0.08f, 0.06f, 0.07f), c(0.93f, 0.93f, 0.9f), round = true, drops = true),
+                                LabEffect.Solid(v(0.06f, 0.04f, -0.03f), Vec3(0.06f, 0.05f, 0.06f), c(0.93f, 0.93f, 0.9f), round = true, drops = true),
                                 LabEffect.Bubbles(v(0f, 0.07f), LEVEL, 50f, 0.1f),
                             ),
                         ),
@@ -579,7 +579,7 @@ object Experiments {
                             L10n("反应剧烈，铜片逐渐溶解，产生红棕色气体，溶液变成绿色。", "The reaction is vigorous: the copper dissolves, a red-brown gas comes off, and the solution turns green."),
                             listOf(
                                 liquid(c(0.25f, 0.68f, 0.42f, 0.55f), seconds = 7f),
-                                LabEffect.Solid(v(0f, 0.03f), Vec3(0.09f, 0.008f, 0.06f), COPPER, metal = true),
+                                LabEffect.Solid(v(0f, 0.03f), Vec3(0.09f, 0.008f, 0.06f), COPPER, metal = true, drops = true),
                                 LabEffect.Bubbles(v(0f, 0.04f), LEVEL, 45f, 0.06f),
                                 LabEffect.Smoke(v(0f, LEVEL + 0.04f), c(0.72f, 0.36f, 0.14f, 0.6f), 9f),
                             ),

@@ -38,7 +38,11 @@ sealed interface LabEffect {
     data class Liquid(val at: Vec3, val radius: Float, val height: Float, val color: LabColor, val seconds: Float = 0f) : LabEffect
 
     /** A small solid: a strip, pellet, wire or lump of the reactant or product. */
-    data class Solid(val at: Vec3, val size: Vec3, val color: LabColor, val round: Boolean = false, val metal: Boolean = false, val glowing: Boolean = false) : LabEffect
+    data class Solid(
+        val at: Vec3, val size: Vec3, val color: LabColor, val round: Boolean = false, val metal: Boolean = false, val glowing: Boolean = false,
+        /** Dropped in on this step: it falls into place instead of just appearing. */
+        val drops: Boolean = false,
+    ) : LabEffect
 
     /** A pellet that darts about on a liquid surface (sodium on water). */
     data class Skater(val at: Vec3, val radius: Float, val size: Float, val color: LabColor) : LabEffect

@@ -104,6 +104,40 @@ object GuidePaths {
                 ),
                 L10n("硅在地壳里的含量仅次于氧，排第二。沙子、玻璃、芯片里都有它。", "Silicon is the second most abundant element in the Earth's crust, after oxygen. It is in sand, glass and chips."),
             ),
+            // v1.13.0: paths that are done on the lab bench. Each step opens an experiment; the bench's own button does it.
+            GuidePath(
+                "oxygen",
+                L10n("氧气有什么本领", "What oxygen can do"),
+                listOf(
+                    step("氧原子最外层有 6 个电子，再得 2 个就排满，所以氧气很活泼。", "An oxygen atom has six outer electrons, two short of full, which makes oxygen reactive.", "打开氧", "Open oxygen", GuideAction.OpenAtom(8)),
+                    step("氧气能支持燃烧。在实验台上把带火星的木条伸进氧气里看看。", "Oxygen supports burning. On the bench, lower a glowing splint into oxygen.", "做木条复燃实验", "Relight a splint", GuideAction.Lab("o2_splint")),
+                    step("硫在空气里只有微弱的淡蓝色火焰。在氧气里呢？", "In air, sulfur burns with a faint pale-blue flame. And in oxygen?", "做硫的燃烧实验", "Burn sulfur", GuideAction.Lab("s_burn")),
+                    step("铁丝在空气里烧不起来。伸进氧气里试试。", "Iron wire will not burn in air. Try it in oxygen.", "做铁丝燃烧实验", "Burn iron wire", GuideAction.Lab("fe_o2")),
+                ),
+                L10n("氧气自己不能燃烧，但能支持燃烧；氧气越浓，燃烧越剧烈。空气里氧气大约占五分之一。", "Oxygen does not burn itself but supports burning, and the more concentrated it is the fiercer the burning. About one fifth of air is oxygen."),
+            ),
+            GuidePath(
+                "carbon_dioxide",
+                L10n("二氧化碳的三个本领", "Three things carbon dioxide does"),
+                listOf(
+                    step("先把它做出来：实验室用大理石和稀盐酸制二氧化碳。", "First make it: in the lab, carbon dioxide comes from marble and dilute hydrochloric acid.", "做制二氧化碳实验", "Make carbon dioxide", GuideAction.Lab("caco3_hcl")),
+                    step("把二氧化碳倒进放着蜡烛的烧杯，看哪支先灭。", "Pour carbon dioxide into a beaker of candles and see which goes out first.", "做阶梯蜡烛实验", "Stepped candles", GuideAction.Lab("candle_co2")),
+                    step("把二氧化碳通进澄清的石灰水里。", "Bubble carbon dioxide into clear limewater.", "做石灰水实验", "Limewater", GuideAction.Lab("limewater_co2")),
+                    step("看看二氧化碳分子：一个碳原子在中间，两边各一个氧原子，排成直线。", "Look at the molecule: one carbon in the middle and an oxygen on each side, in a straight line.", "看二氧化碳分子", "See the CO₂ molecule", GuideAction.Molecule("co2")),
+                ),
+                L10n("二氧化碳比空气重，不燃烧也不支持燃烧，所以能灭火；它能让澄清石灰水变浑浊，用这个办法可以检验它。", "Carbon dioxide is heavier than air and neither burns nor supports burning, so it puts out fires; it turns clear limewater cloudy, which is the test for it."),
+            ),
+            GuidePath(
+                "metal_activity",
+                L10n("哪种金属更活泼", "Which metal is more reactive"),
+                listOf(
+                    step("把锌粒放进稀硫酸：锌能把酸里的氢换出来，冒出氢气。", "Drop zinc into dilute sulfuric acid: zinc pushes the hydrogen out of the acid as a gas.", "做锌和稀硫酸实验", "Zinc and acid", GuideAction.Lab("zn_h2so4")),
+                    step("把铁钉放进蓝色的硫酸铜溶液：铁能把铜换出来。", "Put an iron nail into blue copper sulfate solution: iron pushes the copper out.", "做铁钉和硫酸铜实验", "Iron and copper sulfate", GuideAction.Lab("fe_cuso4")),
+                    step("把铜丝放进硝酸银溶液：铜能把银换出来。", "Put copper wire into silver nitrate solution: copper pushes the silver out.", "做银树实验", "Grow a silver tree", GuideAction.Lab("cu_agno3")),
+                    step("最后看看金：它排在最后，几乎不和别的东西反应。", "Last, look at gold: it comes at the very end and reacts with almost nothing.", "打开金", "Open gold", GuideAction.OpenAtom(79)),
+                ),
+                L10n("这几种金属的活动性从强到弱是：锌、铁、（氢）、铜、银、金。排在前面的金属，能把排在后面的金属从它的盐溶液里置换出来。", "From most to least reactive: zinc, iron, (hydrogen), copper, silver, gold. A metal earlier in the list displaces a later one from a solution of its salt."),
+            ),
         )
 
     fun path(id: String): GuidePath? = ALL.firstOrNull { it.id == id }

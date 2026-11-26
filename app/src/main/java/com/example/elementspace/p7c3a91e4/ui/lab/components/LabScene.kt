@@ -158,6 +158,9 @@ class LabScene {
         return holder
     }
 
+    /** Solids of the stage before the step just taken, or null when the scene was not reached by a step. */
+    private var movedFrom: List<LabEffect.Solid>? = null
+
     fun render(newSpec: LabSceneSpec) {
         if (newSpec == spec) return
         val previous = spec
@@ -180,6 +183,11 @@ class LabScene {
         layer.components[TransformComponent::class.java]?.setPosition(Vector3(0f, BENCH_Y, 0f))
         val experiment = newSpec.experiment
         val effects = if (newSpec.stage == 0) experiment.start else experiment.steps.getOrNull(newSpec.stage - 1)?.effects.orEmpty()
+        // v1.13.0: when a step has just been done, things move: a wire is lowered, a lump is dropped in.
+        val stepped = previous != null && previous.experiment.id == experiment.id && newSpec.stage == previous.stage + 1
+        movedFrom =
+            if (!stepped) null
+            else (if (newSpec.stage == 1) experiment.start else experiment.steps[newSpec.stage - 2].effects).filterIsInstance<LabEffect.Solid>()
         effects.forEach { build(layer, it, newSpec) }
         stage.addChild(layer)
         effectsLayer = layer
@@ -300,7 +308,32 @@ class LabScene {
                 }
                 lastLiquid = effect.color
             }
-            is LabEffect.Solid -> layer.addChild(solid(effect.at, effect.size, effect.color, effect.round, effect.metal, effect.glowing))
+            is LabEffect.Solid -> {
+                val entity = solid(effect.at, effect.size, effect.color, effect.round, effect.metal, effect.glowing)
+                layer.addChild(entity)
+                val before = movedFrom
+                if (before != null && effect !in before) {
+                    // The same piece somewhere else a moment ago (a wire or splint being lowered): glide. A piece
+                    // marked as dropped in: fall from above the container. Anything else simply appears.
+                    val same = before.firstOrNull { it.color == effect.color && it.round == effect.round && it.metal == effect.metal && it.size.x == effect.size.x && it.size.z == effect.size.z }
+                    val from = same?.at ?: if (effect.drops) effect.at + Vec3(0f, 0.42f, 0f) else null
+                    if (from != null) {
+                        val seconds = if (same != null) 0.7f else 0.5f
+                        var t = 0f
+                        val transform = entity.components[TransformComponent::class.java]
+                        transform?.setPosition(from.v3())
+                        tickers += { dt ->
+                            if (t < seconds) {
+                                t = min(seconds, t + dt)
+                                val u = t / seconds
+                                // Lowered by hand: ease in and out. Dropped: speeds up like a falling thing.
+                                val k = if (same != null) u * u * (3f - 2f * u) else u * u
+                                transform?.setPosition((from + (effect.at - from) * k).v3())
+                            }
+                        }
+                    }
+                }
+            }
             is LabEffect.Skater -> {
                 val pellet = solid(effect.at, Vec3(effect.size, effect.size, effect.size), effect.color, round = true, metal = true, glowing = false)
                 layer.addChild(pellet)

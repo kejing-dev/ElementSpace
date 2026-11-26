@@ -18,7 +18,7 @@ class GuidePathsTest {
 
     @Test
     fun `every step points at something that exists and has both languages`() {
-        assertTrue(GuidePaths.ALL.size >= 8)
+        assertTrue(GuidePaths.ALL.size >= 11)
         GuidePaths.ALL.forEach { path ->
             assertTrue(path.id, path.steps.size in 3..5)
             assertTrue(path.done.zh.isNotBlank() && path.done.en.isNotBlank())

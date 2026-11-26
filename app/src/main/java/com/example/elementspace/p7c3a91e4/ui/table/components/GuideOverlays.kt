@@ -36,13 +36,19 @@ import com.pico.spatial.ui.design.Text
 fun GuideListOverlay(language: AppLanguage, onEvent: (PeriodicTableEvent) -> Unit) {
     val close = { onEvent(PeriodicTableEvent.GuideListVisible(false)) }
     Scrim(onDismiss = close) {
-        Card(width = 720.dp) {
+        Card(width = 1200.dp) {
             Text(str(R.string.guide_title), style = PicoTheme.typography.headlineSmall, color = PicoTheme.colorScheme.labelPrimary)
             Text(str(R.string.guide_line), style = PicoTheme.typography.bodyLarge, color = PicoTheme.colorScheme.labelSecondary)
-            GuidePaths.ALL.forEach { path ->
-                Button(onClick = { onEvent(PeriodicTableEvent.GuideStarted(path.id)) }, modifier = NoFocus.fillMaxWidth().height(64.dp)) {
-                    Text(path.title.get(language), maxLines = 1, modifier = Modifier.weight(1f))
-                    Text(str(R.string.guide_steps, path.steps.size), maxLines = 1, color = PicoTheme.colorScheme.labelSecondary)
+            // Two columns (v1.13.0): eleven paths in one column ran off the bottom of the window.
+            GuidePaths.ALL.chunked(2).forEach { pair ->
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    pair.forEach { path ->
+                        Button(onClick = { onEvent(PeriodicTableEvent.GuideStarted(path.id)) }, modifier = NoFocus.weight(1f).height(64.dp)) {
+                            Text(path.title.get(language), maxLines = 1, modifier = Modifier.weight(1f))
+                            Text(str(R.string.guide_steps, path.steps.size), maxLines = 1, color = PicoTheme.colorScheme.labelSecondary)
+                        }
+                    }
+                    if (pair.size == 1) Box(modifier = Modifier.weight(1f))
                 }
             }
             Button(onClick = close, modifier = NoFocus.fillMaxWidth().height(64.dp)) {
