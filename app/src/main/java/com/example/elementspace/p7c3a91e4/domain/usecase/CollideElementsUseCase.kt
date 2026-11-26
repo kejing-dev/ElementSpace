@@ -83,11 +83,11 @@ class CollideElementsUseCase(
             val other = if (metal == a) b else a
             val given = if (metal.isMainGroupMetal()) configuration(metal.atomicNumber).valenceElectrons else null
             val metalZh = if (given != null) "${metal.nameZh}是金属，最外层只有 $given 个电子，容易失去" else "${metal.nameZh}是金属，容易失去电子"
-            val metalEn = if (given != null) "${metal.nameEn} is a metal with only $given outer electron(s), easily lost" else "${metal.nameEn} is a metal and loses electrons easily"
+            val metalEn = if (given != null) "${metal.nameEn} is a metal with only $given outer electron${if (given == 1) "" else "s"}, easily lost" else "${metal.nameEn} is a metal and loses electrons easily"
             val outer = configuration(other.atomicNumber).valenceElectrons
             val need = if (other.symbol == "H") 1 else 8 - outer
             val takerZh = if (other.category != ElementCategory.METALLOID && need in 1..4) "${other.nameZh}最外层 $outer 个电子，再得 $need 个就排满" else "${other.nameZh}得电子的能力比${metal.nameZh}强"
-            val takerEn = if (other.category != ElementCategory.METALLOID && need in 1..4) "${other.nameEn} has $outer outer electron(s) and needs $need more to fill its shell" else "${other.nameEn} attracts electrons more strongly than ${metal.nameEn}"
+            val takerEn = if (other.category != ElementCategory.METALLOID && need in 1..4) "${other.nameEn} has $outer outer electron${if (outer == 1) "" else "s"} and needs $need more to fill its shell" else "${other.nameEn} attracts electrons more strongly than ${metal.nameEn}"
             return L10n(
                 "$metalZh；$takerZh。反应时${metal.nameZh}失去电子（化合价升高），${other.nameZh}得到电子（化合价降低）。",
                 "$metalEn; $takerEn. In the reaction ${metal.nameEn} loses electrons (oxidation state rises) and ${other.nameEn} gains them (it falls).",
@@ -114,7 +114,7 @@ object IonText {
         val shellText = shells.filter { it > 0 }.joinToString("、")
         val like = NOBLE[electrons]
         val lostZh = if (charge > 0) "失去 $n 个电子，带 $n 个单位正电荷" else "得到 $n 个电子，带 $n 个单位负电荷"
-        val lostEn = if (charge > 0) "lost $n electron(s), so it carries $n positive charge(s)" else "gained $n electron(s), so it carries $n negative charge(s)"
+        val lostEn = if (charge > 0) "lost $n electron${if (n == 1) "" else "s"}, so it carries $n positive charge${if (n == 1) "" else "s"}" else "gained $n electron${if (n == 1) "" else "s"}, so it carries $n negative charge${if (n == 1) "" else "s"}"
         return if (like != null && electrons > 0) {
             L10n(
                 "${element.nameZh}原子$lostZh。现在电子排布是 $shellText，和${like.zh}原子一样最外层排满，所以这种离子很稳定。",

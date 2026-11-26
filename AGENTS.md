@@ -316,3 +316,8 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
 
 - Guided paths `oxygen`, `carbon_dioxide`, `metal_activity` (11 paths): each step opens a bench experiment. The guide list is two columns (one column of eleven ran off the window).
 - Lab solids move when a step is taken (LabScene `movedFrom`): the same piece at a new position glides there (a wire or splint being lowered); a `LabEffect.Solid(drops = true)` falls in from above. Mark `drops` on the step where a reagent is first put in.
+
+## v1.13.1 (2026-11-26)
+
+- Lab sound is silent while the app is stopped (LabScreen observes the lifecycle: ON_STOP mutes, ON_START restores).
+- English plurals in collide / ion / Hund texts ("1 electron", "2 electrons" instead of "electron(s)").

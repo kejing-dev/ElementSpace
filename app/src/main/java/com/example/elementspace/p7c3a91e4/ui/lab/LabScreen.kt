@@ -35,6 +35,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.elementspace.p7c3a91e4.R
@@ -103,8 +106,19 @@ fun LabScreen(modifier: Modifier = Modifier) {
     DisposableEffect(Unit) { onDispose { sound.release() } }
     val heard = state.experiment?.let { e -> if (state.stage == 0) e.start else e.steps.getOrNull(state.stage - 1)?.effects.orEmpty() }.orEmpty()
     var volume by remember { mutableIntStateOf(prefs.getInt("volume", 1).coerceIn(0, 2)) }
-    LaunchedEffect(heard, state.powerFactor, soundOn, volume) {
-        sound.set(if (soundOn) LabMix.of(heard, state.powerFactor).times(LabMix.VOLUME[volume]) else LabMix())
+    // v1.13.1: silent while the app is in the background (home button, headset taken off).
+    var foreground by remember { mutableStateOf(true) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) foreground = false
+            if (event == Lifecycle.Event.ON_START) foreground = true
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(heard, state.powerFactor, soundOn, volume, foreground) {
+        sound.set(if (soundOn && foreground) LabMix.of(heard, state.powerFactor).times(LabMix.VOLUME[volume]) else LabMix())
     }
     val onVolume: (Int) -> Unit = { level ->
         volume = level

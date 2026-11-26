@@ -321,7 +321,7 @@ object OrbitalTexts {
         out += L10n("构造原理（能量最低原理）：按 $order 的顺序填。", "Aufbau principle: fill in the order $order.")
         val unpaired = actual.sumOf { s -> Orbitals.hund(s.l, s.electrons).count { it == 1 } }
         out +=
-            if (unpaired > 0) L10n("未成对电子 $unpaired 个：同一能级里电子先分占不同轨道、自旋平行（洪特规则）。", "$unpaired unpaired electron(s): within a subshell electrons first occupy separate orbitals with parallel spins (Hund's rule).")
+            if (unpaired > 0) L10n("未成对电子 $unpaired 个：同一能级里电子先分占不同轨道、自旋平行（洪特规则）。", "$unpaired unpaired electron${if (unpaired == 1) "" else "s"}: within a subshell electrons first occupy separate orbitals with parallel spins (Hund's rule).")
             else L10n("没有未成对电子：每个轨道都是一对自旋相反的电子（泡利原理）。", "No unpaired electrons: every orbital holds a pair of opposite spins (Pauli principle).")
         if (charge == 0 && actual != aufbau) {
             val count = { list: List<Subshell>, label: String -> list.firstOrNull { it.label == label }?.electrons ?: 0 }
