@@ -47,3 +47,10 @@ fun SideCard(content: @Composable () -> Unit) {
         Box(modifier = Modifier.size(SideCardWidth, SideCardHeight)) { content() }
     }
 }
+
+/**
+ * Radius of each model's touch sphere, in scene units (1 = the model's fitting radius, 672 dp in the
+ * 1600 dp Volume). Must stay under (MODEL_EDGE_X - 0.5) * 1600 dp + CardGap = 504 dp, i.e. < 0.75,
+ * or the sphere covers the left of the side card and swallows its taps.
+ */
+const val TOUCH_RADIUS = 0.7f

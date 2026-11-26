@@ -1,5 +1,6 @@
 package com.example.elementspace.p7c3a91e4.ui.atom.components
 
+import com.example.elementspace.p7c3a91e4.ui.common.TOUCH_RADIUS
 import androidx.compose.ui.graphics.Color
 import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
 import com.example.elementspace.p7c3a91e4.domain.model.Lattice
@@ -131,7 +132,9 @@ class AtomScene {
         root.components.set(InteractableComponent())
         root.components.set(
             CollisionComponent(
-                collisionShape = listOf(ShapeResource.createSphere(1f).also { it.toGlobal() }),
+                // Radius 0.7, not 1: the side card starts 504 dp from the centre of the 1600 dp Volume (x = 0.8 + 24 dp)
+                // and a radius-1 sphere (672 dp) sat in front of its left third, so taps there hit the model (v1.4.0 headset).
+                collisionShape = listOf(ShapeResource.createSphere(TOUCH_RADIUS).also { it.toGlobal() }),
                 physicsMaterial = PhysicsMaterialResource(),
             )
         )
