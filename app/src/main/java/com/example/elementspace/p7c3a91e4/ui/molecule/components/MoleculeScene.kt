@@ -20,6 +20,8 @@ import com.pico.spatial.core.ecs.resource.ShapeResource
 import com.pico.spatial.core.ecs.resource.UnlitMaterial
 import com.pico.spatial.core.math.Color4
 import com.pico.spatial.core.math.Vector3
+import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
+import com.example.elementspace.p7c3a91e4.domain.usecase.MoleculeBuilder
 import kotlin.math.max
 
 enum class MoleculeMode { BALL_AND_STICK, SPACE_FILLING }
@@ -32,6 +34,7 @@ data class MoleculeSceneSpec(
     val showGroups: Boolean,
     val showLabels: Boolean = true,
     val colors: Map<String, Color>,
+    val language: AppLanguage = AppLanguage.ZH,
 )
 
 /**
@@ -120,7 +123,11 @@ class MoleculeScene {
             val color = spec.colors[symbol] ?: Color.Gray
             holder.addChild(BallStick.sphereEntity("atom_${index}_$symbol", sphere(), lit(color), atoms.map { it.value.position }, radius))
             if (spec.showLabels) {
-                atoms.forEach { holder.addChild(labels.label(symbol, it.value.position, height = radius * if (fill) 0.6f else 1.15f, lift = radius * 1.04f)) }
+                atoms.forEach {
+                    // A gold group halo (radius × 1.55) is transparent and hides anything inside it.
+                    val haloed = !fill && spec.showGroups && it.value.group
+                    holder.addChild(labels.label(symbol, it.value.position, height = radius * if (fill) 0.6f else 1.15f, lift = radius * if (haloed) 1.6f else 1.04f))
+                }
             }
         }
         if (fill) return holder
@@ -135,16 +142,31 @@ class MoleculeScene {
             val ring = BallStick.ring(m.aromaticRing.map { m.atoms[it].position })
             holder.addChild(BallStick.sphereEntity("ring_$index", sphere(), glow(if (spec.showGroups) gold else ElementColors.MoleculeBond), ring, 0.06f))
         }
+        val centre = m.atoms.fold(Vec3.ZERO) { acc, a -> acc + a.position } * (1f / m.atoms.size)
         if (spec.showGroups) {
             val marked = m.atoms.filter { it.group }
             marked.groupBy { it.symbol }.forEach { (symbol, atoms) ->
                 holder.addChild(BallStick.sphereEntity("halo_${index}_$symbol", sphere(), halo(gold, 0.28f), atoms.map { it.position }, BallStick.ball(symbol) * 1.55f))
             }
+            // Name the group in 3D, just outside it, so the toggle visibly says what it marks.
+            val name = m.group?.get(spec.language)
+            if (name != null && marked.isNotEmpty()) {
+                val at = marked.fold(Vec3.ZERO) { acc, a -> acc + a.position } * (1f / marked.size)
+                val out = at - centre
+                val dir = if (out.length() < 0.6f) Vec3(0f, 1f, 0f) else MoleculeBuilder.norm(out)
+                holder.addChild(labels.label(name, at + dir * 1.35f, height = 0.34f, lift = 0.55f, style = SceneLabels.Style.TAG))
+            }
         }
         if (spec.showAngles) {
             m.angles.forEachIndexed { k, angle ->
-                val beads = BallStick.arc(m.atoms[angle.at].position, m.atoms[angle.a].position, m.atoms[angle.b].position, radius = 0.55f)
+                val at = m.atoms[angle.at].position
+                val beads = BallStick.arc(at, m.atoms[angle.a].position, m.atoms[angle.b].position, radius = 0.55f)
                 holder.addChild(BallStick.sphereEntity("arc_${index}_$k", sphere(), glow(ElementColors.BondAngle), beads, 0.045f))
+                // The value sits beyond the middle of the arc, pulled well forward: an arc that points away
+                // from the viewer would otherwise put it behind the centre ball.
+                val mid = beads[beads.size / 2] - at
+                val dir = if (mid.length() < 1e-3f) Vec3(0f, 1f, 0f) else MoleculeBuilder.norm(mid)
+                holder.addChild(labels.label(angle.label, at + dir * 1.4f, height = 0.3f, lift = 2.2f, style = SceneLabels.Style.TAG))
             }
         }
         return holder

@@ -180,4 +180,33 @@
     <string name="cond_heat">加热</string>
     <string name="cond_ignite">点燃</string>
     <string name="mol_labels">符号</string>
+    <string name="tab_orbitals">轨道</string>
+    <string name="cloud_whole">整体电子云</string>
+    <string name="cloud_single">单个轨道</string>
+    <string name="orb_phase">相位</string>
+    <string name="orb_nodes">节面</string>
+    <string name="orb_axes">坐标轴</string>
+    <string name="orb_node_legend">节面（ψ = 0）</string>
+    <string name="orb_boxes">轨道表示式（点方框看那个轨道）</string>
+    <string name="orb_rules">泡利原理：一个轨道最多 2 个电子，自旋相反（↑↓）。洪特规则：同一能级先分占、自旋平行。</string>
+    <string name="orb_selected">选中的轨道</string>
+    <string name="qn_n">n 主量子数</string>
+    <string name="qn_l">l 角量子数</string>
+    <string name="qn_ml">mₗ 磁量子数</string>
+    <string name="qn_ms">mₛ 自旋</string>
+    <string name="orb_shape">形状</string>
+    <string name="orb_electrons">这个轨道里的电子</string>
+    <string name="orb_count">%1$d 个</string>
+    <string name="orb_spheres">（球面）</string>
+    <string name="orb_radial_nodes">径向节点 n − l − 1</string>
+    <string name="orb_angular_nodes">角节面 l</string>
+    <string name="orb_cone">两个圆锥面（与 z 轴夹 %1$s°）</string>
+    <string name="orb_ml_note">p、d、f 画的是实轨道（如 2pₓ），由 +m 和 −m 两个复数轨道组合而成，所以写 ±m。</string>
+    <string name="orb_adv">进阶</string>
+    <string name="orb_radial_title">径向分布 P(r) = r²R²</string>
+    <string name="orb_zeff_title">有效核电荷（Slater 规则）</string>
+    <string name="orb_why_title">为什么这样填</string>
+    <string name="orb_peak">最可能半径 ≈ %1$s a₀</string>
+    <string name="orb_axis_r">横轴：离核距离 r（a₀，类氢 Z = 1）　紫点：径向节点</string>
+    <string name="orb_source">来源：人教版高中化学 选择性必修2 第一章第一节「原子结构」（能层、能级、原子轨道、泡利原理、洪特规则、构造原理）；《无机化学》（北京师范大学等编，高等教育出版社）原子结构一章；Atkins\' Physical Chemistry「Hydrogenic atomic orbitals」；J. C. Slater, Phys. Rev. 36, 57 (1930)。</string>
 </resources>

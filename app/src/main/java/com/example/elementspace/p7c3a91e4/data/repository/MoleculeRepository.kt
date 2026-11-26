@@ -226,10 +226,36 @@ class BundledMoleculeRepository : MoleculeRepository {
             ring: List<Int> = emptyList(),
         ) = Molecule(
             id = id, name = name, formula = formula, condensed = condensed, structural = structural, skeleton = skeleton,
-            atoms = builder.atoms.toList(), bonds = builder.bonds.toList(), angles = builder.angles.toList(), aromaticRing = ring,
+            atoms = builder.atoms.toList(), bonds = builder.bonds.toList(), angles = builder.angles.ifEmpty { carbonAngles(builder) }, aromaticRing = ring,
             geometry = geometry, group = group, property = property, compareWith = compareWith, compareNote = compareNote,
             reactionIds = reactionIds, source = source,
         )
+
+        /**
+         * When a molecule has no hand-picked angle, mark one angle per kind of carbon it has, with the
+         * textbook value for that carbon: 4 bonds → 109°28′ (sp³), 3 → 120° (sp²), 2 → 180° (sp).
+         * Source: 人教版 选择性必修2 第二章第二节「分子的空间结构」/ 选择性必修3 第一章第一节.
+         */
+        internal fun carbonAngles(b: MoleculeBuilder): List<com.example.elementspace.p7c3a91e4.domain.model.BondAngle> {
+            val ideal = mapOf(4 to (109.47f to "≈109°28′"), 3 to (120f to "≈120°"), 2 to (180f to "180°"))
+            val neighbours = b.atoms.indices.associateWith { i -> b.bonds.mapNotNull { if (it.a == i) it.b else if (it.b == i) it.a else null } }
+            val seen = HashSet<Int>()
+            val out = ArrayList<com.example.elementspace.p7c3a91e4.domain.model.BondAngle>()
+            for (c in b.atoms.indices) {
+                if (b.atoms[c].symbol != "C") continue
+                val n = neighbours.getValue(c)
+                val (target, label) = ideal[n.size] ?: continue
+                if (!seen.add(n.size)) continue
+                // Prefer the pair closest to the ideal, heavy atoms first so the arc is easy to see.
+                val pairs = n.flatMapIndexed { i, x -> n.drop(i + 1).map { y -> x to y } }
+                val best = pairs.minBy { (x, y) ->
+                    val heavy = listOf(x, y).count { b.atoms[it].symbol != "H" }
+                    kotlin.math.abs(b.degrees(c, x, y) - target) - heavy * 0.5f
+                }
+                out += com.example.elementspace.p7c3a91e4.domain.model.BondAngle(c, best.first, best.second, label, b.degrees(c, best.first, best.second))
+            }
+            return out
+        }
 
         private val BENZENE = benzene()
 

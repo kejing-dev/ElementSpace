@@ -105,32 +105,46 @@ class SceneLabels {
             return Quat(x * s, y * s, z * s, cos(radians / 2f))
         }
 
-        /** White bold symbol with a dark outline, or an orange tag on a light pill (M3 sample). */
+        /**
+         * White bold symbol with a dark outline, or an orange tag on a light pill (M3 sample).
+         * Text after "_" is drawn as a subscript ("2p_x" → 2pₓ).
+         */
         fun bitmap(text: String, style: Style): Bitmap {
+            val main = text.substringBefore('_')
+            val sub = text.substringAfter('_', "")
             val paint =
                 Paint(Paint.ANTI_ALIAS_FLAG).apply {
                     textSize = TEXT_PX
                     typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                    textAlign = Paint.Align.CENTER
+                    textAlign = Paint.Align.LEFT
                 }
+            val subPaint = Paint(paint).apply { textSize = TEXT_PX * 0.62f }
+            val textWidth = paint.measureText(main) + if (sub.isEmpty()) 0f else subPaint.measureText(sub) + TEXT_PX * 0.04f
             val pad = if (style == Style.TAG) TEXT_PX * 0.55f else TEXT_PX * 0.18f
-            val width = (paint.measureText(text) + pad * 2).toInt().coerceAtLeast(8)
+            val width = (textWidth + pad * 2).toInt().coerceAtLeast(8)
             val height = (TEXT_PX * 1.45f).toInt()
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             val baseline = height / 2f - (paint.descent() + paint.ascent()) / 2f
+            val start = (width - textWidth) / 2f
+            fun draw(p: Paint, sp: Paint) {
+                canvas.drawText(main, start, baseline, p)
+                if (sub.isNotEmpty()) canvas.drawText(sub, start + paint.measureText(main) + TEXT_PX * 0.04f, baseline + TEXT_PX * 0.2f, sp)
+            }
             when (style) {
                 Style.SYMBOL -> {
-                    val stroke = Paint(paint).apply { this.style = Paint.Style.STROKE; strokeWidth = TEXT_PX * 0.16f; color = 0xE6141619.toInt(); strokeJoin = Paint.Join.ROUND }
-                    canvas.drawText(text, width / 2f, baseline, stroke)
+                    val stroke = { p: Paint -> Paint(p).apply { this.style = Paint.Style.STROKE; strokeWidth = TEXT_PX * 0.16f; color = 0xE6141619.toInt(); strokeJoin = Paint.Join.ROUND } }
+                    draw(stroke(paint), stroke(subPaint))
                     paint.color = 0xFFFFFFFF.toInt()
-                    canvas.drawText(text, width / 2f, baseline, paint)
+                    subPaint.color = 0xFFFFFFFF.toInt()
+                    draw(paint, subPaint)
                 }
                 Style.TAG -> {
                     val pill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xF0FFFFFF.toInt() }
                     canvas.drawRoundRect(RectF(0f, 0f, width.toFloat(), height.toFloat()), height / 2f, height / 2f, pill)
                     paint.color = 0xFFB25A00.toInt()
-                    canvas.drawText(text, width / 2f, baseline, paint)
+                    subPaint.color = 0xFFB25A00.toInt()
+                    draw(paint, subPaint)
                 }
             }
             return bitmap

@@ -90,6 +90,12 @@ object ElementColors {
             ElementCategory.ACTINIDE -> CategoryActinide
         }
 
+    /** Sign of ψ in the single-orbital view, and where ψ = 0 (M4 sample). */
+    val PhasePositive = Color(0xFF3B7BFF)
+    val PhaseNegative = Color(0xFFFF8A2A)
+    val NodalSurface = Color(0xFF9B7CFF)
+    val OrbitalAxis = Color(0xFF3A3F48)
+
     fun orbital(l: Int): Color =
         when (l) {
             0 -> OrbitalS

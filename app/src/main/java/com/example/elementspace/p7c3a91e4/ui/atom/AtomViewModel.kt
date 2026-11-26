@@ -13,6 +13,9 @@ import com.example.elementspace.p7c3a91e4.domain.usecase.BuildAllotropeLatticeUs
 import com.example.elementspace.p7c3a91e4.domain.usecase.BuildNucleusLayoutUseCase
 import com.example.elementspace.p7c3a91e4.domain.usecase.ElectronConfigurationUseCase
 import com.example.elementspace.p7c3a91e4.domain.usecase.SampleOrbitalCloudUseCase
+import com.example.elementspace.p7c3a91e4.domain.usecase.OrbitalRef
+import com.example.elementspace.p7c3a91e4.domain.usecase.Orbitals
+import com.example.elementspace.p7c3a91e4.domain.usecase.SampleOrbitalUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +32,7 @@ class AtomViewModel(
     private val buildLattice: BuildAllotropeLatticeUseCase,
     reactionRepository: ReactionRepository,
     moleculeRepository: MoleculeRepository = BundledMoleculeRepository.shared,
+    private val sampleOrbital: SampleOrbitalUseCase = SampleOrbitalUseCase(),
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AtomUiState())
@@ -85,6 +89,16 @@ class AtomViewModel(
                 sessionRepository.touchAtom(atomicNumber)
                 sessionRepository.showMolecule(event.id)
             }
+            is AtomEvent.CloudModeSelected -> change { it.copy(singleOrbital = event.single) }
+            is AtomEvent.OrbitalSelected -> change { it.copy(singleOrbital = true, orbital = event.ref) }
+            is AtomEvent.OrbitalOptionToggled ->
+                _state.update {
+                    when (event.option) {
+                        OrbitalOption.PHASE -> it.copy(showPhase = !it.showPhase)
+                        OrbitalOption.NODES -> it.copy(showNodes = !it.showNodes)
+                        OrbitalOption.AXES -> it.copy(showAxes = !it.showAxes)
+                    }
+                }
             AtomEvent.PauseToggled -> _state.update { it.copy(paused = !it.paused) }
             AtomEvent.ResetView -> _state.update { it.copy(resetToken = it.resetToken + 1) }
             AtomEvent.Touched -> sessionRepository.touchAtom(atomicNumber)
@@ -117,11 +131,19 @@ class AtomViewModel(
         val element = state.element ?: return state
         val configuration = electronConfiguration(element.atomicNumber, state.charge)
         val outermost = configuration.shells.size.coerceAtLeast(1)
+        val cloud = state.view == AtomViewMode.CLOUD
+        // Keep the chosen orbital while its subshell is occupied; otherwise the outermost one.
+        val orbital =
+            state.orbital?.takeIf { ref -> configuration.subshells.any { it.n == ref.n && it.l == ref.l } }
+                ?: configuration.subshells.lastOrNull()?.let { OrbitalRef(it.n, it.l, 0) }
+        val single = cloud && state.singleOrbital && orbital != null
         return state.copy(
+            orbital = orbital,
+            orbitalSample = if (single) state.orbitalSample?.takeIf { it.ref == orbital } ?: sampleOrbital(orbital!!) else null,
             configuration = configuration,
             nucleus = buildNucleus(state.protons, state.neutrons),
             clouds =
-                if (state.view == AtomViewMode.CLOUD) {
+                if (cloud && !single) {
                     val perElectron = (CLOUD_POINT_BUDGET / state.electrons.coerceAtLeast(1)).coerceIn(12, 90)
                     configuration.subshells.map { sampleCloud(it, outermost, perElectron) }
                 } else {

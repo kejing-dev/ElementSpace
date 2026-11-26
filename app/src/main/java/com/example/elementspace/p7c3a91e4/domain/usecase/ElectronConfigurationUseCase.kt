@@ -28,6 +28,13 @@ class ElectronConfigurationUseCase {
         return ElectronConfiguration(shells = shells, subshells = subshells)
     }
 
+    /** Plain Aufbau filling of a neutral atom, without the observed exceptions (to explain them). */
+    fun aufbauOnly(atomicNumber: Int): List<Subshell> {
+        val occupancy = mutableMapOf<Pair<Int, Int>, Int>()
+        add(occupancy, atomicNumber)
+        return AUFBAU.mapNotNull { (n, l) -> occupancy[n to l]?.takeIf { it > 0 }?.let { Subshell(n, l, it) } }
+    }
+
     private fun neutral(z: Int): MutableMap<Pair<Int, Int>, Int> {
         val occupancy = mutableMapOf<Pair<Int, Int>, Int>()
         add(occupancy, z)

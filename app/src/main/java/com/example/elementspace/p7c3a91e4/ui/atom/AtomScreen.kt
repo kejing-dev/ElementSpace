@@ -8,6 +8,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
+import com.example.elementspace.p7c3a91e4.domain.usecase.NodalSurface
+import com.example.elementspace.p7c3a91e4.domain.usecase.OrbitalRef
+import com.example.elementspace.p7c3a91e4.domain.usecase.Orbitals
+import com.example.elementspace.p7c3a91e4.ui.atom.components.OrbitalView
+import com.example.elementspace.p7c3a91e4.ui.navigation.DebugBus
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,6 +65,27 @@ fun AtomScreen(atomicNumber: Int, modifier: Modifier = Modifier) {
         }
     }
 
+    // QA screenshots: see DebugBus / AGENTS.md.
+    DebugBus.Collect { command ->
+        when (command.cmd) {
+            "aview" -> AtomViewMode.entries.firstOrNull { it.name.equals(command.arg, ignoreCase = true) }?.let { view ->
+                if (view.advanced && !viewModel.state.value.advancedExpanded) viewModel.onEvent(AtomEvent.AdvancedToggled)
+                viewModel.onEvent(AtomEvent.ViewSelected(view))
+            }
+            "cloud" -> viewModel.onEvent(AtomEvent.CloudModeSelected(command.arg != "whole"))
+            // "orbital 3d:0" = n, l letter, index into the real orbitals of that subshell.
+            "orbital" -> command.arg?.let { arg ->
+                val n = arg.first().digitToIntOrNull()
+                val l = "spdf".indexOf(arg.getOrNull(1) ?: ' ')
+                val index = arg.substringAfter(':', "0").toIntOrNull() ?: 0
+                if (n != null && l >= 0) viewModel.onEvent(AtomEvent.OrbitalSelected(OrbitalRef(n, l, index.coerceIn(0, 2 * l))))
+            }
+            "phase" -> viewModel.onEvent(AtomEvent.OrbitalOptionToggled(OrbitalOption.PHASE))
+            "nodes" -> viewModel.onEvent(AtomEvent.OrbitalOptionToggled(OrbitalOption.NODES))
+            "axes" -> viewModel.onEvent(AtomEvent.OrbitalOptionToggled(OrbitalOption.AXES))
+        }
+    }
+
     AppLocale(state.language) { AtomContent(state = state, onEvent = onEvent, modifier = modifier) }
 }
 
@@ -78,6 +106,13 @@ internal fun AtomContent(
             return@Box
         }
 
+        val sample = state.orbitalSample
+        val nodes =
+            remember(sample?.ref) {
+                sample?.ref?.let { ref -> Orbitals.orbital(ref).angularNodes + Orbitals.radialNodes(ref.n, ref.l).map { NodalSurface.Sphere(it) } }.orEmpty()
+            }
+        val orbitalView = sample?.let { OrbitalView(it, nodes, Orbitals.name(it.ref), state.showPhase, state.showNodes, state.showAxes) }
+
         // The Volume itself holds only the model; every label lives in the window fittings below
         // so nothing sits between the viewer and the atom.
         AtomSceneView(
@@ -89,6 +124,7 @@ internal fun AtomContent(
                     clouds = state.clouds,
                     hiddenSubshells = state.hiddenSubshells,
                     lattice = state.lattice,
+                    orbital = orbitalView,
                 ),
             paused = state.paused,
             resetToken = state.resetToken,
@@ -103,6 +139,8 @@ internal fun AtomContent(
                 advancedExpanded = state.advancedExpanded,
                 allotropeAvailable = state.allotropes.isNotEmpty(),
                 paused = state.paused,
+                singleOrbital = state.singleOrbital,
+                onCloudMode = { onEvent(AtomEvent.CloudModeSelected(it)) },
                 onViewSelected = { onEvent(AtomEvent.ViewSelected(it)) },
                 onAdvancedToggle = { onEvent(AtomEvent.AdvancedToggled) },
                 onPauseToggle = { onEvent(AtomEvent.PauseToggled) },

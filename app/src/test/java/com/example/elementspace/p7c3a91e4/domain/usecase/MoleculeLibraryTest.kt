@@ -77,6 +77,19 @@ class MoleculeLibraryTest {
     }
 
     @Test
+    fun `every molecule marks at least one angle and its arc matches the value shown`() {
+        val ideal = mapOf("109°28′" to 109.47f, "120°" to 120f, "180°" to 180f, "104.5°" to 104.5f)
+        library.forEach { m ->
+            assertTrue("${m.id} has no angle", m.angles.isNotEmpty())
+            m.angles.forEach { a ->
+                val expected = ideal.entries.first { a.label.endsWith(it.key) }.value
+                // "≈" values are the textbook VSEPR figure; real carbonyl carbons spread to ~123–126°.
+                assertEquals("${m.id} ${a.label}", expected, a.degrees, if (a.label.startsWith("≈")) 6f else 2.5f)
+            }
+        }
+    }
+
+    @Test
     fun `atoms that are not bonded never overlap`() {
         library.forEach { m ->
             val bonded = m.bonds.map { setOf(it.a, it.b) }.toSet()

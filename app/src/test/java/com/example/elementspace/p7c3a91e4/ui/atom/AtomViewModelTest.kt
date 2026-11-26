@@ -9,6 +9,7 @@ import com.example.elementspace.p7c3a91e4.domain.usecase.BuildAllotropeLatticeUs
 import com.example.elementspace.p7c3a91e4.domain.usecase.BuildNucleusLayoutUseCase
 import com.example.elementspace.p7c3a91e4.domain.usecase.ElectronConfigurationUseCase
 import com.example.elementspace.p7c3a91e4.domain.usecase.SampleOrbitalCloudUseCase
+import com.example.elementspace.p7c3a91e4.domain.usecase.OrbitalRef
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -97,7 +98,14 @@ class AtomViewModelTest {
         val vm = viewModel(6)
         vm.onEvent(AtomEvent.AdvancedToggled)
         vm.onEvent(AtomEvent.ViewSelected(AtomViewMode.CLOUD))
+        // The cloud view opens on one orbital: carbon's outermost, 2p.
+        assertEquals(OrbitalRef(2, 1, 0), vm.state.value.orbitalSample?.ref)
+        assertTrue(vm.state.value.clouds.isEmpty())
+        vm.onEvent(AtomEvent.CloudModeSelected(single = false))
         assertEquals(3, vm.state.value.clouds.size) // 1s 2s 2p
+        assertNull(vm.state.value.orbitalSample)
+        vm.onEvent(AtomEvent.OrbitalSelected(OrbitalRef(2, 0, 0)))
+        assertEquals(OrbitalRef(2, 0, 0), vm.state.value.orbitalSample?.ref)
         assertNull(vm.state.value.lattice)
 
         vm.onEvent(AtomEvent.ViewSelected(AtomViewMode.ALLOTROPE))

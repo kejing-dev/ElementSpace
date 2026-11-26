@@ -73,6 +73,7 @@ fun MoleculeScreen(modifier: Modifier = Modifier) {
                         showGroups = state.showGroups,
                         showLabels = state.showLabels,
                         colors = colors,
+                        language = state.language,
                     ),
                 resetToken = state.resetToken,
                 modifier = Modifier.fillMaxSize(),

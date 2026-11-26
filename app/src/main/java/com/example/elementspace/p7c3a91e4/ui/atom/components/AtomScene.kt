@@ -6,6 +6,9 @@ import com.example.elementspace.p7c3a91e4.domain.model.Lattice
 import com.example.elementspace.p7c3a91e4.domain.model.NucleusLayout
 import com.example.elementspace.p7c3a91e4.domain.model.OrbitalCloud
 import com.example.elementspace.p7c3a91e4.domain.model.Vec3
+import com.example.elementspace.p7c3a91e4.domain.usecase.NodalSurface
+import com.example.elementspace.p7c3a91e4.domain.usecase.OrbitalSample
+import com.example.elementspace.p7c3a91e4.ui.common.SceneLabels
 import com.example.elementspace.p7c3a91e4.ui.theme.ElementColors
 import com.pico.spatial.core.ecs.CollisionComponent
 import com.pico.spatial.core.ecs.Component
@@ -45,6 +48,18 @@ data class AtomSceneSpec(
     val clouds: List<OrbitalCloud>,
     val hiddenSubshells: Set<String>,
     val lattice: Lattice?,
+    /** Cloud view showing one orbital instead of the whole cloud. */
+    val orbital: OrbitalView? = null,
+)
+
+/** One orbital in the cloud view: sampled points, where ψ = 0, and what to draw. */
+data class OrbitalView(
+    val sample: OrbitalSample,
+    val nodes: List<NodalSurface>,
+    val name: String,
+    val phase: Boolean,
+    val showNodes: Boolean,
+    val axes: Boolean,
 )
 
 /** Spins an entity about its local Y axis after a fixed tilt; driven by [OrbitSystem]. */
@@ -96,6 +111,8 @@ class AtomScene {
     private var spec: AtomSceneSpec? = null
     private var paused: Boolean = false
     private val orbits = ArrayList<OrbitComponent>()
+    private val labels = SceneLabels()
+    private var planeMesh: MeshResource? = null
 
     // Meshes are created per rebuild, never kept across rebuilds: destroying the previous content
     // releases the meshes it used, and building with a released mesh throws.
@@ -126,6 +143,7 @@ class AtomScene {
             setScaleVector(Vector3(radiusMeters * zoom))
             setQuaternion(axisAngle(1f, 0f, 0f, pitch) * axisAngle(0f, 1f, 0f, yaw))
         }
+        labels.setRotation(yaw, pitch)
     }
 
     fun setPaused(value: Boolean) {
@@ -141,11 +159,13 @@ class AtomScene {
         sphereMesh = null
         cubeMesh = null
         cylinderMesh = null
+        planeMesh = null
+        labels.reset()
         val next = Entity()
         when (newSpec.view) {
             AtomViewMode.SHELL -> buildShells(next, newSpec)
             AtomViewMode.NUCLEUS -> newSpec.nucleus?.let { next.addChild(nucleus(it, 0.62f)) }
-            AtomViewMode.CLOUD -> buildCloud(next, newSpec)
+            AtomViewMode.CLOUD -> newSpec.orbital?.let { buildOrbital(next, it) } ?: buildCloud(next, newSpec)
             AtomViewMode.ALLOTROPE -> newSpec.lattice?.let { buildLattice(next, it) }
         }
         root.addChild(next)
@@ -200,6 +220,70 @@ class AtomScene {
             )
         }
         parent.addChild(spin)
+    }
+
+    /**
+     * One orbital, standing still so its axes and nodes stay put (the user turns it by hand).
+     * Chemistry axes (z up) map to the scene as x → x, y → −z (away from the viewer), z → y.
+     */
+    private fun buildOrbital(parent: Entity, view: OrbitalView) {
+        val holder = Entity()
+        holder.components[TransformComponent::class.java]?.setScaleVector(Vector3(ORBITAL_SCALE))
+        val sample = view.sample
+        val positive = if (view.phase) ElementColors.PhasePositive else ElementColors.orbital(sample.ref.l)
+        val negative = if (view.phase) ElementColors.PhaseNegative else ElementColors.orbital(sample.ref.l)
+        if (sample.positive.isNotEmpty()) holder.addChild(instanced("psi_pos", cube(), unlit(positive), sample.positive.map(::scene), 0.0085f))
+        if (sample.negative.isNotEmpty()) holder.addChild(instanced("psi_neg", cube(), unlit(negative), sample.negative.map(::scene), 0.0085f))
+        holder.addChild(instanced("nucleus_dot", sphere(), glow(ElementColors.ParticleProton), listOf(Vec3.ZERO), 0.022f))
+        if (view.showNodes) view.nodes.forEachIndexed { i, node -> nodal(holder, i, node, sample.extent) }
+        if (view.axes) {
+            val axes = listOf(Vec3(1f, 0f, 0f) to "x", Vec3(0f, 1f, 0f) to "y", Vec3(0f, 0f, 1f) to "z")
+            val sticks =
+                axes.mapIndexed { i, (axis, _) ->
+                    MeshInstancesResource.Instance("axis_$i", Transform(Vector3(0f, 0f, 0f), alignYTo(scene(axis)), Vector3(0.0035f, 2.1f, 0.0035f)))
+                }
+            holder.addChild(instancedEntity("axes", cylinder(), unlit(ElementColors.OrbitalAxis, 0.9f), sticks))
+            axes.forEach { (axis, name) -> holder.addChild(labels.label(name, scene(axis) * 1.12f, height = 0.09f, lift = 0.02f)) }
+        }
+        holder.addChild(labels.label(view.name, Vec3(0f, -1.12f, 0f), height = 0.11f, lift = 0.1f, style = SceneLabels.Style.TAG))
+        parent.addChild(holder)
+    }
+
+    private fun nodal(holder: Entity, index: Int, node: NodalSurface, extent: Float) {
+        val violet = ElementColors.NodalSurface
+        when (node) {
+            is NodalSurface.Plane -> {
+                // A translucent disc, drawn from both sides.
+                val mesh = planeMesh ?: MeshResource.createPlane(1.9f, 1.9f, 0.94f).also { planeMesh = it }
+                val facing = alignZTo(scene(node.normal))
+                listOf(facing, facing * axisAngle(1f, 0f, 0f, PI.toFloat())).forEach { q ->
+                    val disc = ModelEntity(mesh, UnlitMaterial.create(BlendingMode.TRANSPARENT).apply { setBaseColor(violet.toColor4(0.16f)) })
+                    disc.components[TransformComponent::class.java]?.setQuaternion(q)
+                    holder.addChild(disc)
+                }
+            }
+            is NodalSurface.Cone -> {
+                // Rings of beads on both nappes; a mesh cone would hide the lobes inside it.
+                val t = Math.toRadians(node.halfAngleDegrees.toDouble())
+                val beads =
+                    listOf(0.25f, 0.45f, 0.65f, 0.85f).flatMap { s ->
+                        listOf(1f, -1f).flatMap { side ->
+                            val h = (s * cos(t)).toFloat() * side
+                            val r = (s * sin(t)).toFloat()
+                            (0 until 48).map { k ->
+                                val a = TWO_PI * k / 48
+                                scene(Vec3(r * cos(a), r * sin(a), h))
+                            }
+                        }
+                    }
+                holder.addChild(instanced("cone_$index", sphere(), unlit(violet), beads, 0.006f))
+            }
+            is NodalSurface.Sphere -> {
+                val shell = ModelEntity(sphere(), UnlitMaterial.create(BlendingMode.TRANSPARENT).apply { setBaseColor(violet.toColor4(0.14f)) })
+                shell.components[TransformComponent::class.java]?.setScaleVector(Vector3(node.radius / extent))
+                holder.addChild(shell)
+            }
+        }
     }
 
     private fun buildLattice(parent: Entity, lattice: Lattice) {
@@ -305,6 +389,18 @@ class AtomScene {
             setEmissiveColor(color.toColor4())
         }
 
+    /** Chemistry axes (z up) to scene axes (y up, viewer on +z). */
+    private fun scene(p: Vec3): Vec3 = Vec3(p.x, p.z, -p.y)
+
+    /** Rotation taking +Z (the plane's facing) onto the unit vector [n]. */
+    private fun alignZTo(n: Vec3): Quat {
+        val ax = -n.y
+        val ay = n.x
+        val length = sqrt(ax * ax + ay * ay)
+        if (length < 1e-5f) return if (n.z > 0f) Quat.identity() else axisAngle(1f, 0f, 0f, PI.toFloat())
+        return axisAngle(ax / length, ay / length, 0f, acos(n.z.coerceIn(-1f, 1f)))
+    }
+
     /** Rotation taking the +Y axis onto the unit vector [direction]. */
     private fun alignYTo(direction: Vec3): Quat {
         val axisX = direction.z
@@ -315,6 +411,8 @@ class AtomScene {
     }
 
     private companion object {
+        /** The orbital's 99 % radius fills a little less than the Volume's sphere. */
+        const val ORBITAL_SCALE = 0.86f
         var registered = false
 
         fun ensureRegistered() {

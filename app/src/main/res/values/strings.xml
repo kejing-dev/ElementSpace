@@ -180,4 +180,33 @@
     <string name="cond_heat">Heat</string>
     <string name="cond_ignite">Ignite</string>
     <string name="mol_labels">Symbols</string>
+    <string name="tab_orbitals">Orbitals</string>
+    <string name="cloud_whole">Whole cloud</string>
+    <string name="cloud_single">One orbital</string>
+    <string name="orb_phase">Phase</string>
+    <string name="orb_nodes">Nodes</string>
+    <string name="orb_axes">Axes</string>
+    <string name="orb_node_legend">Node (ψ = 0)</string>
+    <string name="orb_boxes">Orbital diagram (tap a box)</string>
+    <string name="orb_rules">Pauli: at most 2 electrons per orbital, opposite spins (↑↓). Hund: within a subshell, fill singly with parallel spins first.</string>
+    <string name="orb_selected">Selected orbital</string>
+    <string name="qn_n">n principal</string>
+    <string name="qn_l">l angular</string>
+    <string name="qn_ml">mₗ magnetic</string>
+    <string name="qn_ms">mₛ spin</string>
+    <string name="orb_shape">Shape</string>
+    <string name="orb_electrons">Electrons in it</string>
+    <string name="orb_count">%1$d</string>
+    <string name="orb_spheres"> (spheres)</string>
+    <string name="orb_radial_nodes">Radial nodes n − l − 1</string>
+    <string name="orb_angular_nodes">Angular nodes l</string>
+    <string name="orb_cone">a double cone (%1$s° from z)</string>
+    <string name="orb_ml_note">p, d and f are drawn as real orbitals (e.g. 2pₓ), each a mix of the complex +m and −m orbitals, hence ±m.</string>
+    <string name="orb_adv">Advanced</string>
+    <string name="orb_radial_title">Radial distribution P(r) = r²R²</string>
+    <string name="orb_zeff_title">Effective nuclear charge (Slater\'s rules)</string>
+    <string name="orb_why_title">Why it fills this way</string>
+    <string name="orb_peak">Most probable radius ≈ %1$s a₀</string>
+    <string name="orb_axis_r">Horizontal: distance r from the nucleus (a₀, hydrogen-like Z = 1). Violet dots: radial nodes.</string>
+    <string name="orb_source">Sources: PEP High-school Chemistry, Structure of Matter Ch. 1 §1 (shells, subshells, orbitals, Pauli, Hund, Aufbau); Inorganic Chemistry (Beijing Normal Univ. et al., Higher Education Press), atomic structure; Atkins\' Physical Chemistry, \"Hydrogenic atomic orbitals\"; J. C. Slater, Phys. Rev. 36, 57 (1930).</string>
 </resources>

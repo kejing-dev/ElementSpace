@@ -31,10 +31,14 @@ fun RowScope.MoleculeToolbarContent(state: MoleculeUiState, onEvent: (MoleculeEv
     VerticalDivider(modifier = Modifier.size(width = 1.dp, height = 32.dp))
     // Marks are drawn on the sticks, so they only apply to the ball-and-stick model.
     val sticks = state.mode == MoleculeMode.BALL_AND_STICK
-    ToggleButton(checked = state.showAngles && sticks, onCheckedChange = { onEvent(MoleculeEvent.AnglesToggled) }, enabled = sticks, modifier = NoFocus) {
+    val shown = listOfNotNull(state.molecule, state.compare)
+    // Greyed out when the molecule has nothing to mark, so a tap never looks like it did nothing.
+    val hasAngles = sticks && shown.any { it.angles.isNotEmpty() }
+    val hasGroups = sticks && shown.any { it.group != null }
+    ToggleButton(checked = state.showAngles && hasAngles, onCheckedChange = { onEvent(MoleculeEvent.AnglesToggled) }, enabled = hasAngles, modifier = NoFocus) {
         Text(str(R.string.mol_angles), maxLines = 1)
     }
-    ToggleButton(checked = state.showGroups && sticks, onCheckedChange = { onEvent(MoleculeEvent.GroupsToggled) }, enabled = sticks, modifier = NoFocus) {
+    ToggleButton(checked = state.showGroups && hasGroups, onCheckedChange = { onEvent(MoleculeEvent.GroupsToggled) }, enabled = hasGroups, modifier = NoFocus) {
         Text(str(R.string.mol_groups), maxLines = 1)
     }
     ToggleButton(checked = state.showLabels, onCheckedChange = { onEvent(MoleculeEvent.LabelsToggled) }, modifier = NoFocus) {

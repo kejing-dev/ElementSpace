@@ -79,6 +79,8 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
     // One kind of content per page (v1.3.0); pages without content are left out.
     val pages =
         buildList {
+            // In the cloud view the orbital page comes first, so switching to the cloud shows it.
+            if (state.view == AtomViewMode.CLOUD && state.configuration != null) add(AtomPage.ORBITALS)
             add(AtomPage.STRUCTURE)
             if (state.reactions.isNotEmpty()) add(AtomPage.REACTIONS)
             if (state.molecules.isNotEmpty()) add(AtomPage.MOLECULES)
@@ -88,6 +90,7 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
         pages.map { page ->
             when (page) {
                 AtomPage.STRUCTURE -> str(R.string.tab_structure)
+                AtomPage.ORBITALS -> str(R.string.tab_orbitals)
                 AtomPage.REACTIONS -> str(R.string.tab_reactions, state.reactions.size)
                 AtomPage.MOLECULES -> str(R.string.tab_molecules, state.molecules.size)
                 AtomPage.PROPERTIES -> str(R.string.tab_properties)
@@ -96,6 +99,7 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
     PagedCard(key = element.atomicNumber, tabs = tabs, modifier = modifier, header = { ElementHero(element, state.language) }) { index ->
         when (pages[index]) {
             AtomPage.STRUCTURE -> StructurePage(state, element, onEvent)
+            AtomPage.ORBITALS -> OrbitalPage(state, onEvent)
             AtomPage.REACTIONS -> ReactionsSection(state, onEvent)
             AtomPage.MOLECULES -> {
                 if (element.symbol == "C") CarbonBondingSection()
@@ -106,7 +110,7 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
     }
 }
 
-private enum class AtomPage { STRUCTURE, REACTIONS, MOLECULES, PROPERTIES }
+private enum class AtomPage { ORBITALS, STRUCTURE, REACTIONS, MOLECULES, PROPERTIES }
 
 /** What the atom is made of; the sections follow the selected view. */
 @Composable

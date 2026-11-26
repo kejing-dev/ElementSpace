@@ -11,6 +11,8 @@ import com.example.elementspace.p7c3a91e4.domain.model.NucleusLayout
 import com.example.elementspace.p7c3a91e4.domain.model.OrbitalCloud
 import com.example.elementspace.p7c3a91e4.domain.model.Reaction
 import com.example.elementspace.p7c3a91e4.domain.model.Molecule
+import com.example.elementspace.p7c3a91e4.domain.usecase.OrbitalRef
+import com.example.elementspace.p7c3a91e4.domain.usecase.OrbitalSample
 
 data class AtomUiState(
     val element: Element? = null,
@@ -35,6 +37,13 @@ data class AtomUiState(
     val nucleus: NucleusLayout? = null,
     val clouds: List<OrbitalCloud> = emptyList(),
     val lattice: Lattice? = null,
+    /** Cloud view: every occupied orbital at once, or one orbital with its phase and nodes. */
+    val singleOrbital: Boolean = true,
+    val orbital: OrbitalRef? = null,
+    val showPhase: Boolean = true,
+    val showNodes: Boolean = true,
+    val showAxes: Boolean = true,
+    val orbitalSample: OrbitalSample? = null,
     /** Common reactions that contain this element (info card section). */
     val reactions: List<Reaction> = emptyList(),
     /** Molecules that contain this element, grouped by carbon skeleton on the card. */
@@ -60,6 +69,8 @@ data class AtomUiState(
         get() = neutrons - (isotopes.firstOrNull()?.neutrons(protons) ?: neutrons)
 }
 
+enum class OrbitalOption { PHASE, NODES, AXES }
+
 sealed interface AtomEvent {
     data class ViewSelected(val view: AtomViewMode) : AtomEvent
 
@@ -75,6 +86,13 @@ sealed interface AtomEvent {
     data class AllotropeSelected(val index: Int) : AtomEvent
 
     data class SubshellToggled(val label: String) : AtomEvent
+
+    data class CloudModeSelected(val single: Boolean) : AtomEvent
+
+    /** A box of the orbital diagram; also switches to the single-orbital view. */
+    data class OrbitalSelected(val ref: OrbitalRef) : AtomEvent
+
+    data class OrbitalOptionToggled(val option: OrbitalOption) : AtomEvent
 
 
     /** Shows the reaction in the reaction Volume; the screen opens the window. */

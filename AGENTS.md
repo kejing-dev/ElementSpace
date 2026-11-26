@@ -116,7 +116,7 @@ adb shell am broadcast -a com.example.elementspace.p7c3a91e4.DEBUG -p com.exampl
 ```
 
 Commands (`--es cmd`, optional `--es arg`): `atom <Z>`, `reaction na_cl2|h2_o2|fe_cuso4`, `step <1..4>`, `next`, `prev`,
-`replay`, `play`, `settings`, `howto`, `exit` (confirm card), `exit-yes` (same call as [退出]), `reset`, `lang zh|en`.
+`replay`, `play`, `settings`, `howto`, `exit` (confirm card), `exit-yes` (same call as [退出]), `reset`, `lang zh|en`; v1.4.0 adds `aview`, `cloud`, `orbital`, `phase`, `nodes`, `axes`.
 Wait ~5 s after `reaction` before `step` (the new reaction resets to step 1), and ~5 s before a screenshot: the
 emulator's capture lags the scene by a few seconds. `logcat -s ElementSpaceRx` logs every rendered step.
 
@@ -158,3 +158,26 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
   flickering cones (`createCone(1, 1)` scaled (r, h, r), pivot at its centre) + 「加热」; IGNITE = small
   flame with spinning sparks where the reactants meet (under them if that spot is taken) + 「点燃」;
   CATALYST = tag only (浓硫酸 · 催化剂), never drawn as a molecule or counted.
+
+## v1.4.0 polish (2026-11-25): atomic orbitals, bond-angle / group toggles
+
+- Orbitals (`domain/usecase/Orbitals.kt`): hydrogen-like ψ = R_nl(r)·A(direction). R uses the associated
+  Laguerre polynomials (Z = 1, r in a₀); A is the real s/p/d/f harmonic, with its nodal planes / cones.
+  `extent` = 99 % radius; `radialNodes` (n − l − 1), `mostProbableRadius`. `SampleOrbitalUseCase` draws r
+  from P(r) = r²R² by its cumulative table and the direction from A² by rejection (separable). Points
+  are in chemistry axes (z up); `AtomScene` maps x → x, y → −z, z → y.
+- `Slater.zEff` (groups (1s)(2s,2p)(3s,3p)(3d)(4s,4p)(4d)(4f)…, 0.30 / 0.35 / 0.85 / 1.00) and
+  `OrbitalTexts` (Slater working, radial note, "why it fills this way": Aufbau order, unpaired count,
+  exceptions vs `ElectronConfigurationUseCase.aufbauOnly`, 4s-before-3d, np³ for n ≤ 4 only — Sb < Te).
+- Cloud view: toolbar 整体电子云 / 单个轨道 (default single). Single = phase colours (blue ψ > 0, orange
+  ψ < 0), nodes (translucent discs both sides, bead rings for cones, translucent spheres for radial
+  nodes), axes with x / y / z labels, name tag under the orbital ("2p_x": SceneLabels draws text after
+  "_" as a subscript). It stands still (no spin) so axes stay put. Whole = the old per-subshell cloud.
+- Atom card in the cloud view: first page 轨道 — phase / nodes / axes toggles, orbital box diagram
+  (highest energy on top, Hund fill, tap a box), quantum numbers, shape, node counts, then 进阶:
+  radial distribution chart, Slater Z*, why. Sources on the page.
+- Molecules: molecules without a hand-picked angle get one per kind of carbon
+  (`BundledMoleculeRepository.carbonAngles`: 4 bonds ≈109°28′, 3 ≈120°, 2 180°); angle values and the
+  group name are SceneLabels tags in 3D; 键角 / 官能团 buttons are greyed out when there is nothing to mark.
+- Debug: `aview shell|nucleus|cloud|allotrope`, `cloud whole|single`, `orbital 3d:2` (n, letter, index
+  into `Orbitals.shapes[l]`), `phase`, `nodes`, `axes`.

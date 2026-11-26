@@ -36,6 +36,8 @@ fun RowScope.AtomToolbarContent(
     advancedExpanded: Boolean,
     allotropeAvailable: Boolean,
     paused: Boolean,
+    singleOrbital: Boolean,
+    onCloudMode: (Boolean) -> Unit,
     onViewSelected: (AtomViewMode) -> Unit,
     onAdvancedToggle: () -> Unit,
     onPauseToggle: () -> Unit,
@@ -57,6 +59,11 @@ fun RowScope.AtomToolbarContent(
     if (advancedExpanded) {
         ViewToggle(AtomViewMode.CLOUD, selected = view == AtomViewMode.CLOUD, enabled = true, onViewSelected)
         ViewToggle(AtomViewMode.ALLOTROPE, selected = view == AtomViewMode.ALLOTROPE, enabled = allotropeAvailable, onViewSelected)
+    }
+    if (view == AtomViewMode.CLOUD) {
+        VerticalDivider(modifier = Modifier.size(width = 1.dp, height = 32.dp))
+        ToggleButton(checked = !singleOrbital, onCheckedChange = { onCloudMode(false) }) { Text(str(R.string.cloud_whole), maxLines = 1) }
+        ToggleButton(checked = singleOrbital, onCheckedChange = { onCloudMode(true) }) { Text(str(R.string.cloud_single), maxLines = 1) }
     }
     VerticalDivider(modifier = Modifier.size(width = 1.dp, height = 32.dp))
     IconButton(onClick = onPauseToggle) {
