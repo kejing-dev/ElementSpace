@@ -91,7 +91,7 @@ object GuidePaths {
                     step("生锈很慢。让铁和氧直接碰一碰，看它们会不会反应。", "Rusting is slow. Bring iron and oxygen together directly and see whether they react.", "铁和氧碰一碰", "Collide iron and oxygen", GuideAction.Collide(26, 8)),
                     step("在纯氧里，烧红的铁丝会剧烈燃烧，火星四射。到实验台上看。", "In pure oxygen a red-hot iron wire burns fiercely, throwing sparks. See it on the bench.", "做铁丝燃烧实验", "Burn iron wire", GuideAction.Lab("fe_o2")),
                 ),
-                L10n("生锈和燃烧都是铁和氧气反应，一个很慢，一个很剧烈。刷油漆、涂油、镀上别的金属，把氧气和水隔开，铁就不容易生锈。", "Rusting and burning are both iron reacting with oxygen: one slow, one violent. Paint, oil or a coating of another metal keeps oxygen and water away, so the iron does not rust."),
+                L10n("生锈和燃烧都是铁和氧气反应，一个很慢，一个很剧烈。刷油漆、涂油、镀上别的金属，把氧气和水隔开，铁就不容易生锈。", "Rusting and burning are both iron reacting with oxygen: one slow, one violent. Paint, oil or a coating of another metal keeps oxygen and water away, so the iron rusts much less easily."),
             ),
             GuidePath(
                 "chip_sand",

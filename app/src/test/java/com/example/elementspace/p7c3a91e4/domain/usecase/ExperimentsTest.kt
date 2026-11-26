@@ -39,7 +39,7 @@ class ExperimentsTest {
                 "mg_burn" to "2Mg + O₂", "fe_o2" to "3Fe + 2O₂", "na_water" to "2Na + 2H₂O", "cu_agno3" to "Cu + 2AgNO₃",
                 "cuso4_naoh" to "CuSO₄ + 2NaOH", "h2o2" to "2H₂O₂", "thermite" to "2Al + Fe₂O₃",
                 "fe_cuso4" to "Fe + CuSO₄", "zn_h2so4" to "Zn + H₂SO₄", "caco3_hcl" to "CaCO₃ + 2HCl", "limewater_co2" to "Ca(OH)₂ + CO₂",
-                "s_burn" to "S + O₂", "cu_hno3" to "Cu + 4HNO₃", "metal_acid" to "Fe + 2HCl",
+                "s_burn" to "S + O₂", "cu_hno3" to "Cu + 4HNO₃",
             )
         Experiments.ALL.forEach { e ->
             val id = e.reactionId ?: return@forEach

@@ -117,7 +117,18 @@ class PeriodicTableViewModel(
         _state.update { it.copy(collideOutcome = null, collidePicks = emptyList(), collideMode = false) }
         when (val action = step.action) {
             is GuideAction.OpenAtom -> openAtom(action.atomicNumber)
-            is GuideAction.Atom -> sessionRepository.sendAtomCommand(AtomCommand(action.atomicNumber, action.action))
+            is GuideAction.Atom -> {
+                val command = AtomCommand(action.atomicNumber, action.action)
+                if (action.atomicNumber in sessionRepository.openAtoms.value) sessionRepository.sendAtomCommand(command)
+                else {
+                    // The atom's window was closed since an earlier step: open it again and give it time to start listening.
+                    openAtom(action.atomicNumber)
+                    viewModelScope.launch {
+                        kotlinx.coroutines.delay(1500)
+                        sessionRepository.sendAtomCommand(command)
+                    }
+                }
+            }
             is GuideAction.Reaction -> {
                 sessionRepository.showReaction(action.id)
                 _state.update { it.copy(auxWindow = AuxWindow.REACTION) }

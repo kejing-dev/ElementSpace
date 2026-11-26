@@ -637,7 +637,6 @@ object Experiments {
                         ),
                     ),
                 choiceTitle = L10n("放哪种金属", "Which metal"),
-                reactionId = "fe_2",
                 source = J8,
             ),
             Experiment(

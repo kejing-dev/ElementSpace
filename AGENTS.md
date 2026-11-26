@@ -336,3 +336,13 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
 ## v1.15.1 (2026-11-26)
 
 - The lab card's experiment list is grouped (`Experiments.GROUPS`, three themes; a test checks every experiment is in exactly one). Choice buttons use titleMedium text.
+
+## v1.15.2 (2026-11-26)
+
+Fixes from an independent review of v1.9.1..v1.15.1 (no crashes found):
+- `AmbientLabSound` listens to the `sound` / `volume` prefs, so a lit match follows the lab's switch and slider at once.
+- `LabSound` sets its load listener before loading (a completion with no listener is dropped).
+- `metal_acid` has no `reactionId` (it showed the iron equation for every metal).
+- A guide step that acts on an atom reopens the atom window if it was closed, then sends the command after 1.5 s.
+- The volume slider's position is no longer re-keyed on every stop during a drag.
+- Open, not fixed: `ThingModels.lit` may write emissive onto materials shared between clones; two windows showing the same bulb (W and Ar) could then switch together. Not confirmed.

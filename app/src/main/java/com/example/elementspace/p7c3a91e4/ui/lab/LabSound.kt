@@ -43,21 +43,25 @@ class LabSound(context: Context) {
             .setMaxStreams(4)
             .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
             .build()
-    private val flame = pool.load(context, R.raw.lab_flame, 1)
-    private val sparks = pool.load(context, R.raw.lab_sparks, 1)
-    private val fizz = pool.load(context, R.raw.lab_fizz, 1)
     private val loaded = HashSet<Int>()
     private val streams = HashMap<Int, Int>()
     private var mix = LabMix()
     private var released = false
+    private val flame: Int
+    private val sparks: Int
+    private val fizz: Int
 
     init {
+        // The listener goes on before anything loads: a completion with no listener set is simply dropped.
         pool.setOnLoadCompleteListener { _, sample, status ->
-            if (status == 0) {
+            if (status == 0 && !released) {
                 loaded += sample
                 apply()
             }
         }
+        flame = pool.load(context, R.raw.lab_flame, 1)
+        sparks = pool.load(context, R.raw.lab_sparks, 1)
+        fizz = pool.load(context, R.raw.lab_fizz, 1)
     }
 
     /** Sets what should be heard now. Muted is simply an empty mix. */
@@ -115,8 +119,15 @@ fun AmbientLabSound(effects: List<LabEffect>) {
             holder[0] = null
         }
     }
-    androidx.compose.runtime.LaunchedEffect(effects, foreground.value) {
-        val prefs = context.getSharedPreferences("element_space", Context.MODE_PRIVATE)
+    // The lab's switch and slider write these prefs; listen so a sounding thing follows them at once.
+    val prefs = androidx.compose.runtime.remember { context.getSharedPreferences("element_space", Context.MODE_PRIVATE) }
+    val settings = androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    androidx.compose.runtime.DisposableEffect(prefs) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key -> if (key == "sound" || key == "volume") settings.intValue++ }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    androidx.compose.runtime.LaunchedEffect(effects, foreground.value, settings.intValue) {
         val audible = effects.isNotEmpty() && foreground.value && prefs.getBoolean("sound", true)
         val mix = if (audible) LabMix.of(effects, 1f).times(LabMix.VOLUME[prefs.getInt("volume", 1).coerceIn(0, 2)]) else LabMix()
         if (mix == LabMix() && holder[0] == null) return@LaunchedEffect

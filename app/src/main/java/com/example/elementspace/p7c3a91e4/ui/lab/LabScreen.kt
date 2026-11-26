@@ -244,7 +244,9 @@ private fun LabCard(state: LabUiState, experiment: Experiment, volume: Int, onVo
         }
         // Three-stop volume: bound to a free Float so a tap or a short drag is never swallowed, snapped on release.
         CardSection(str(R.string.lab_volume)) {
-            var pos by remember(volume) { mutableFloatStateOf(volume.toFloat()) }
+            // Not keyed on the volume: re-keying mid-drag would snap the thumb back at every stop.
+            var pos by remember { mutableFloatStateOf(volume.toFloat()) }
+            LaunchedEffect(volume) { if (Math.round(pos) != volume) pos = volume.toFloat() }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Slider(modifier = NoFocus.weight(1f).height(48.dp), value = pos,
                     onValueChange = { v ->
