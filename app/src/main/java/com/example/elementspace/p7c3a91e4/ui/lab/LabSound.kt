@@ -8,18 +8,23 @@ import com.example.elementspace.p7c3a91e4.domain.model.LabEffect
 
 /** How loud each looping sound should be for a set of effects, 0..1. Plain data so it can be unit-tested. */
 data class LabMix(val flame: Float = 0f, val sparks: Float = 0f, val fizz: Float = 0f) {
+    fun times(volume: Float) = LabMix(flame * volume, sparks * volume, fizz * volume)
+
     companion object {
+        /** Master volume of the three stops: low, medium (default), high. */
+        val VOLUME = floatArrayOf(0.5f, 0.8f, 1f)
+
         fun of(effects: List<LabEffect>, power: Float): LabMix {
             var flame = 0f
             var sparks = 0f
             var fizz = 0f
             for (effect in effects) {
                 when (effect) {
-                    is LabEffect.Flame -> flame = maxOf(flame, 0.35f * effect.size * power)
-                    is LabEffect.Glow -> flame = maxOf(flame, 0.3f + 0.25f * effect.size)
-                    is LabEffect.Sparks -> sparks = maxOf(sparks, 0.25f + effect.rate / 80f)
-                    is LabEffect.Bubbles -> fizz = maxOf(fizz, 0.2f + effect.rate / 60f)
-                    is LabEffect.Skater -> fizz = maxOf(fizz, 0.7f)
+                    is LabEffect.Flame -> flame = maxOf(flame, (effect.size * power).coerceIn(0.45f, 1f))
+                    is LabEffect.Glow -> flame = maxOf(flame, 1f)
+                    is LabEffect.Sparks -> sparks = maxOf(sparks, 0.6f + effect.rate / 80f)
+                    is LabEffect.Bubbles -> fizz = maxOf(fizz, 0.6f + effect.rate / 60f)
+                    is LabEffect.Skater -> fizz = maxOf(fizz, 1f)
                     else -> Unit
                 }
             }
@@ -29,8 +34,8 @@ data class LabMix(val flame: Float = 0f, val sparks: Float = 0f, val fizz: Float
 }
 
 /**
- * The bench's sounds (v1.10.0): three loops (flame, sparks, fizz) and one shot when something catches
- * fire. The clips are synthesized noise (factory polish/M10-sounds.py), so there is nothing to license.
+ * The bench's sounds: three loops (flame, sparks, fizz) cut from CC0 recordings (v1.10.1; sources in
+ * the factory's apps/element-space/build/sound-sources.md, cut by polish/M10-sounds.py).
  */
 class LabSound(context: Context) {
     private val pool =
@@ -41,7 +46,6 @@ class LabSound(context: Context) {
     private val flame = pool.load(context, R.raw.lab_flame, 1)
     private val sparks = pool.load(context, R.raw.lab_sparks, 1)
     private val fizz = pool.load(context, R.raw.lab_fizz, 1)
-    private val ignite = pool.load(context, R.raw.lab_ignite, 1)
     private val loaded = HashSet<Int>()
     private val streams = HashMap<Int, Int>()
     private var mix = LabMix()
@@ -59,10 +63,8 @@ class LabSound(context: Context) {
     /** Sets what should be heard now. Muted is simply an empty mix. */
     fun set(next: LabMix) {
         if (released) return
-        val caughtFire = next.flame > 0f && mix.flame == 0f
         mix = next
         apply()
-        if (caughtFire && ignite in loaded) pool.play(ignite, 0.6f, 0.6f, 1, 0, 1f)
     }
 
     private fun apply() {

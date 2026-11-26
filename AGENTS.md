@@ -294,3 +294,9 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
 - Toolbar toggle 声音, remembered in SharedPreferences `element_space/sound` (default on).
 - Guide paths `iron_rust` and `chip_sand` (8 paths). New `AtomAction.Thing(id)` shows an everyday thing from a guide step.
 - Tests: LabMixTest; GuidePathsTest checks Thing ids belong to the element.
+
+## v1.10.1 (2026-11-26)
+
+- The lab loops are now CC0 recordings, not synthesis (factory rule D51: real-object sounds must be recordings). Sources: factory `apps/element-space/build/sound-sources.md`; cut by `polish/M10-sounds.py <src dir> <res/raw> <loudness.wav>` (5 s, crossfaded loop, gain only). The ignite one-shot is gone (no recording for it).
+- Volume: three-stop slider in the lab card (低 / 中 / 高 = 0.5 / 0.8 / 1.0, prefs `volume`, default 中) plus the 声音 mute toggle in the toolbar. `LabMix.times(volume)`.
+- Adding any sound file turns on the factory gates `sound-source`, `loudness` (needs `qa/loudness-<version>.wav` per version: rerun M10-sounds.py with the new file name) and `slider-height` (`.height(48.dp)` on the same line as `Slider(`).

@@ -21,6 +21,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,6 +59,7 @@ import com.pico.spatial.ui.design.Button
 import com.pico.spatial.ui.design.Icon
 import com.pico.spatial.ui.design.IconButton
 import com.pico.spatial.ui.design.PicoTheme
+import com.pico.spatial.ui.design.Slider
 import com.pico.spatial.ui.design.Text
 import com.pico.spatial.ui.design.ToggleButton
 import com.pico.spatial.ui.design.VerticalDivider
@@ -100,7 +102,14 @@ fun LabScreen(modifier: Modifier = Modifier) {
     val sound = remember { LabSound(context.applicationContext) }
     DisposableEffect(Unit) { onDispose { sound.release() } }
     val heard = state.experiment?.let { e -> if (state.stage == 0) e.start else e.steps.getOrNull(state.stage - 1)?.effects.orEmpty() }.orEmpty()
-    LaunchedEffect(heard, state.powerFactor, soundOn) { sound.set(if (soundOn) LabMix.of(heard, state.powerFactor) else LabMix()) }
+    var volume by remember { mutableIntStateOf(prefs.getInt("volume", 1).coerceIn(0, 2)) }
+    LaunchedEffect(heard, state.powerFactor, soundOn, volume) {
+        sound.set(if (soundOn) LabMix.of(heard, state.powerFactor).times(LabMix.VOLUME[volume]) else LabMix())
+    }
+    val onVolume: (Int) -> Unit = { level ->
+        volume = level
+        prefs.edit().putInt("volume", level).apply()
+    }
     val onSound: (Boolean) -> Unit = { on ->
         soundOn = on
         prefs.edit().putBoolean("sound", on).apply()
@@ -119,7 +128,7 @@ fun LabScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxSize(),
             )
             Toolbar { LabToolbar(state, experiment, soundOn, onSound, onEvent) }
-            SideCard { LabCard(state, experiment, onEvent) }
+            SideCard { LabCard(state, experiment, volume, onVolume, onEvent) }
         }
     }
 }
@@ -152,7 +161,7 @@ private fun RowScope.LabToolbar(state: LabUiState, experiment: Experiment, sound
 /** What you see and why, the reagents to pick, and the list of experiments. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun LabCard(state: LabUiState, experiment: Experiment, onEvent: (LabEvent) -> Unit) {
+private fun LabCard(state: LabUiState, experiment: Experiment, volume: Int, onVolume: (Int) -> Unit, onEvent: (LabEvent) -> Unit) {
     val language = state.language
     PagedCard(
         key = experiment.id,
@@ -212,6 +221,22 @@ private fun LabCard(state: LabUiState, experiment: Experiment, onEvent: (LabEven
             CardSection(str(R.string.lab_micro_title)) {
                 EquationLine(reaction, language, big = false)
                 Button(onClick = { onEvent(LabEvent.MicroOpened) }, modifier = NoFocus.height(56.dp)) { Text(str(R.string.lab_micro), maxLines = 1) }
+            }
+        }
+        // Three-stop volume: bound to a free Float so a tap or a short drag is never swallowed, snapped on release.
+        CardSection(str(R.string.lab_volume)) {
+            var pos by remember(volume) { mutableFloatStateOf(volume.toFloat()) }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Slider(modifier = NoFocus.weight(1f).height(48.dp), value = pos,
+                    onValueChange = { v ->
+                        pos = v
+                        val level = Math.round(v).coerceIn(0, 2)
+                        if (level != volume) onVolume(level)
+                    },
+                    onValueChangeFinished = { pos = Math.round(pos).toFloat() },
+                    valueRange = 0f..2f,
+                )
+                Text(str(listOf(R.string.lab_volume_low, R.string.lab_volume_mid, R.string.lab_volume_high)[volume]), style = PicoTheme.typography.titleMedium, color = PicoTheme.colorScheme.labelPrimary, maxLines = 1)
             }
         }
         CardBody(str(R.string.lab_safety), PicoTheme.colorScheme.labelSecondary)
