@@ -184,10 +184,14 @@ private fun LabCard(state: LabUiState, experiment: Experiment, volume: Int, onVo
         header = { Text(experiment.name.get(language), style = PicoTheme.typography.headlineMedium, color = PicoTheme.colorScheme.labelPrimary) },
     ) { page ->
         if (page == 1) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Experiments.ALL.forEach { other ->
-                    Button(onClick = { onEvent(LabEvent.ExperimentSelected(other.id)) }, enabled = other.id != experiment.id, modifier = NoFocus.fillMaxWidth().height(64.dp)) {
-                        Text(other.name.get(language), maxLines = 1, modifier = Modifier.weight(1f))
+            Experiments.GROUPS.forEach { (title, ids) ->
+                CardSection(title.get(language)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        ids.mapNotNull { Experiments.experiment(it) }.forEach { other ->
+                            Button(onClick = { onEvent(LabEvent.ExperimentSelected(other.id)) }, enabled = other.id != experiment.id, modifier = NoFocus.fillMaxWidth().height(64.dp)) {
+                                Text(other.name.get(language), maxLines = 1, modifier = Modifier.weight(1f))
+                            }
+                        }
                     }
                 }
             }
@@ -225,7 +229,7 @@ private fun LabCard(state: LabUiState, experiment: Experiment, volume: Int, onVo
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     experiment.choices.forEachIndexed { i, choice ->
                         ToggleButton(checked = state.choice == i, onCheckedChange = { onEvent(LabEvent.ChoiceSelected(i)) }, modifier = NoFocus.height(56.dp)) {
-                            Text(choice.label.get(language), maxLines = 1)
+                            Text(choice.label.get(language), style = PicoTheme.typography.titleMedium, maxLines = 1)
                         }
                     }
                 }

@@ -84,4 +84,12 @@ class ExperimentsTest {
         // Mg > Zn > Fe > Cu (none)
         assertTrue(rates[0] > rates[1] && rates[1] > rates[2] && rates[2] > 0.0 && rates[3] == 0.0)
     }
+
+    @Test
+    fun `every experiment is listed in exactly one group`() {
+        val listed = Experiments.GROUPS.flatMap { it.second }
+        assertEquals(listed.size, listed.toSet().size)
+        assertEquals(Experiments.ALL.map { it.id }.toSet(), listed.toSet())
+        Experiments.GROUPS.forEach { (title, _) -> assertTrue(title.zh.isNotBlank() && title.en.isNotBlank()) }
+    }
 }

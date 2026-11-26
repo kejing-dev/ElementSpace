@@ -698,6 +698,14 @@ object Experiments {
             "indicator" to listOf("H"),
         )
 
+    /** The experiment list on the card, by theme (v1.15.1): nineteen in one flat list was hard to choose from. */
+    val GROUPS: List<Pair<L10n, List<String>>> =
+        listOf(
+            L10n("燃烧和火焰", "Burning and flames") to listOf("flame_test", "o2_splint", "mg_burn", "fe_o2", "s_burn", "candle_co2", "thermite"),
+            L10n("金属", "Metals") to listOf("metal_acid", "na_water", "zn_h2so4", "fe_cuso4", "cu_agno3", "cu_hno3"),
+            L10n("酸、碱、盐和气体", "Acids, alkalis, salts and gases") to listOf("indicator", "neutral", "cuso4_naoh", "caco3_hcl", "limewater_co2", "h2o2"),
+        )
+
     fun forSymbol(symbol: String): List<Experiment> = ALL.filter { symbol in ELEMENTS[it.id].orEmpty() }
 
     /** The bench experiment that shows this library reaction, if there is one. */

@@ -332,3 +332,7 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
 
 - Pick-and-compare experiments (19): `metal_acid` (Mg / Zn / Fe / Cu in dilute HCl; bubble rate follows the activity series) and `indicator` (litmus with five solutions).
 - `LabChoice(label, note, flame = null, effects = null)`: a choice now either tints flames or carries its own effects, shown instead of step 1's (`LabSceneSpec.override`). Choices apply to step 1 only, so a later step can state the conclusion. `Experiment.choiceTitle` heads the choice buttons. Picking another choice makes its `drops` solids fall in.
+
+## v1.15.1 (2026-11-26)
+
+- The lab card's experiment list is grouped (`Experiments.GROUPS`, three themes; a test checks every experiment is in exactly one). Choice buttons use titleMedium text.
