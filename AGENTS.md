@@ -300,3 +300,9 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
 - The lab loops are now CC0 recordings, not synthesis (factory rule D51: real-object sounds must be recordings). Sources: factory `apps/element-space/build/sound-sources.md`; cut by `polish/M10-sounds.py <src dir> <res/raw> <loudness.wav>` (5 s, crossfaded loop, gain only). The ignite one-shot is gone (no recording for it).
 - Volume: three-stop slider in the lab card (低 / 中 / 高 = 0.5 / 0.8 / 1.0, prefs `volume`, default 中) plus the 声音 mute toggle in the toolbar. `LabMix.times(volume)`.
 - Adding any sound file turns on the factory gates `sound-source`, `loudness` (needs `qa/loudness-<version>.wav` per version: rerun M10-sounds.py with the new file name) and `slider-height` (`.height(48.dp)` on the same line as `Slider(`).
+
+## v1.11.0 (2026-11-26)
+
+- Five more experiments (17): `s_burn`, `o2_splint`, `candle_co2`, `neutral`, `cu_hno3`. Only existing equipment (gas jar, beaker); candles, splint and spoon are small `LabEffect.Solid`s.
+- `ThingModels.glass` now calls `setDepthWrite(false)`: glass was hiding additive sprites inside it (flames and the iron-wire glow in the gas jar never showed before this).
+- `LabEffect.Flame` has an alpha body under the additive sprites, so a flame still reads against a bright wall (additive blue is invisible on white).

@@ -11,7 +11,7 @@ import com.example.elementspace.p7c3a91e4.domain.model.Vec3
 
 /**
  * The lab bench (v1.9.0, twelve experiments since v1.9.1), chosen for what you see. Every observation is worded
- * after the PEP textbooks (九年级 units 2, 5, 8, 10; 必修第一册 ch. 2; 必修第二册 ch. 8) and each
+ * after the PEP textbooks (九年级 units 2, 5, 8, 10; 必修第一册 ch. 2; 必修第二册 ch. 5, 8) and each
  * experiment links to its reaction in the library for the atom-level view. Positions are scene
  * units above the bench top (y = 0), x to the right, z toward the viewer.
  */
@@ -26,6 +26,7 @@ object Experiments {
     private val J8 = L10n("人教版九年级《化学》第八单元「金属和金属材料」", "PEP Chemistry Grade 9, Unit 8 (Metals)")
     private val J10 = L10n("人教版九年级《化学》第十单元「酸和碱」", "PEP Chemistry Grade 9, Unit 10 (Acids and bases)")
     private val S1_21 = L10n("人教版高中《化学》必修第一册 第二章第一节「钠及其化合物」", "PEP High-school Chemistry Book 1, Ch. 2 §1 (Sodium and its compounds)")
+    private val S2_52 = L10n("人教版高中《化学》必修第二册 第五章第二节「氮及其化合物」", "PEP High-school Chemistry Book 2, Ch. 5 §2 (Nitrogen and its compounds)")
     private val S2_81 = L10n("人教版高中《化学》必修第二册 第八章第一节「自然资源的开发利用」", "PEP High-school Chemistry Book 2, Ch. 8 §1 (Using natural resources)")
 
     private val LAMP_FLAME = c(1f, 0.72f, 0.28f)
@@ -426,6 +427,171 @@ object Experiments {
                     ),
                 reactionId = "ca_4",
                 source = J6,
+            ),
+            // v1.11.0
+            Experiment(
+                id = "s_burn",
+                name = L10n("硫在氧气中燃烧", "Sulfur burning in oxygen"),
+                setup = L10n("集气瓶里装满氧气，瓶底留了少量水。燃烧匙里放着淡黄色的硫粉。", "A gas jar full of oxygen with a little water at the bottom. A deflagrating spoon holds pale-yellow sulfur powder."),
+                props = listOf(LabProp("gasjar", 0f, 0f, 0.5f, glass = true)),
+                start =
+                    listOf(
+                        LabEffect.Liquid(v(0f, 0.012f), 0.118f, 0.03f, WATER),
+                        LabEffect.Solid(v(0f, 0.7f), Vec3(0.008f, 0.2f, 0.008f), c(0.3f, 0.3f, 0.32f), metal = true),
+                        LabEffect.Solid(v(0f, 0.59f), Vec3(0.04f, 0.02f, 0.04f), c(0.95f, 0.88f, 0.3f), round = true),
+                    ),
+                steps =
+                    listOf(
+                        LabStep(
+                            L10n("点燃硫，伸进瓶里", "Light the sulfur and lower it in"),
+                            L10n("硫在氧气里燃烧得更旺，发出明亮的蓝紫色火焰，放出热量，生成有刺激性气味的气体。", "In oxygen the sulfur burns more strongly, with a bright blue-violet flame, giving out heat and a gas with a pungent smell."),
+                            listOf(
+                                LabEffect.Liquid(v(0f, 0.012f), 0.118f, 0.03f, WATER),
+                                LabEffect.Solid(v(0f, 0.42f), Vec3(0.008f, 0.3f, 0.008f), c(0.3f, 0.3f, 0.32f), metal = true),
+                                LabEffect.Solid(v(0f, 0.26f), Vec3(0.04f, 0.02f, 0.04f), c(0.95f, 0.88f, 0.3f), round = true),
+                                LabEffect.Flame(v(0f, 0.27f), c(0.5f, 0.42f, 1f), 0.75f, 1.2f),
+                            ),
+                        ),
+                        LabStep(
+                            L10n("生成了什么", "What formed"),
+                            L10n("生成的气体是二氧化硫 SO₂，有毒，会污染空气。瓶底的水用来吸收它。在空气里硫的火焰只是微弱的淡蓝色。S + O₂ = SO₂（点燃）。", "The gas is sulfur dioxide, SO₂: toxic and an air pollutant. The water at the bottom absorbs it. In air, sulfur burns with only a faint pale-blue flame. S + O₂ = SO₂ (ignite)."),
+                            listOf(
+                                LabEffect.Liquid(v(0f, 0.012f), 0.118f, 0.03f, WATER),
+                                LabEffect.Solid(v(0f, 0.42f), Vec3(0.008f, 0.3f, 0.008f), c(0.3f, 0.3f, 0.32f), metal = true),
+                                LabEffect.Flame(v(0f, 0.27f), c(0.5f, 0.42f, 1f), 0.35f, 0.5f),
+                            ),
+                        ),
+                    ),
+                reactionId = "s_1",
+                source = J2,
+            ),
+            Experiment(
+                id = "o2_splint",
+                name = L10n("带火星的木条复燃：检验氧气", "A glowing splint relights: the test for oxygen"),
+                setup = L10n("集气瓶里收集了一瓶无色的气体。手里是一根吹灭后还带着火星的木条。", "A gas jar holds a colourless gas. In hand is a wooden splint, blown out but still glowing at the tip."),
+                props = listOf(LabProp("gasjar", 0f, 0f, 0.5f, glass = true)),
+                start =
+                    listOf(
+                        LabEffect.Solid(v(0f, 0.7f), Vec3(0.012f, 0.2f, 0.012f), c(0.78f, 0.62f, 0.4f)),
+                        LabEffect.Solid(v(0f, 0.595f), Vec3(0.014f, 0.014f, 0.014f), c(1f, 0.35f, 0.1f), round = true, glowing = true),
+                    ),
+                steps =
+                    listOf(
+                        LabStep(
+                            L10n("把木条伸进瓶里", "Lower the splint into the jar"),
+                            L10n("带火星的木条复燃了，烧得很旺。", "The glowing splint bursts back into flame and burns brightly."),
+                            listOf(
+                                LabEffect.Solid(v(0f, 0.45f), Vec3(0.012f, 0.24f, 0.012f), c(0.78f, 0.62f, 0.4f)),
+                                LabEffect.Flame(v(0f, 0.33f), LAMP_FLAME, 0.7f, 1.2f),
+                            ),
+                        ),
+                        LabStep(
+                            L10n("这说明什么", "What this shows"),
+                            L10n("瓶里的气体是氧气。氧气能支持燃烧，所以带火星的木条在氧气里会复燃。这就是检验氧气的方法。", "The gas is oxygen. Oxygen supports burning, so a glowing splint relights in it. This is the test for oxygen."),
+                            listOf(
+                                LabEffect.Solid(v(0f, 0.47f), Vec3(0.012f, 0.2f, 0.012f), c(0.78f, 0.62f, 0.4f)),
+                                LabEffect.Flame(v(0f, 0.37f), LAMP_FLAME, 0.5f, 0.8f),
+                            ),
+                        ),
+                    ),
+                source = J2,
+            ),
+            Experiment(
+                id = "candle_co2",
+                name = L10n("二氧化碳熄灭阶梯蜡烛", "Carbon dioxide puts out stepped candles"),
+                setup = L10n("烧杯里有一高一矮两支点燃的蜡烛。旁边有一瓶收集好的二氧化碳。", "Two lit candles, one short and one tall, stand in a beaker. Beside it is a jar of collected carbon dioxide."),
+                props = listOf(beaker()),
+                start =
+                    listOf(
+                        LabEffect.Solid(v(-0.06f, 0.05f), Vec3(0.03f, 0.08f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                        LabEffect.Solid(v(0.06f, 0.1f), Vec3(0.03f, 0.18f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                        LabEffect.Flame(v(-0.06f, 0.095f), LAMP_FLAME, 0.3f, 0.5f),
+                        LabEffect.Flame(v(0.06f, 0.195f), LAMP_FLAME, 0.3f, 0.5f),
+                    ),
+                steps =
+                    listOf(
+                        LabStep(
+                            L10n("沿杯壁慢慢倒入二氧化碳", "Slowly pour carbon dioxide down the side"),
+                            L10n("矮的蜡烛先熄灭了。", "The short candle goes out first."),
+                            listOf(
+                                LabEffect.Solid(v(-0.06f, 0.05f), Vec3(0.03f, 0.08f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                                LabEffect.Solid(v(0.06f, 0.1f), Vec3(0.03f, 0.18f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                                LabEffect.Smoke(v(-0.06f, 0.1f), c(0.9f, 0.9f, 0.9f, 0.4f), 3f),
+                                LabEffect.Flame(v(0.06f, 0.195f), LAMP_FLAME, 0.3f, 0.5f),
+                            ),
+                        ),
+                        LabStep(
+                            L10n("继续倒", "Keep pouring"),
+                            L10n("高的蜡烛随后也熄灭了。", "Then the tall candle goes out too."),
+                            listOf(
+                                LabEffect.Solid(v(-0.06f, 0.05f), Vec3(0.03f, 0.08f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                                LabEffect.Solid(v(0.06f, 0.1f), Vec3(0.03f, 0.18f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                                LabEffect.Smoke(v(0.06f, 0.2f), c(0.9f, 0.9f, 0.9f, 0.4f), 3f),
+                            ),
+                        ),
+                        LabStep(
+                            L10n("为什么矮的先灭", "Why the short one first"),
+                            L10n("二氧化碳的密度比空气大，倒进去先沉在杯底，再慢慢升高；它不能燃烧，也不支持燃烧。所以二氧化碳可以用来灭火。", "Carbon dioxide is denser than air: it settles at the bottom and rises slowly. It neither burns nor supports burning, which is why it is used to put out fires."),
+                            listOf(
+                                LabEffect.Solid(v(-0.06f, 0.05f), Vec3(0.03f, 0.08f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                                LabEffect.Solid(v(0.06f, 0.1f), Vec3(0.03f, 0.18f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                            ),
+                        ),
+                    ),
+                source = J6,
+            ),
+            Experiment(
+                id = "neutral",
+                name = L10n("酸碱中和", "Neutralising an alkali with an acid"),
+                setup = L10n("烧杯里是无色的氢氧化钠溶液。旁边有酚酞溶液和稀盐酸。", "A beaker of colourless sodium hydroxide solution. Phenolphthalein and dilute hydrochloric acid stand ready."),
+                props = listOf(beaker()),
+                start = listOf(liquid(WATER)),
+                steps =
+                    listOf(
+                        LabStep(
+                            L10n("滴入几滴酚酞溶液", "Add a few drops of phenolphthalein"),
+                            L10n("溶液变成红色：酚酞遇到碱性溶液变红。", "The solution turns red: phenolphthalein is red in an alkaline solution."),
+                            listOf(liquid(c(0.93f, 0.22f, 0.5f, 0.55f), seconds = 2.5f)),
+                        ),
+                        LabStep(
+                            L10n("慢慢滴入稀盐酸，边滴边搅", "Add dilute hydrochloric acid slowly, stirring"),
+                            L10n("红色逐渐变浅，最后恰好变成无色。", "The red fades and, at the end point, just disappears."),
+                            listOf(liquid(WATER, seconds = 7f), LabEffect.Solid(v(0.07f, 0.3f), Vec3(0.01f, 0.46f, 0.01f), c(0.85f, 0.93f, 1f))),
+                        ),
+                        LabStep(
+                            L10n("为什么颜色没了", "Why the colour went"),
+                            L10n("盐酸和氢氧化钠反应，生成了氯化钠和水，溶液不再显碱性。NaOH + HCl = NaCl + H₂O。酸和碱作用生成盐和水的反应，叫做中和反应。", "The acid reacted with the sodium hydroxide to give sodium chloride and water, so the solution is no longer alkaline. NaOH + HCl = NaCl + H₂O. An acid and an alkali giving a salt and water is called neutralisation."),
+                            listOf(liquid(WATER)),
+                        ),
+                    ),
+                source = J10,
+            ),
+            Experiment(
+                id = "cu_hno3",
+                name = L10n("铜和浓硝酸", "Copper and concentrated nitric acid"),
+                setup = L10n("烧杯里是浓硝酸，旁边有一小片铜。这个实验要在通风橱里做。", "A beaker of concentrated nitric acid, and a small piece of copper. This is done in a fume cupboard."),
+                props = listOf(beaker()),
+                start = listOf(liquid(c(0.98f, 0.95f, 0.72f, 0.3f))),
+                steps =
+                    listOf(
+                        LabStep(
+                            L10n("放入铜片", "Drop in the copper"),
+                            L10n("反应剧烈，铜片逐渐溶解，产生红棕色气体，溶液变成绿色。", "The reaction is vigorous: the copper dissolves, a red-brown gas comes off, and the solution turns green."),
+                            listOf(
+                                liquid(c(0.25f, 0.68f, 0.42f, 0.55f), seconds = 7f),
+                                LabEffect.Solid(v(0f, 0.03f), Vec3(0.09f, 0.008f, 0.06f), COPPER, metal = true),
+                                LabEffect.Bubbles(v(0f, 0.04f), LEVEL, 45f, 0.06f),
+                                LabEffect.Smoke(v(0f, LEVEL + 0.04f), c(0.72f, 0.36f, 0.14f, 0.6f), 9f),
+                            ),
+                        ),
+                        LabStep(
+                            L10n("红棕色的气体是什么", "What the red-brown gas is"),
+                            L10n("是二氧化氮 NO₂，有毒。Cu + 4HNO₃（浓）= Cu(NO₃)₂ + 2NO₂↑ + 2H₂O。铜排在氢后面，不和稀盐酸反应，却能被硝酸氧化：硝酸有很强的氧化性。", "Nitrogen dioxide, NO₂, which is toxic. Cu + 4HNO₃ (conc.) = Cu(NO₃)₂ + 2NO₂↑ + 2H₂O. Copper sits below hydrogen and ignores dilute hydrochloric acid, yet nitric acid oxidises it: nitric acid is a strong oxidising agent."),
+                            listOf(liquid(c(0.25f, 0.68f, 0.42f, 0.55f)), LabEffect.Smoke(v(0f, LEVEL + 0.04f), c(0.72f, 0.36f, 0.14f, 0.5f), 3f)),
+                        ),
+                    ),
+                reactionId = "n_5",
+                source = S2_52,
             ),
         )
 

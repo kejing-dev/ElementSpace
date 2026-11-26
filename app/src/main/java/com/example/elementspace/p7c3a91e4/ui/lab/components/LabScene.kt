@@ -203,6 +203,12 @@ class LabScene {
             is LabEffect.Flame -> {
                 val color = spec.flameTint ?: effect.color
                 val size = effect.size * spec.power
+                // v1.11.0: additive sprites vanish against a bright wall (a blue sulfur flame most of all), so an
+                // alpha body in the flame's colour goes underneath; it is what you see in a bright room.
+                emit(layer, Sprite.SOFT, BlendingMode.TRANSPARENT, LabColor(color.r, color.g, color.b, 0.5f), max = 40, rate = 36f, life = 0.5f, size0 = 0.1f * size, size1 = 0.015f) { p ->
+                    p.p = effect.at + Vec3(rnd(0.01f), rnd(0.006f), rnd(0.01f))
+                    p.v = Vec3(rnd(0.02f), 0.3f * size + rnd(0.04f), rnd(0.02f))
+                }
                 // Outer body in the flame's colour, a hotter pale core, and light on the bench.
                 emit(layer, Sprite.SOFT, BlendingMode.ADD, color.dim(0.8f), max = 60, rate = 52f, life = 0.62f, size0 = 0.15f * size, size1 = 0.02f) { p ->
                     p.p = effect.at + Vec3(rnd(0.014f), rnd(0.008f), rnd(0.014f))

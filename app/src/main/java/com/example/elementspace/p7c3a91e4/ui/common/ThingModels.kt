@@ -81,6 +81,8 @@ object ThingModels {
                         material.setOpacity(alpha)
                         material.setRoughness(0.06f)
                         material.setMetallic(0f)
+                        // Glass must not hide what is inside it: without this, flames in a gas jar fail the depth test.
+                        material.setDepthWrite(false)
                     }
                 }
             }
