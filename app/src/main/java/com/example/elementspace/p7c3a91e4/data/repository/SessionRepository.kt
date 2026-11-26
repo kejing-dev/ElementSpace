@@ -1,7 +1,12 @@
 package com.example.elementspace.p7c3a91e4.data.repository
 
 import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
+import com.example.elementspace.p7c3a91e4.domain.model.AtomCommand
+import com.example.elementspace.p7c3a91e4.domain.model.LearningLevel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -53,6 +58,16 @@ interface SessionRepository {
     fun compareMolecule(id: String?)
 
     fun closeMolecule()
+
+    /** How much the cards show (v1.7.0); beginner by default. */
+    val level: StateFlow<LearningLevel>
+
+    fun setLevel(level: LearningLevel)
+
+    /** Requests from a guided path to an open atom Volume (remove an electron, show an allotrope…). */
+    val atomCommands: SharedFlow<AtomCommand>
+
+    fun sendAtomCommand(command: AtomCommand)
 }
 
 class InMemorySessionRepository(initialLanguage: AppLanguage = AppLanguage.ZH) : SessionRepository {
@@ -91,6 +106,20 @@ class InMemorySessionRepository(initialLanguage: AppLanguage = AppLanguage.ZH) :
         _openAtoms.value = emptyList()
         _openReaction.value = null
         _openMolecule.value = null
+    }
+
+    private val _level = MutableStateFlow(LearningLevel.BASIC)
+    override val level: StateFlow<LearningLevel> = _level.asStateFlow()
+
+    override fun setLevel(level: LearningLevel) {
+        _level.value = level
+    }
+
+    private val _atomCommands = MutableSharedFlow<AtomCommand>(extraBufferCapacity = 8)
+    override val atomCommands: SharedFlow<AtomCommand> = _atomCommands.asSharedFlow()
+
+    override fun sendAtomCommand(command: AtomCommand) {
+        _atomCommands.tryEmit(command)
     }
 
     private val _openMolecule = MutableStateFlow<MoleculeView?>(null)

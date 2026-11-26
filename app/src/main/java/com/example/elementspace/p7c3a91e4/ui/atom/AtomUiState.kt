@@ -7,6 +7,7 @@ import com.example.elementspace.p7c3a91e4.domain.model.ElectronConfiguration
 import com.example.elementspace.p7c3a91e4.domain.model.Element
 import com.example.elementspace.p7c3a91e4.domain.model.Isotope
 import com.example.elementspace.p7c3a91e4.domain.model.Lattice
+import com.example.elementspace.p7c3a91e4.domain.model.LearningLevel
 import com.example.elementspace.p7c3a91e4.domain.model.NucleusLayout
 import com.example.elementspace.p7c3a91e4.domain.model.OrbitalCloud
 import com.example.elementspace.p7c3a91e4.domain.model.Reaction
@@ -17,6 +18,7 @@ import com.example.elementspace.p7c3a91e4.domain.usecase.OrbitalSample
 data class AtomUiState(
     val element: Element? = null,
     val language: AppLanguage = AppLanguage.ZH,
+    val level: LearningLevel = LearningLevel.BASIC,
     val view: AtomViewMode = AtomViewMode.SHELL,
     /** Advanced views and panel rows stay hidden until the user asks for them. */
     val advancedExpanded: Boolean = false,

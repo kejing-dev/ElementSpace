@@ -8,6 +8,9 @@ import com.example.elementspace.p7c3a91e4.data.repository.SessionRepository
 import com.example.elementspace.p7c3a91e4.domain.model.TrendProperty
 import com.example.elementspace.p7c3a91e4.data.repository.BundledReactionRepository
 import com.example.elementspace.p7c3a91e4.data.repository.ElementReactions
+import com.example.elementspace.p7c3a91e4.data.repository.GuidePaths
+import com.example.elementspace.p7c3a91e4.domain.model.AtomCommand
+import com.example.elementspace.p7c3a91e4.domain.model.GuideAction
 import com.example.elementspace.p7c3a91e4.domain.usecase.CollideElementsUseCase
 import com.example.elementspace.p7c3a91e4.domain.usecase.FilterElementsUseCase
 import com.example.elementspace.p7c3a91e4.domain.usecase.TrendScaleUseCase
@@ -40,6 +43,7 @@ class PeriodicTableViewModel(
         viewModelScope.launch {
             sessionRepository.language.collect { language -> _state.update { it.copy(language = language) } }
         }
+        viewModelScope.launch { sessionRepository.level.collect { level -> _state.update { it.copy(level = level) } } }
         viewModelScope.launch {
             sessionRepository.openAtoms.collect { open -> _state.update { it.copy(openAtoms = open) } }
         }
@@ -52,6 +56,19 @@ class PeriodicTableViewModel(
                 refilter { it.copy(category = if (it.category == event.category) null else event.category) }
             is PeriodicTableEvent.TrendSelected -> selectTrend(event.trend)
             is PeriodicTableEvent.ElementSelected -> if (_state.value.collideMode) pick(event.atomicNumber) else openAtom(event.atomicNumber)
+            is PeriodicTableEvent.LevelSelected -> {
+                sessionRepository.setLevel(event.level)
+                _state.update { it.copy(languageMenuOpen = false) }
+            }
+            is PeriodicTableEvent.GuideListVisible -> _state.update { it.copy(guideListOpen = event.visible, languageMenuOpen = false) }
+            is PeriodicTableEvent.GuideStarted ->
+                GuidePaths.path(event.id)?.let { path ->
+                    _state.update { it.copy(guideListOpen = false, guide = GuideProgress(path), collideMode = false, collidePicks = emptyList(), collideOutcome = null) }
+                }
+            PeriodicTableEvent.GuideNext -> guideNext()
+            PeriodicTableEvent.GuideExit -> _state.update { it.copy(guide = null) }
+            is PeriodicTableEvent.FirstRunVisible -> _state.update { it.copy(firstRunOpen = event.visible) }
+            PeriodicTableEvent.AuxWindowHandled -> _state.update { it.copy(auxWindow = null) }
             PeriodicTableEvent.CollideToggled -> _state.update { it.copy(collideMode = !it.collideMode, collidePicks = emptyList(), collideOutcome = null, languageMenuOpen = false) }
             PeriodicTableEvent.CollideDismissed -> _state.update { it.copy(collidePicks = emptyList(), collideOutcome = null) }
             is PeriodicTableEvent.CollideReactionOpened -> sessionRepository.showReaction(event.id)
@@ -72,6 +89,8 @@ class PeriodicTableViewModel(
             PeriodicTableEvent.BackPressed ->
                 _state.update {
                     when {
+                        it.firstRunOpen -> it.copy(firstRunOpen = false)
+                        it.guideListOpen -> it.copy(guideListOpen = false)
                         it.collideOutcome != null -> it.copy(collidePicks = emptyList(), collideOutcome = null)
                         it.exitConfirmOpen -> it.copy(exitConfirmOpen = false)
                         it.howToOpen -> it.copy(howToOpen = false)
@@ -82,6 +101,34 @@ class PeriodicTableViewModel(
             PeriodicTableEvent.WindowRequestHandled -> _state.update { it.copy(windowRequest = null) }
             PeriodicTableEvent.ReplacedNoticeShown -> _state.update { it.copy(replacedNotice = null) }
         }
+    }
+
+    /** Runs the current step's action, then shows the next step (or the closing line). */
+    private fun guideNext() {
+        val progress = _state.value.guide ?: return
+        val step = progress.path.steps.getOrNull(progress.step) ?: return
+        // A result card left over from an earlier step would cover what this step opens.
+        _state.update { it.copy(collideOutcome = null, collidePicks = emptyList(), collideMode = false) }
+        when (val action = step.action) {
+            is GuideAction.OpenAtom -> openAtom(action.atomicNumber)
+            is GuideAction.Atom -> sessionRepository.sendAtomCommand(AtomCommand(action.atomicNumber, action.action))
+            is GuideAction.Reaction -> {
+                sessionRepository.showReaction(action.id)
+                _state.update { it.copy(auxWindow = AuxWindow.REACTION) }
+            }
+            is GuideAction.Molecule -> {
+                sessionRepository.showMolecule(action.id)
+                _state.update { it.copy(auxWindow = AuxWindow.MOLECULE) }
+            }
+            is GuideAction.Collide -> {
+                val a = elementRepository.element(action.a)
+                val b = elementRepository.element(action.b)
+                if (a != null && b != null) {
+                    _state.update { it.copy(collideMode = true, collidePicks = listOf(a.atomicNumber, b.atomicNumber), collideOutcome = CollideOutcome(a, b, collide(a, b))) }
+                }
+            }
+        }
+        _state.update { it.copy(guide = progress.copy(step = progress.step + 1)) }
     }
 
     /** First tap picks, tapping it again unpicks, the second element shows the result. */

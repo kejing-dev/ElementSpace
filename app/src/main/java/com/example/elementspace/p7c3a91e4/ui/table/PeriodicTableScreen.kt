@@ -26,7 +26,11 @@ import com.example.elementspace.p7c3a91e4.ui.table.components.ExitConfirmOverlay
 import com.example.elementspace.p7c3a91e4.ui.table.components.HowToOverlay
 import com.example.elementspace.p7c3a91e4.ui.navigation.WindowIds
 import com.example.elementspace.p7c3a91e4.ui.table.components.ColourControl
+import com.example.elementspace.p7c3a91e4.domain.model.LearningLevel
 import com.example.elementspace.p7c3a91e4.ui.table.components.CollideOverlay
+import com.example.elementspace.p7c3a91e4.ui.table.components.FirstRunOverlay
+import com.example.elementspace.p7c3a91e4.ui.table.components.GuideBar
+import com.example.elementspace.p7c3a91e4.ui.table.components.GuideListOverlay
 import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.design.Text
 import com.example.elementspace.p7c3a91e4.ui.table.components.ElementGrid
@@ -54,6 +58,27 @@ fun PeriodicTableScreen(modifier: Modifier = Modifier) {
         }
     }
 
+    // Guided paths open the reaction / molecule Volume through here.
+    LaunchedEffect(state.auxWindow) {
+        val aux = state.auxWindow ?: return@LaunchedEffect
+        runCatching {
+            when (aux) {
+                AuxWindow.REACTION -> navigator.openWindowContainer(WindowIds.REACTION_VOLUME, tag = WindowIds.REACTION_TAG)
+                AuxWindow.MOLECULE -> navigator.openWindowContainer(WindowIds.MOLECULE_VOLUME, tag = WindowIds.MOLECULE_TAG)
+            }
+        }
+        viewModel.onEvent(PeriodicTableEvent.AuxWindowHandled)
+    }
+
+    // First launch only: a card with three things to try (v1.7.0).
+    LaunchedEffect(Unit) {
+        val prefs = context.getSharedPreferences("element_space", android.content.Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("first_run_done", false)) {
+            prefs.edit().putBoolean("first_run_done", true).apply()
+            viewModel.onEvent(PeriodicTableEvent.FirstRunVisible(true))
+        }
+    }
+
     LaunchedEffect(state.windowRequest) {
         val request = state.windowRequest ?: return@LaunchedEffect
         request.close?.let { navigator.closeWindowContainer(WindowIds.ATOM_VOLUME, WindowIds.atomTag(it)) }
@@ -71,6 +96,11 @@ fun PeriodicTableScreen(modifier: Modifier = Modifier) {
     // QA screenshots: see DebugBus / AGENTS.md.
     DebugBus.Collect { command ->
         when (command.cmd) {
+            "guide" -> if (command.arg == null) viewModel.onEvent(PeriodicTableEvent.GuideListVisible(true)) else viewModel.onEvent(PeriodicTableEvent.GuideStarted(command.arg))
+            "gnext" -> viewModel.onEvent(PeriodicTableEvent.GuideNext)
+            "gexit" -> viewModel.onEvent(PeriodicTableEvent.GuideExit)
+            "firstrun" -> viewModel.onEvent(PeriodicTableEvent.FirstRunVisible(true))
+            "level" -> LearningLevel.entries.firstOrNull { it.name.equals(command.arg, ignoreCase = true) }?.let { viewModel.onEvent(PeriodicTableEvent.LevelSelected(it)) }
             "atom" -> command.number?.let { viewModel.onEvent(PeriodicTableEvent.ElementSelected(it)) }
             // "collide 11,17": turn the mode on and pick both; "collide off" leaves it.
             "collide" -> {
@@ -146,6 +176,9 @@ internal fun PeriodicTableContent(
             onLanguageSelected = { onEvent(PeriodicTableEvent.LanguageSelected(it)) },
             onHowTo = { onEvent(PeriodicTableEvent.HowToVisible(true)) },
             onExit = { onEvent(PeriodicTableEvent.ExitConfirmVisible(true)) },
+            level = state.level,
+            onLevelSelected = { onEvent(PeriodicTableEvent.LevelSelected(it)) },
+            onGuide = { onEvent(PeriodicTableEvent.GuideListVisible(true)) },
             collideMode = state.collideMode,
             onCollideToggle = { onEvent(PeriodicTableEvent.CollideToggled) },
         )
@@ -181,7 +214,8 @@ internal fun PeriodicTableContent(
                 // Raised tiles would poke through the result card, so they drop back while it is open.
                 picked = if (state.collideOutcome == null) state.collidePicks else emptyList(),
             )
-            StatusRow(
+            state.guide?.let { GuideBar(it, state.language, onEvent) }
+            if (state.guide == null) StatusRow(
                 openElements = state.openAtoms.mapNotNull { z -> state.elements.getOrNull(z - 1) },
                 maxOpen = state.maxOpenAtoms,
                 language = state.language,
@@ -191,6 +225,8 @@ internal fun PeriodicTableContent(
             )
         }
     }
+    if (state.guideListOpen) GuideListOverlay(state.language, onEvent)
+    if (state.firstRunOpen) FirstRunOverlay(onEvent)
     state.collideOutcome?.let { CollideOverlay(it, state.language, onEvent) }
     if (state.howToOpen) HowToOverlay(onClose = { onEvent(PeriodicTableEvent.HowToVisible(false)) })
     if (state.exitConfirmOpen) ExitConfirmOverlay(onCancel = { onEvent(PeriodicTableEvent.ExitConfirmVisible(false)) }, onExit = onExit)

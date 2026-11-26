@@ -225,4 +225,20 @@
     <string name="collide_unknown_line">Textbooks and the usual references list no common direct reaction between these two elements. See what each of them commonly reacts with.</string>
     <string name="ion_remove">Remove an electron</string>
     <string name="ion_add">Add an electron</string>
+    <string name="guide">Learn</string>
+    <string name="guide_title">Learn step by step</string>
+    <string name="guide_line">3–4 steps each: one sentence and one tap per step.</string>
+    <string name="guide_steps">%1$d steps</string>
+    <string name="guide_another">Another one</string>
+    <string name="guide_finish">Done</string>
+    <string name="guide_exit">Leave</string>
+    <string name="level_item">Depth: %1$s</string>
+    <string name="level_more">%1$d more advanced reactions: raise the depth in Settings to see them.</string>
+    <string name="first_title">Three things to try</string>
+    <string name="first_1">Tap an element to open its atom; pinch and turn it.</string>
+    <string name="first_2">Turn on Collide and tap two elements to see whether they react.</string>
+    <string name="first_3">Tap Learn to work through one question step by step.</string>
+    <string name="first_how">Everything works the same way: look at it and pinch, or point the controller and pull the trigger.</string>
+    <string name="first_free">Explore freely</string>
+    <string name="first_guided">Learn: why sodium explodes in water</string>
 </resources>

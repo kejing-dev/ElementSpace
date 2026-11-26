@@ -40,11 +40,11 @@ import com.pico.spatial.ui.design.IconButton
 import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.design.Text
 
-private val NoFocus = Modifier.focusProperties { canFocus = false }
+internal val NoFocus = Modifier.focusProperties { canFocus = false }
 
 /** Dims the table and swallows taps so only the card on top can be used. */
 @Composable
-private fun Scrim(onDismiss: () -> Unit, content: @Composable () -> Unit) {
+internal fun Scrim(onDismiss: () -> Unit, content: @Composable () -> Unit) {
     Box(
         modifier =
             Modifier.fillMaxSize()
@@ -58,7 +58,7 @@ private fun Scrim(onDismiss: () -> Unit, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun Card(width: androidx.compose.ui.unit.Dp, content: @Composable ColumnScope.() -> Unit) {
+internal fun Card(width: androidx.compose.ui.unit.Dp, content: @Composable ColumnScope.() -> Unit) {
     Column(
         modifier =
             Modifier.width(width)

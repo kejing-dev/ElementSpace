@@ -216,3 +216,20 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
 - 46 element + element reactions appended to the factory data file (`EXTRA` block; appended so
   earlier ids keep their numbers). Library: 232 reactions.
 - Debug: `collide 11,17` / `collide off`, `charge 1|-1`.
+
+## v1.7.0 polish (2026-11-25): plain-language line, three levels, first-run card, guided paths
+
+- `ElementSummary.of`: one plain sentence at the top of every atom card (31 hand-written, the rest by
+  family; elements in `ElementReactions.NOTES` reuse that note).
+- `LearningLevel` BASIC / SCHOOL / UNIVERSITY in `SessionRepository.level` (default BASIC, picked in
+  the Settings menu; in memory only). Atom card: the 轨道 page needs UNIVERSITY; the reaction list is
+  filtered by `reactionsFor` (beginner = junior + hand-animated, topped up to three) with a line saying
+  how many more exist.
+- First launch (`SharedPreferences element_space/first_run_done`): `FirstRunOverlay`, three things to
+  try, then free exploring or the first path.
+- 跟我学: `GuidePaths.ALL` (5 paths, 3-4 steps). `GuideBar` is docked at the bottom of the table
+  window in place of the status row: one sentence + one button per step. `GuideAction`: open an atom,
+  drive an open atom (`SessionRepository.atomCommands` -> `AtomViewModel`), show a reaction or
+  molecule (`auxWindow` request the screen opens), or collide two elements.
+- Debug: `guide` (list) / `guide <id>`, `gnext`, `gexit`, `firstrun`, `level basic|school|university`.
+  After a fresh install send `reset` once to close the first-run card before screenshots.

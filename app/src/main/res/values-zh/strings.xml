@@ -225,4 +225,20 @@
     <string name="collide_unknown_line">课本和常用资料里，这两种单质没有常见的直接反应。可以看看它们各自常见的反应。</string>
     <string name="ion_remove">拿走一个电子</string>
     <string name="ion_add">加一个电子</string>
+    <string name="guide">跟我学</string>
+    <string name="guide_title">跟我学</string>
+    <string name="guide_line">每条 3–4 步，每步一句话、点一下。</string>
+    <string name="guide_steps">%1$d 步</string>
+    <string name="guide_another">再学一条</string>
+    <string name="guide_finish">完成</string>
+    <string name="guide_exit">退出</string>
+    <string name="level_item">内容深度：%1$s</string>
+    <string name="level_more">还有 %1$d 条更深的反应：在「设置」里把内容深度调高就能看到。</string>
+    <string name="first_title">三件可以试的事</string>
+    <string name="first_1">点一个元素，打开它的原子；捏住转一转。</string>
+    <string name="first_2">打开「碰一碰」，点两个元素，看它们会不会反应。</string>
+    <string name="first_3">点「跟我学」，一步一步弄懂一个问题。</string>
+    <string name="first_how">所有操作都是：看着它，捏一下手指；或者用手柄指着，扣扳机。</string>
+    <string name="first_free">自己看看</string>
+    <string name="first_guided">跟我学：为什么钠遇水会炸</string>
 </resources>

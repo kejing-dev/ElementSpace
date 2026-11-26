@@ -36,6 +36,9 @@ import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
 import com.example.elementspace.p7c3a91e4.domain.model.Element
 import com.example.elementspace.p7c3a91e4.domain.model.Isotope
 import com.example.elementspace.p7c3a91e4.domain.model.Subshell
+import com.example.elementspace.p7c3a91e4.domain.model.LearningLevel
+import com.example.elementspace.p7c3a91e4.domain.model.SchoolStage
+import com.example.elementspace.p7c3a91e4.domain.usecase.ElementSummary
 import com.example.elementspace.p7c3a91e4.domain.usecase.IonText
 import com.example.elementspace.p7c3a91e4.ui.atom.AtomEvent
 import com.example.elementspace.p7c3a91e4.ui.atom.AtomUiState
@@ -83,7 +86,8 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
     val pages =
         buildList {
             // In the cloud view the orbital page comes first, so switching to the cloud shows it.
-            if (state.view == AtomViewMode.CLOUD && state.configuration != null) add(AtomPage.ORBITALS)
+            // Orbitals, quantum numbers and Slater are university material (v1.7.0 levels).
+            if (state.view == AtomViewMode.CLOUD && state.configuration != null && state.level == LearningLevel.UNIVERSITY) add(AtomPage.ORBITALS)
             add(AtomPage.STRUCTURE)
             // Every element has this page (M5): its reactions, or why it has none.
             add(AtomPage.REACTIONS)
@@ -95,11 +99,12 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
             when (page) {
                 AtomPage.STRUCTURE -> str(R.string.tab_structure)
                 AtomPage.ORBITALS -> str(R.string.tab_orbitals)
-                AtomPage.REACTIONS -> if (state.reactions.isEmpty()) str(R.string.tab_reactions_plain) else str(R.string.tab_reactions, state.reactions.size)
+                AtomPage.REACTIONS -> if (state.reactions.isEmpty()) str(R.string.tab_reactions_plain) else str(R.string.tab_reactions, reactionsFor(state).size)
                 AtomPage.MOLECULES -> str(R.string.tab_molecules, state.molecules.size)
                 AtomPage.PROPERTIES -> str(R.string.tab_properties)
             }
         }
+    val reactions = reactionsFor(state)
     PagedCard(key = element.atomicNumber, tabs = tabs, modifier = modifier, header = { ElementHero(element, state.language) }) { index ->
         when (pages[index]) {
             AtomPage.STRUCTURE -> StructurePage(state, element, onEvent)
@@ -108,7 +113,10 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
                 if (state.reactions.isEmpty()) {
                     ElementReactions.NOTES[element.symbol]?.let { note -> CardBody(note.get(state.language)) }
                 } else {
-                    ReactionsSection(state, onEvent)
+                    ReactionsSection(state.copy(reactions = reactions), onEvent)
+                    if (reactions.size < state.reactions.size) {
+                        Text(str(R.string.level_more, state.reactions.size - reactions.size), style = PicoTheme.typography.bodyLarge, color = PicoTheme.colorScheme.labelSecondary)
+                    }
                 }
             AtomPage.MOLECULES -> {
                 if (element.symbol == "C") CarbonBondingSection()
@@ -119,11 +127,36 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
     }
 }
 
+/**
+ * Reactions for the chosen level: beginner = junior-school and hand-animated ones (at least three
+ * when the element has that many), school = junior + senior, university = everything. A level that
+ * would be empty falls through to the next one, so no element loses its list.
+ */
+private fun reactionsFor(state: AtomUiState): List<com.example.elementspace.p7c3a91e4.domain.model.Reaction> {
+    val all = state.reactions
+    // Beginner: junior-school reactions and the hand-animated ones, topped up to three from the next level.
+    val junior = all.filter { SchoolStage.JUNIOR in it.stages || !it.schematic }
+    val school = all.filter { it.stages.isNotEmpty() }
+    val basic = (junior + (school + all).filter { it !in junior }).take(maxOf(junior.size, 3))
+    return when (state.level) {
+        LearningLevel.BASIC -> basic
+        LearningLevel.SCHOOL -> school.ifEmpty { all }
+        LearningLevel.UNIVERSITY -> all
+    }
+}
+
 private enum class AtomPage { ORBITALS, STRUCTURE, REACTIONS, MOLECULES, PROPERTIES }
 
 /** What the atom is made of; the sections follow the selected view. */
 @Composable
 private fun StructurePage(state: AtomUiState, element: Element, onEvent: (AtomEvent) -> Unit) {
+    // v1.7.0 "一句话看懂": the plain sentence comes before anything else.
+    Text(
+        ElementSummary.of(element, ElementReactions.NOTES[element.symbol]).get(state.language),
+        style = PicoTheme.typography.titleMedium,
+        color = Color(0xFF1D2127),
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(ElementColors.ConditionChip).padding(horizontal = 20.dp, vertical = 14.dp),
+    )
     ViewNote(state)
     if (state.charge != 0) {
         // v1.6.0: what the atom has just become, in one or two plain sentences.

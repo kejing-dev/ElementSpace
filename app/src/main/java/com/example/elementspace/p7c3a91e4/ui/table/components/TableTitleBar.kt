@@ -13,6 +13,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.elementspace.p7c3a91e4.R
 import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
+import com.example.elementspace.p7c3a91e4.domain.model.LearningLevel
 import com.example.elementspace.p7c3a91e4.ui.theme.str
 import com.pico.spatial.ui.design.Button
 import com.pico.spatial.ui.design.Icon
@@ -38,6 +39,9 @@ fun TableTitleBar(
     modifier: Modifier = Modifier,
     collideMode: Boolean = false,
     onCollideToggle: () -> Unit = {},
+    level: LearningLevel = LearningLevel.BASIC,
+    onLevelSelected: (LearningLevel) -> Unit = {},
+    onGuide: () -> Unit = {},
 ) {
     TitleBar(
         modifier = modifier,
@@ -52,6 +56,7 @@ fun TableTitleBar(
             }
         },
         trailingActions = {
+            Button(onClick = onGuide, modifier = Modifier.focusProperties { canFocus = false }) { Text(str(R.string.guide), maxLines = 1) }
             ToggleButton(checked = collideMode, onCheckedChange = { onCollideToggle() }, modifier = Modifier.focusProperties { canFocus = false }) {
                 Text(str(R.string.collide), maxLines = 1)
             }
@@ -69,6 +74,8 @@ fun TableTitleBar(
                 onSelected = onLanguageSelected,
                 onHowTo = onHowTo,
                 onExit = onExit,
+                level = level,
+                onLevelSelected = onLevelSelected,
             )
         },
     )
@@ -86,6 +93,8 @@ private fun SettingsMenu(
     onSelected: (AppLanguage) -> Unit,
     onHowTo: () -> Unit,
     onExit: () -> Unit,
+    level: LearningLevel,
+    onLevelSelected: (LearningLevel) -> Unit,
 ) {
     Box {
         Button(onClick = { onVisible(!open) }, modifier = Modifier.focusProperties { canFocus = false }) {
@@ -101,6 +110,19 @@ private fun SettingsMenu(
                         leadingIcon = { Icon(painter = painterResource(R.drawable.ic_globe), contentDescription = null, modifier = Modifier.size(24.dp)) },
                         trailingIcon = {
                             if (option == language) {
+                                Icon(painter = painterResource(R.drawable.ic_check), contentDescription = null, modifier = Modifier.size(24.dp))
+                            }
+                        },
+                    )
+                }
+                // How much the cards show (v1.7.0): beginner / school / university.
+                LearningLevel.entries.forEach { option ->
+                    MenuItem(
+                        title = { Text(str(R.string.level_item, if (language == AppLanguage.ZH) option.zh else option.en)) },
+                        onClick = { onLevelSelected(option) },
+                        leadingIcon = { Icon(painter = painterResource(R.drawable.ic_atom), contentDescription = null, modifier = Modifier.size(24.dp)) },
+                        trailingIcon = {
+                            if (option == level) {
                                 Icon(painter = painterResource(R.drawable.ic_check), contentDescription = null, modifier = Modifier.size(24.dp))
                             }
                         },

@@ -7,6 +7,7 @@ import com.example.elementspace.p7c3a91e4.data.repository.ElementRepository
 import com.example.elementspace.p7c3a91e4.data.repository.MoleculeRepository
 import com.example.elementspace.p7c3a91e4.data.repository.ReactionRepository
 import com.example.elementspace.p7c3a91e4.data.repository.SessionRepository
+import com.example.elementspace.p7c3a91e4.domain.model.AtomAction
 import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
 import com.example.elementspace.p7c3a91e4.domain.model.ElementCategory
 import com.example.elementspace.p7c3a91e4.domain.usecase.BuildAllotropeLatticeUseCase
@@ -59,6 +60,21 @@ class AtomViewModel(
         viewModelScope.launch {
             sessionRepository.language.collect { language -> _state.update { it.copy(language = language) } }
         }
+        viewModelScope.launch { sessionRepository.level.collect { level -> _state.update { it.copy(level = level) } } }
+        // Guided paths (v1.7.0) drive this atom with the same events the buttons send.
+        viewModelScope.launch {
+            sessionRepository.atomCommands.collect { command ->
+                if (command.atomicNumber != atomicNumber) return@collect
+                when (val action = command.action) {
+                    is AtomAction.Charge -> onEvent(AtomEvent.ChargeStepped(action.delta))
+                    is AtomAction.View -> show(action.view)
+                    is AtomAction.Allotrope -> {
+                        show(AtomViewMode.ALLOTROPE)
+                        onEvent(AtomEvent.AllotropeSelected(action.index))
+                    }
+                }
+            }
+        }
     }
 
     fun onEvent(event: AtomEvent) {
@@ -104,6 +120,11 @@ class AtomViewModel(
             AtomEvent.Touched -> sessionRepository.touchAtom(atomicNumber)
             AtomEvent.Closed -> sessionRepository.closeAtom(atomicNumber)
         }
+    }
+
+    private fun show(view: AtomViewMode) {
+        if (view.advanced && !_state.value.advancedExpanded) onEvent(AtomEvent.AdvancedToggled)
+        onEvent(AtomEvent.ViewSelected(view))
     }
 
     private fun toggleAdvanced() {
