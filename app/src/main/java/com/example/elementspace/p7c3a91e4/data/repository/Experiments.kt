@@ -596,4 +596,31 @@ object Experiments {
         )
 
     fun experiment(id: String): Experiment? = ALL.firstOrNull { it.id == id }
+
+    /** Which element cards offer which experiment (v1.12.0): the elements the experiment is really about. */
+    val ELEMENTS: Map<String, List<String>> =
+        mapOf(
+            "flame_test" to listOf("Na", "K", "Li", "Ca", "Sr", "Ba", "Cu"),
+            "mg_burn" to listOf("Mg"),
+            "fe_o2" to listOf("Fe", "O"),
+            "na_water" to listOf("Na"),
+            "cu_agno3" to listOf("Cu", "Ag"),
+            "cuso4_naoh" to listOf("Cu"),
+            "h2o2" to listOf("O"),
+            "thermite" to listOf("Al", "Fe"),
+            "fe_cuso4" to listOf("Fe", "Cu"),
+            "zn_h2so4" to listOf("Zn", "H"),
+            "caco3_hcl" to listOf("Ca", "C"),
+            "limewater_co2" to listOf("Ca", "C"),
+            "s_burn" to listOf("S", "O"),
+            "o2_splint" to listOf("O"),
+            "candle_co2" to listOf("C"),
+            "neutral" to listOf("Na", "Cl"),
+            "cu_hno3" to listOf("Cu", "N"),
+        )
+
+    fun forSymbol(symbol: String): List<Experiment> = ALL.filter { symbol in ELEMENTS[it.id].orEmpty() }
+
+    /** The bench experiment that shows this library reaction, if there is one. */
+    fun forReaction(reactionId: String): Experiment? = ALL.firstOrNull { it.reactionId == reactionId }
 }

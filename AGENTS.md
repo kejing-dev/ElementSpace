@@ -306,3 +306,8 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
 - Five more experiments (17): `s_burn`, `o2_splint`, `candle_co2`, `neutral`, `cu_hno3`. Only existing equipment (gas jar, beaker); candles, splint and spoon are small `LabEffect.Solid`s.
 - `ThingModels.glass` now calls `setDepthWrite(false)`: glass was hiding additive sprites inside it (flames and the iron-wire glow in the gas jar never showed before this).
 - `LabEffect.Flame` has an alpha body under the additive sprites, so a flame still reads against a bright wall (additive blue is invisible on white).
+
+## v1.12.0 (2026-11-26)
+
+- Experiments are reachable from where the user already is: `Experiments.ELEMENTS` (experiment id -> element symbols; every new experiment must be added, a test checks) feeds a "到实验台上做" section on the element card's 生活里 page (`AtomEvent.ExperimentOpened`); the collide result offers the experiment when `Experiments.forReaction(reactionId)` finds one.
+- Debug: `tab <n>` switches the page of every PagedCard (1-based), useful for card screenshots.

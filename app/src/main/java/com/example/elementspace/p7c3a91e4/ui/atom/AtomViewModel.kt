@@ -56,6 +56,7 @@ class AtomViewModel(
                         reactions = reactionRepository.forSymbol(element.symbol),
                         molecules = moleculeRepository.forSymbol(element.symbol),
                         things = EverydayThings.forSymbol(element.symbol),
+                        experiments = com.example.elementspace.p7c3a91e4.data.repository.Experiments.forSymbol(element.symbol),
                     )
                 )
         }
@@ -104,6 +105,7 @@ class AtomViewModel(
                 sessionRepository.touchAtom(atomicNumber)
                 sessionRepository.showReaction(event.id)
             }
+            is AtomEvent.ExperimentOpened -> sessionRepository.showExperiment(event.id)
             is AtomEvent.MoleculeOpened -> {
                 sessionRepository.touchAtom(atomicNumber)
                 sessionRepository.showMolecule(event.id)

@@ -61,6 +61,9 @@ fun AtomScreen(atomicNumber: Int, modifier: Modifier = Modifier) {
         if (event is AtomEvent.ReactionOpened) {
             runCatching { navigator.openWindowContainer(WindowIds.REACTION_VOLUME, tag = WindowIds.REACTION_TAG) }
         }
+        if (event is AtomEvent.ExperimentOpened) {
+            runCatching { navigator.openWindowContainer(WindowIds.LAB_VOLUME, tag = WindowIds.LAB_TAG) }
+        }
         if (event is AtomEvent.MoleculeOpened) {
             runCatching { navigator.openWindowContainer(WindowIds.MOLECULE_VOLUME, tag = WindowIds.MOLECULE_TAG) }
         }

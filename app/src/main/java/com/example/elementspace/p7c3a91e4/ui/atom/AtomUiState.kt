@@ -51,6 +51,8 @@ data class AtomUiState(
     val reactions: List<Reaction> = emptyList(),
     /** Everyday things that contain this element (v1.8.0), and the one shown in the Volume instead of the atom. */
     val things: List<EverydayThing> = emptyList(),
+    /** Bench experiments about this element (v1.12.0). */
+    val experiments: List<com.example.elementspace.p7c3a91e4.domain.model.Experiment> = emptyList(),
     val thing: EverydayThing? = null,
     /** Molecules that contain this element, grouped by carbon skeleton on the card. */
     val molecules: List<Molecule> = emptyList(),
@@ -112,6 +114,9 @@ sealed interface AtomEvent {
 
     /** Shows the molecule in the molecule Volume; the screen opens the window. */
     data class MoleculeOpened(val id: String) : AtomEvent
+
+    /** Opens the lab bench on an experiment. */
+    data class ExperimentOpened(val id: String) : AtomEvent
 
     data object PauseToggled : AtomEvent
 

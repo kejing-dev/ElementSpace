@@ -25,6 +25,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import com.example.elementspace.p7c3a91e4.data.repository.Experiments
 import androidx.compose.ui.unit.dp
 import com.example.elementspace.p7c3a91e4.R
 import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
@@ -204,6 +205,12 @@ fun CollideOverlay(outcome: CollideOutcome, language: AppLanguage, onEvent: (Per
                                 Icon(painterResource(R.drawable.ic_player_play), contentDescription = null, modifier = Modifier.size(24.dp))
                                 Text(str(R.string.collide_watch), maxLines = 1)
                             }
+                        }
+                    }
+                    // v1.12.0: when the bench has this reaction as an experiment, offer it.
+                    result.reactions.firstNotNullOfOrNull { Experiments.forReaction(it.id) }?.let { experiment ->
+                        Button(onClick = { onEvent(PeriodicTableEvent.LabOpened(experiment.id)) }, modifier = NoFocus.fillMaxWidth().height(64.dp)) {
+                            Text(str(R.string.collide_lab, experiment.name.get(language)), maxLines = 1, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                         }
                     }
                 }

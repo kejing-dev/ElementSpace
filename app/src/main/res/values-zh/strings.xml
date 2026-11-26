@@ -248,6 +248,8 @@
     <string name="lab_empty">从周期表上方的「实验台」打开一个实验。</string>
     <string name="lab_restart">重来</string>
     <string name="lab_sound">声音</string>
+    <string name="atom_experiments">到实验台上做</string>
+    <string name="collide_lab">到实验台做：%1$s</string>
     <string name="lab_volume">音量</string>
     <string name="lab_volume_low">低</string>
     <string name="lab_volume_mid">中</string>

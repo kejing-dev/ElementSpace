@@ -248,6 +248,8 @@
     <string name="lab_empty">Open an experiment from Lab above the periodic table.</string>
     <string name="lab_restart">Start over</string>
     <string name="lab_sound">Sound</string>
+    <string name="atom_experiments">On the lab bench</string>
+    <string name="collide_lab">Do it on the bench: %1$s</string>
     <string name="lab_volume">Volume</string>
     <string name="lab_volume_low">Low</string>
     <string name="lab_volume_mid">Medium</string>

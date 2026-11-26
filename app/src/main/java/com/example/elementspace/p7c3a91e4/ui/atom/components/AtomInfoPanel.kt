@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import com.example.elementspace.p7c3a91e4.ui.common.CardSection
 import androidx.compose.ui.unit.dp
 import com.example.elementspace.p7c3a91e4.R
 import com.example.elementspace.p7c3a91e4.ui.common.PagedCard
@@ -94,7 +95,7 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
             // Every element has this page (M5): its reactions, or why it has none.
             add(AtomPage.REACTIONS)
             if (state.molecules.isNotEmpty()) add(AtomPage.MOLECULES)
-            if (state.things.isNotEmpty()) add(AtomPage.LIFE)
+            if (state.things.isNotEmpty() || state.experiments.isNotEmpty()) add(AtomPage.LIFE)
             add(AtomPage.PROPERTIES)
         }
     val tabs =
@@ -176,6 +177,19 @@ private fun LifePage(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
                             ) { Text(label.get(language), maxLines = 1) }
                         }
                         Button(onClick = { onEvent(AtomEvent.ThingSelected(null)) }, modifier = NoFocus.height(56.dp)) { Text(str(R.string.thing_back), maxLines = 1) }
+                    }
+                }
+            }
+        }
+        // v1.12.0: bench experiments about this element, one tap to open the lab on it.
+        if (state.experiments.isNotEmpty()) {
+            CardSection(str(R.string.atom_experiments)) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    state.experiments.forEach { experiment ->
+                        Button(onClick = { onEvent(AtomEvent.ExperimentOpened(experiment.id)) }, modifier = NoFocus.fillMaxWidth().height(64.dp)) {
+                            Icon(painterResource(R.drawable.ic_player_play), contentDescription = null, modifier = Modifier.size(22.dp))
+                            Text(experiment.name.get(language), maxLines = 1, modifier = Modifier.weight(1f))
+                        }
                     }
                 }
             }

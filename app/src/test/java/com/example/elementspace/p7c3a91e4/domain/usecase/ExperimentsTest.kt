@@ -67,4 +67,13 @@ class ExperimentsTest {
         val notes = flame.choices.joinToString(" ") { it.note.zh }
         listOf("钠：黄色", "钾：紫色", "锂：紫红色", "钙：砖红色", "锶：洋红色", "钡：黄绿色", "铜：绿色").forEach { assertTrue(it, notes.contains(it)) }
     }
+
+    @Test
+    fun `every experiment is offered on at least one real element card`() {
+        val symbols = com.example.elementspace.p7c3a91e4.data.repository.BundledElementRepository().elements().map { it.symbol }.toSet()
+        assertEquals(Experiments.ALL.map { it.id }.toSet(), Experiments.ELEMENTS.keys)
+        Experiments.ELEMENTS.forEach { (id, list) -> assertTrue(id, list.isNotEmpty() && symbols.containsAll(list)) }
+        assertTrue(Experiments.forSymbol("Fe").map { it.id }.containsAll(listOf("fe_o2", "thermite", "fe_cuso4")))
+        assertEquals("fe_o2", Experiments.forReaction("fe_1")?.id)
+    }
 }
