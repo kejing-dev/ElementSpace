@@ -46,4 +46,16 @@ class EverydayThingsTest {
             }
         }
     }
+
+    @Test
+    fun `things with an action say what it does in both languages`() {
+        val acting = EverydayThings.ALL.filter { it.action != null }
+        assertTrue(acting.map { it.id }.containsAll(listOf("match", "cola", "bulb")))
+        acting.forEach { t ->
+            val a = t.action!!
+            assertTrue(t.id, a.on.zh.isNotBlank() && a.on.en.isNotBlank() && a.off.zh.isNotBlank() && a.off.en.isNotBlank())
+            // A switch works the thing's own light; anything else must show something.
+            assertTrue(t.id, if (a.switch) t.glows && a.effects.isEmpty() else a.effects.isNotEmpty())
+        }
+    }
 }

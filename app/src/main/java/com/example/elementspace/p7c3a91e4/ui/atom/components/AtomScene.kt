@@ -10,7 +10,11 @@ import com.example.elementspace.p7c3a91e4.domain.model.Vec3
 import com.example.elementspace.p7c3a91e4.domain.usecase.NodalSurface
 import com.example.elementspace.p7c3a91e4.domain.usecase.OrbitalSample
 import com.example.elementspace.p7c3a91e4.ui.common.ModelBox
+import com.example.elementspace.p7c3a91e4.domain.model.Experiment
+import com.example.elementspace.p7c3a91e4.domain.model.L10n
+import com.example.elementspace.p7c3a91e4.domain.model.LabEffect
 import com.example.elementspace.p7c3a91e4.ui.lab.components.LabScene
+import com.example.elementspace.p7c3a91e4.ui.lab.components.LabSceneSpec
 import com.pico.spatial.core.ecs.PointLightComponent
 import com.pico.spatial.core.ecs.resource.TextureResource
 import com.example.elementspace.p7c3a91e4.ui.common.ThingModels
@@ -65,6 +69,8 @@ data class AtomSceneSpec(
     val thingGlass: Boolean = false,
     /** The thing gives off light (a lit bulb): a warm glow and a point light around it. */
     val thingGlows: Boolean = false,
+    /** Lab effects playing on the thing (a lit match's flame, an open drink's bubbles). */
+    val thingEffects: List<LabEffect> = emptyList(),
 )
 
 /** One orbital in the cloud view: sampled points, where ψ = 0, and what to draw. */
@@ -161,6 +167,9 @@ class AtomScene {
     private val labels = SceneLabels()
     private var thingHolder: Entity? = null
     private var thingGlow: Entity? = null
+    private var thingLamp: Entity? = null
+    private var thingFitted: Entity? = null
+    private var thingFx: LabScene? = null
     private var billboard: Quat = Quat.identity()
     private var pendingThing: Triple<String, Entity, ModelBox?>? = null
     private var planeMesh: MeshResource? = null
@@ -199,6 +208,7 @@ class AtomScene {
         labels.setRotation(yaw, pitch)
         billboard = SceneLabels.inverse(yaw, pitch)
         thingGlow?.components?.get(TransformComponent::class.java)?.setQuaternion(billboard)
+        thingFx?.setBillboard(billboard)
     }
 
     fun setPaused(value: Boolean) {
@@ -212,6 +222,8 @@ class AtomScene {
         // The thing view depends on nothing else in the spec; rebuilding would throw its model away.
         if (newSpec.thing != null && newSpec.thing == spec?.thing) {
             spec = newSpec
+            applyGlow()
+            applyThingEffects()
             return
         }
         spec = newSpec
@@ -225,6 +237,9 @@ class AtomScene {
         val next = Entity()
         thingHolder = null
         thingGlow = null
+        thingLamp = null
+        thingFitted = null
+        thingFx = null
         if (newSpec.thing != null) {
             // The model arrives from ThingModels (async); the holder turns it slowly so every side is seen.
             val holder = orbiting(speed = 0.35f, tiltX = 0f, tiltZ = 0f)
@@ -283,7 +298,25 @@ class AtomScene {
         fitted.addChild(model)
         if (spec?.thingFloats == true) fitted.components.set(BobComponent(0.06f, 0.9f))
         holder.addChild(fitted)
-        if (spec?.thingGlows == true) {
+        thingFitted = fitted
+        applyGlow()
+        applyThingEffects()
+    }
+
+    /** The lamp's light: on or off without reloading the model. */
+    private fun applyGlow() {
+        val fitted = thingFitted ?: return
+        val on = spec?.thingGlows == true
+        if (on == (thingGlow != null)) return
+        if (!on) {
+            ThingModels.lit(fitted, Color4(0f, 0f, 0f, 1f))
+            thingGlow?.destroy(true)
+            thingLamp?.destroy(true)
+            thingGlow = null
+            thingLamp = null
+            return
+        }
+        run {
             val warm = Color4(1f, 0.82f, 0.5f, 1f)
             ThingModels.lit(fitted, Color4(0.9f, 0.62f, 0.25f, 1f))
             val halo = ModelEntity(MeshResource.createPlane(1f, 1f, 0f), UnlitMaterial.create(BlendingMode.ADD).apply { setBaseColor(warm); setBaseColorTexture(TextureResource(LabScene.glowBitmap())) })
@@ -299,7 +332,22 @@ class AtomScene {
             lamp.components[TransformComponent::class.java]?.setPosition(Vector3(0f, 0.2f, 0.3f))
             lamp.components.set(PointLightComponent(warm, 900f, 1.8f))
             content?.addChild(lamp)
+            thingLamp = lamp
         }
+    }
+
+    /** The thing's flame or bubbles: an embedded lab scene, so they are the same particles as on the bench. */
+    private fun applyThingEffects() {
+        if (thingFitted == null) return
+        val effects = spec?.thingEffects.orEmpty()
+        if (effects.isEmpty() && thingFx == null) return
+        val fx = thingFx ?: LabScene(embedded = true).also {
+            content?.addChild(it.root)
+            thingFx = it
+        }
+        fx.setBillboard(billboard)
+        val none = L10n("", "")
+        fx.render(LabSceneSpec(Experiment(id = "thing", name = none, setup = none, props = emptyList(), start = effects, steps = emptyList(), source = none), 0, null, 1f))
     }
 
     fun destroy() {

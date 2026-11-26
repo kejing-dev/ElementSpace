@@ -78,7 +78,8 @@ class LabTickSystem : System() {
  * The SDK's ParticleComponent has no documented way to be built in code (it is authored in the
  * Spatial Editor), so the particles here are a pool of camera-facing planes moved by [LabTickSystem].
  */
-class LabScene {
+/** [embedded]: only the effects, in the host scene's own units, with no bench offset and nothing to grab (the atom Volume's thing view). */
+class LabScene(private val embedded: Boolean = false) {
     val root: Entity = Entity()
 
     /** Everything on show hangs under this, scaled up so the bench fills the Volume instead of sitting small in its middle. */
@@ -102,10 +103,12 @@ class LabScene {
 
     init {
         ensureRegistered()
-        root.components.set(InteractableComponent())
-        root.components.set(CollisionComponent(collisionShape = listOf(ShapeResource.createSphere(TOUCH_RADIUS).also { it.toGlobal() }), physicsMaterial = PhysicsMaterialResource()))
+        if (!embedded) {
+            root.components.set(InteractableComponent())
+            root.components.set(CollisionComponent(collisionShape = listOf(ShapeResource.createSphere(TOUCH_RADIUS).also { it.toGlobal() }), physicsMaterial = PhysicsMaterialResource()))
+            stage.components[TransformComponent::class.java]?.setScaleVector(Vector3(STAGE_SCALE))
+        }
         root.components.set(LabTickComponent(::tick))
-        stage.components[TransformComponent::class.java]?.setScaleVector(Vector3(STAGE_SCALE))
         root.addChild(stage)
     }
 
@@ -115,6 +118,11 @@ class LabScene {
             setQuaternion(SceneLabels.axisAngle(1f, 0f, 0f, pitch) * SceneLabels.axisAngle(0f, 1f, 0f, yaw))
         }
         billboard = SceneLabels.inverse(yaw, pitch)
+    }
+
+    /** For an embedded scene: the host's rotation, so sprites keep facing the viewer. */
+    fun setBillboard(value: Quat) {
+        billboard = value
     }
 
     /** The experiment whose equipment is wanted but not yet on the bench, or null. */
@@ -180,7 +188,7 @@ class LabScene {
         cylinderMesh = null
         textures.clear()
         val layer = Entity()
-        layer.components[TransformComponent::class.java]?.setPosition(Vector3(0f, BENCH_Y, 0f))
+        layer.components[TransformComponent::class.java]?.setPosition(Vector3(0f, if (embedded) 0f else BENCH_Y, 0f))
         val experiment = newSpec.experiment
         val effects = if (newSpec.stage == 0) experiment.start else experiment.steps.getOrNull(newSpec.stage - 1)?.effects.orEmpty()
         // v1.13.0: when a step has just been done, things move: a wire is lowered, a lump is dropped in.

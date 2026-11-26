@@ -112,10 +112,15 @@ class AtomViewModel(
             }
             is AtomEvent.ThingSelected -> {
                 sessionRepository.touchAtom(atomicNumber)
-                _state.update { s -> s.copy(thing = event.id?.let { id -> s.things.firstOrNull { it.id == id } }) }
+                _state.update { s ->
+                    val thing = event.id?.let { id -> s.things.firstOrNull { it.id == id } }
+                    // A lamp starts switched on; a match starts unlit and a drink closed.
+                    s.copy(thing = thing, thingActive = thing?.action?.switch == true)
+                }
             }
+            AtomEvent.ThingActionToggled -> _state.update { s -> if (s.thing?.action != null) s.copy(thingActive = !s.thingActive) else s }
             is AtomEvent.ThingAllotropeOpened -> {
-                _state.update { it.copy(thing = null) }
+                _state.update { it.copy(thing = null, thingActive = false) }
                 show(AtomViewMode.ALLOTROPE)
                 onEvent(AtomEvent.AllotropeSelected(event.index))
             }

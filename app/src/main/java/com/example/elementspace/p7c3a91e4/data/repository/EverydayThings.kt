@@ -2,6 +2,10 @@ package com.example.elementspace.p7c3a91e4.data.repository
 
 import com.example.elementspace.p7c3a91e4.domain.model.EverydayThing
 import com.example.elementspace.p7c3a91e4.domain.model.L10n
+import com.example.elementspace.p7c3a91e4.domain.model.LabColor
+import com.example.elementspace.p7c3a91e4.domain.model.LabEffect
+import com.example.elementspace.p7c3a91e4.domain.model.ThingAction
+import com.example.elementspace.p7c3a91e4.domain.model.Vec3
 import com.example.elementspace.p7c3a91e4.domain.model.ThingInside
 
 /**
@@ -33,6 +37,7 @@ object EverydayThings {
                 "cola", listOf("C", "O"), L10n("汽水", "Fizzy drink"),
                 L10n("汽水里的气泡是二氧化碳：加压溶在水里，一打开瓶盖压强变小，就跑出来了。", "The bubbles in a fizzy drink are carbon dioxide, dissolved under pressure and released when the cap comes off."),
                 ThingInside.Molecule("co2"), L10n("看二氧化碳分子", "See the CO₂ molecule"),
+                action = ThingAction(L10n("打开瓶盖", "Open it"), L10n("盖上", "Close it"), listOf(LabEffect.Bubbles(Vec3(0f, 0.05f, 0f), 0.68f, 42f, 0.22f))),
             ),
             EverydayThing(
                 "ice", listOf("H", "O"), L10n("冰块", "Ice"),
@@ -72,6 +77,7 @@ object EverydayThings {
                 "bulb", listOf("W", "Ar"), L10n("白炽灯泡", "Light bulb"),
                 L10n("灯丝是钨：熔点约 3422 ℃，是金属里最高的，烧到发白光也不熔化。灯泡里充了氩气保护灯丝。", "The filament is tungsten: it melts near 3422 °C, the highest of any metal, so it can glow white-hot. The bulb is filled with argon to protect it."),
                 glows = true,
+                action = ThingAction(L10n("开灯", "Switch on"), L10n("关灯", "Switch off"), switch = true),
             ),
             EverydayThing(
                 "ring", listOf("Au"), L10n("金戒指", "Gold ring"),
@@ -97,6 +103,7 @@ object EverydayThings {
                 "match", listOf("P", "S"), L10n("火柴", "Match"),
                 L10n("安全火柴的盒子侧面涂着红磷，火柴头里有氯酸钾和硫。一划，摩擦生热，红磷先着火，再把火柴头点燃。", "A safety match box has red phosphorus on its striking strip; the match head holds potassium chlorate and sulfur. Striking heats the phosphorus until it ignites and lights the head."),
                 ThingInside.Reaction("p_1"), L10n("看磷的燃烧", "See phosphorus burn"),
+                action = ThingAction(L10n("划着火柴", "Strike it"), L10n("吹灭", "Blow it out"), listOf(LabEffect.Flame(Vec3(0f, 0.57f, 0f), LabColor(1f, 0.72f, 0.28f), 0.85f, 0.8f))),
             ),
         )
 

@@ -90,3 +90,37 @@ class LabSound(context: Context) {
         runCatching { pool.release() }
     }
 }
+
+/**
+ * Sound for lab effects shown outside the bench (a lit match in the atom Volume). Follows the lab's
+ * own sound switch and volume, is silent in the background, and creates no player until something
+ * actually sounds.
+ */
+@androidx.compose.runtime.Composable
+fun AmbientLabSound(effects: List<LabEffect>) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val holder = androidx.compose.runtime.remember { arrayOfNulls<LabSound>(1) }
+    val foreground = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
+    val owner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    androidx.compose.runtime.DisposableEffect(owner) {
+        val observer =
+            androidx.lifecycle.LifecycleEventObserver { _, event ->
+                if (event == androidx.lifecycle.Lifecycle.Event.ON_STOP) foreground.value = false
+                if (event == androidx.lifecycle.Lifecycle.Event.ON_START) foreground.value = true
+            }
+        owner.lifecycle.addObserver(observer)
+        onDispose {
+            owner.lifecycle.removeObserver(observer)
+            holder[0]?.release()
+            holder[0] = null
+        }
+    }
+    androidx.compose.runtime.LaunchedEffect(effects, foreground.value) {
+        val prefs = context.getSharedPreferences("element_space", Context.MODE_PRIVATE)
+        val audible = effects.isNotEmpty() && foreground.value && prefs.getBoolean("sound", true)
+        val mix = if (audible) LabMix.of(effects, 1f).times(LabMix.VOLUME[prefs.getInt("volume", 1).coerceIn(0, 2)]) else LabMix()
+        if (mix == LabMix() && holder[0] == null) return@LaunchedEffect
+        val sound = holder[0] ?: LabSound(context.applicationContext).also { holder[0] = it }
+        sound.set(mix)
+    }
+}

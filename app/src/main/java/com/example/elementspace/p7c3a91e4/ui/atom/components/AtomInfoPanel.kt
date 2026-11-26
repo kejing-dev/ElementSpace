@@ -179,6 +179,13 @@ private fun LifePage(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
                         Button(onClick = { onEvent(AtomEvent.ThingSelected(null)) }, modifier = NoFocus.height(56.dp)) { Text(str(R.string.thing_back), maxLines = 1) }
                     }
                 }
+                // v1.14.0: the thing's own action, one tap (strike the match, open the drink, switch the lamp).
+                val action = thing.action
+                if (selected && action != null) {
+                    Button(onClick = { onEvent(AtomEvent.ThingActionToggled) }, modifier = NoFocus.fillMaxWidth().height(64.dp)) {
+                        Text((if (state.thingActive) action.off else action.on).get(language), maxLines = 1, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                    }
+                }
             }
         }
         // v1.12.0: bench experiments about this element, one tap to open the lab on it.

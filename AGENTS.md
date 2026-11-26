@@ -321,3 +321,9 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
 
 - Lab sound is silent while the app is stopped (LabScreen observes the lifecycle: ON_STOP mutes, ON_START restores).
 - English plurals in collide / ion / Hund texts ("1 electron", "2 electrons" instead of "electron(s)").
+
+## v1.14.0 (2026-11-26)
+
+- Thing actions: `EverydayThing.action = ThingAction(on, off, effects, switch)`. One button on the selected thing's row (`AtomEvent.ThingActionToggled`, state `thingActive`): match = flame, cola = bubbles, bulb = switch its glow. Debug `tact`.
+- The flame and bubbles are the lab's own particles: `LabScene(embedded = true)` hangs under the atom scene's content (no bench offset, no stage scale, no collider) and renders a throwaway Experiment whose `start` is the thing's effects. Effect positions are in thing-view units (model about 1.1 tall, centred).
+- `AmbientLabSound(effects)` plays the matching loop outside the bench, with the lab's sound switch and volume; it creates no SoundPool until something sounds.

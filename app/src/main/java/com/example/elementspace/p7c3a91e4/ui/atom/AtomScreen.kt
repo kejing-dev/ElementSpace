@@ -69,6 +69,9 @@ fun AtomScreen(atomicNumber: Int, modifier: Modifier = Modifier) {
         }
     }
 
+    // v1.14.0: a lit match or an open drink is heard too, with the lab's sound setting.
+    com.example.elementspace.p7c3a91e4.ui.lab.AmbientLabSound(state.thing?.action?.effects?.takeIf { state.thingActive }.orEmpty())
+
     // QA screenshots: see DebugBus / AGENTS.md.
     DebugBus.Collect { command ->
         when (command.cmd) {
@@ -76,6 +79,7 @@ fun AtomScreen(atomicNumber: Int, modifier: Modifier = Modifier) {
                 if (view.advanced && !viewModel.state.value.advancedExpanded) viewModel.onEvent(AtomEvent.AdvancedToggled)
                 viewModel.onEvent(AtomEvent.ViewSelected(view))
             }
+            "tact" -> viewModel.onEvent(AtomEvent.ThingActionToggled)
             "thing" -> viewModel.onEvent(AtomEvent.ThingSelected(command.arg?.takeIf { it != "none" }))
             "charge" -> command.number?.let { viewModel.onEvent(AtomEvent.ChargeStepped(it)) }
             "cloud" -> viewModel.onEvent(AtomEvent.CloudModeSelected(command.arg != "whole"))
@@ -134,7 +138,8 @@ internal fun AtomContent(
                     thing = state.thing?.id,
                     thingFloats = state.thing?.floats == true,
                     thingGlass = state.thing?.glass == true,
-                    thingGlows = state.thing?.glows == true,
+                    thingGlows = state.thing?.glows == true && (state.thing?.action?.switch != true || state.thingActive),
+                    thingEffects = state.thing?.action?.effects?.takeIf { state.thingActive }.orEmpty(),
                     charge = state.charge,
                     ionLabel = if (state.charge != 0) AtomLabelText.ion(state.element.symbol, state.charge) else null,
                 ),

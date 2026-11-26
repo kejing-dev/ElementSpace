@@ -54,6 +54,8 @@ data class AtomUiState(
     /** Bench experiments about this element (v1.12.0). */
     val experiments: List<com.example.elementspace.p7c3a91e4.domain.model.Experiment> = emptyList(),
     val thing: EverydayThing? = null,
+    /** The shown thing's action is on: the match is lit, the drink is open, the lamp is on. */
+    val thingActive: Boolean = false,
     /** Molecules that contain this element, grouped by carbon skeleton on the card. */
     val molecules: List<Molecule> = emptyList(),
 ) {
@@ -97,6 +99,9 @@ sealed interface AtomEvent {
 
     /** Shows an everyday thing in the Volume; null goes back to the atom. */
     data class ThingSelected(val id: String?) : AtomEvent
+
+    /** One tap on the thing's own button: strike / blow out, open / close, on / off. */
+    data object ThingActionToggled : AtomEvent
 
     /** "看里面" for a thing whose inside is one of this element's allotropes. */
     data class ThingAllotropeOpened(val index: Int) : AtomEvent

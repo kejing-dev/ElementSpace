@@ -11,6 +11,13 @@ sealed interface ThingInside {
 }
 
 /**
+ * Something you can do to an everyday thing with one tap (v1.14.0): strike the match, open the drink,
+ * switch the lamp. [effects] are lab effects in the thing view's own units (the model is about 1.1
+ * tall, centred on the origin); a [switch] has none and turns the thing's own glow on and off instead.
+ */
+data class ThingAction(val on: L10n, val off: L10n, val effects: List<LabEffect> = emptyList(), val switch: Boolean = false)
+
+/**
  * An everyday object that contains an element (v1.8.0 "生活里的它"). [id] is also the model file:
  * assets/models/things/<id>.glb. [inside] and its button text are null when there is nothing more
  * to open than the atom itself.
@@ -28,4 +35,5 @@ data class EverydayThing(
     val glass: Boolean = false,
     /** Gives off light (the bulb is shown switched on). */
     val glows: Boolean = false,
+    val action: ThingAction? = null,
 )
