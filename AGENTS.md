@@ -281,3 +281,9 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
   marble + dilute hydrochloric acid, carbon dioxide into limewater (12 in all).
 - Sixth guided path, "焰火的颜色从哪来", which opens the flame test (`GuideAction.Lab`).
 - The content depth chosen in Settings is saved (`SharedPreferences element_space/level`).
+
+## v1.9.2 (2026-11-26)
+
+- Three more everyday things (Tripo, textured): `nail` (Fe, rusting), `chip` (Si), `match` (P, S). 17 things in all; `things/index.json` regenerated with scratchpad `glb_index.py`.
+- Making an ion now shows the electron: `FlyComponent` in AtomScene moves one gold electron from the outer shell away (charge up) or in from outside (charge down), 1.6 s, driven by the existing orbit system. Only in the shell view.
+- `EverydayThing.glows`: the bulb is drawn switched on (`ThingModels.lit` sets emissive on its materials, plus an additive halo using `LabScene.glowBitmap()` and one point light).

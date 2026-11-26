@@ -62,6 +62,14 @@ object ThingModels {
      * and would show as white models; the material is shared with the template, which is fine because a
      * glass object is always glass.
      */
+    /** Makes every material give off [color], so a lamp looks switched on. */
+    fun lit(root: Entity, color: Color4) {
+        root.components[ModelComponent::class.java]?.let { model ->
+            runCatching { model.materials.forEach { material -> if (material is PhysicallyBasedMaterial) material.setEmissiveColor(color) } }
+        }
+        runCatching { root.getChildren() }.getOrNull()?.forEach { lit(it, color) }
+    }
+
     fun glass(root: Entity, alpha: Float = 0.28f) {
         val tint = Color4(0.82f, 0.93f, 1f, alpha)
         root.components[ModelComponent::class.java]?.let { model ->

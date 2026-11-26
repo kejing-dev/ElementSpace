@@ -18,7 +18,7 @@ class EverydayThingsTest {
     @Test
     fun `every thing has a model, a size entry, both languages and real elements`() {
         val index = File(models, "index.json").readText()
-        assertTrue(EverydayThings.ALL.size >= 14)
+        assertTrue(EverydayThings.ALL.size >= 17)
         assertEquals(EverydayThings.ALL.size, EverydayThings.ALL.map { it.id }.toSet().size)
         EverydayThings.ALL.forEach { thing ->
             assertTrue("${thing.id}.glb", File(models, "${thing.id}.glb").length() > 1000)

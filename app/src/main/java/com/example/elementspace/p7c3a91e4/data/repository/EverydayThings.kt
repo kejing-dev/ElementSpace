@@ -6,7 +6,8 @@ import com.example.elementspace.p7c3a91e4.domain.model.ThingInside
 
 /**
  * Everyday things, each tied to the elements it shows. Facts: PEP 九年级 (units 6, 8, 10, 11) and
- * 必修第一册; tungsten's melting point and the alkaline cell from Greenwood & Earnshaw (ch. 22, 28).
+ * 必修第一册; tungsten's melting point and the alkaline cell from Greenwood & Earnshaw (ch. 22, 28);
+ * rusting from 九年级 unit 8, silicon from 必修第二册 ch. 5 §3, the safety match from Greenwood & Earnshaw ch. 12.
  * Models are Tripo meshes (see AGENTS.md for the asset list). EverydayThingsTest checks every id has
  * a model and every "inside" target exists.
  */
@@ -70,6 +71,7 @@ object EverydayThings {
             EverydayThing(
                 "bulb", listOf("W", "Ar"), L10n("白炽灯泡", "Light bulb"),
                 L10n("灯丝是钨：熔点约 3422 ℃，是金属里最高的，烧到发白光也不熔化。灯泡里充了氩气保护灯丝。", "The filament is tungsten: it melts near 3422 °C, the highest of any metal, so it can glow white-hot. The bulb is filled with argon to protect it."),
+                glows = true,
             ),
             EverydayThing(
                 "ring", listOf("Au"), L10n("金戒指", "Gold ring"),
@@ -79,6 +81,22 @@ object EverydayThings {
                 "cinnabar", listOf("Hg", "S"), L10n("朱砂", "Cinnabar"),
                 L10n("朱砂是硫化汞，红色颜料和印泥的原料。它含汞，有毒。", "Cinnabar is mercury sulfide, the red of traditional pigment and seal paste. It contains mercury and is toxic."),
                 ThingInside.Reaction("hg_2"), L10n("看汞和硫的反应", "See mercury react with sulfur"),
+            ),
+            // v1.9.2
+            EverydayThing(
+                "nail", listOf("Fe"), L10n("生锈的铁钉", "Rusty nail"),
+                L10n("铁和空气里的氧气、水一起作用就会生锈。铁锈的主要成分是氧化铁，红棕色、疏松，挡不住里面的铁继续生锈。", "Iron rusts when oxygen and water act on it together. Rust is mainly iron(III) oxide: red-brown and crumbly, so it cannot protect the iron underneath."),
+                ThingInside.Reaction("fe_1"), L10n("看铁在氧气里燃烧", "See iron burn in oxygen"),
+            ),
+            EverydayThing(
+                "chip", listOf("Si"), L10n("电脑芯片", "Computer chip"),
+                L10n("芯片是用高纯度的硅做的。硅是半导体：导电能力在导体和绝缘体之间，可以做成微小的开关。硅来自沙子里的二氧化硅。", "Chips are made of very pure silicon, a semiconductor: it conducts between a conductor and an insulator, so it can be built into tiny switches. The silicon comes from the silicon dioxide in sand."),
+                ThingInside.Reaction("si_2"), L10n("看怎样从沙子得到硅", "See silicon made from sand"),
+            ),
+            EverydayThing(
+                "match", listOf("P", "S"), L10n("火柴", "Match"),
+                L10n("安全火柴的盒子侧面涂着红磷，火柴头里有氯酸钾和硫。一划，摩擦生热，红磷先着火，再把火柴头点燃。", "A safety match box has red phosphorus on its striking strip; the match head holds potassium chlorate and sulfur. Striking heats the phosphorus until it ignites and lights the head."),
+                ThingInside.Reaction("p_1"), L10n("看磷的燃烧", "See phosphorus burn"),
             ),
         )
 

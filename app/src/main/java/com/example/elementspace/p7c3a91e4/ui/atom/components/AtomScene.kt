@@ -10,6 +10,9 @@ import com.example.elementspace.p7c3a91e4.domain.model.Vec3
 import com.example.elementspace.p7c3a91e4.domain.usecase.NodalSurface
 import com.example.elementspace.p7c3a91e4.domain.usecase.OrbitalSample
 import com.example.elementspace.p7c3a91e4.ui.common.ModelBox
+import com.example.elementspace.p7c3a91e4.ui.lab.components.LabScene
+import com.pico.spatial.core.ecs.PointLightComponent
+import com.pico.spatial.core.ecs.resource.TextureResource
 import com.example.elementspace.p7c3a91e4.ui.common.ThingModels
 import com.example.elementspace.p7c3a91e4.ui.common.SceneLabels
 import com.example.elementspace.p7c3a91e4.ui.theme.ElementColors
@@ -60,6 +63,8 @@ data class AtomSceneSpec(
     val thing: String? = null,
     val thingFloats: Boolean = false,
     val thingGlass: Boolean = false,
+    /** The thing gives off light (a lit bulb): a warm glow and a point light around it. */
+    val thingGlows: Boolean = false,
 )
 
 /** One orbital in the cloud view: sampled points, where ψ = 0, and what to draw. */
@@ -89,6 +94,13 @@ class BobComponent(val amplitude: Float = 0f, val speed: Float = 1f) : Component
     override fun clone(): Component = BobComponent(amplitude, speed)
 }
 
+/** An electron leaving or joining the atom: moves from [from] to [to] once, shrinking away if it [leaves]. */
+class FlyComponent(val from: Vec3 = Vec3.ZERO, val to: Vec3 = Vec3.ZERO, val duration: Float = 1.6f, val size: Float = 0.06f, val leaves: Boolean = true) : Component() {
+    var time: Float = 0f
+
+    override fun clone(): Component = FlyComponent(from, to, duration, size, leaves)
+}
+
 /** Advances every [OrbitComponent] each frame, so motion never depends on recomposition. */
 class OrbitSystem : System() {
     override fun update(context: SceneUpdateContext) {
@@ -99,6 +111,19 @@ class OrbitSystem : System() {
             if (orbit.paused) continue
             orbit.angle = (orbit.angle + orbit.speed * context.deltaTime) % TWO_PI
             entity.components[TransformComponent::class.java]?.setQuaternion(orbit.rotation())
+        }
+        for (entity in context.scene.queryEntity(EntityQueryCondition.hasComponent(FlyComponent::class.java))) {
+            val fly = entity.components[FlyComponent::class.java] ?: continue
+            if (fly.time >= fly.duration) continue
+            fly.time = (fly.time + context.deltaTime).coerceAtMost(fly.duration)
+            val u = fly.time / fly.duration
+            val t = u * u * (3f - 2f * u)
+            val p = fly.from + (fly.to - fly.from) * t
+            entity.components[TransformComponent::class.java]?.apply {
+                setPosition(Vector3(p.x, p.y + 0.25f * sin(PI.toFloat() * t), p.z))
+                // Leaving: fades out by shrinking. Arriving: disappears into the shell at the end.
+                setScaleVector(Vector3(if (u >= 1f) 0f else if (fly.leaves) fly.size * (1f - t * 0.6f) else fly.size))
+            }
         }
         for (entity in context.scene.queryEntity(EntityQueryCondition.hasComponent(BobComponent::class.java))) {
             val bob = entity.components[BobComponent::class.java] ?: continue
@@ -135,6 +160,8 @@ class AtomScene {
     private val orbits = ArrayList<OrbitComponent>()
     private val labels = SceneLabels()
     private var thingHolder: Entity? = null
+    private var thingGlow: Entity? = null
+    private var billboard: Quat = Quat.identity()
     private var pendingThing: Triple<String, Entity, ModelBox?>? = null
     private var planeMesh: MeshResource? = null
 
@@ -170,6 +197,8 @@ class AtomScene {
             setQuaternion(axisAngle(1f, 0f, 0f, pitch) * axisAngle(0f, 1f, 0f, yaw))
         }
         labels.setRotation(yaw, pitch)
+        billboard = SceneLabels.inverse(yaw, pitch)
+        thingGlow?.components?.get(TransformComponent::class.java)?.setQuaternion(billboard)
     }
 
     fun setPaused(value: Boolean) {
@@ -179,6 +208,7 @@ class AtomScene {
 
     fun render(newSpec: AtomSceneSpec) {
         if (newSpec == spec) return
+        val before = spec
         // The thing view depends on nothing else in the spec; rebuilding would throw its model away.
         if (newSpec.thing != null && newSpec.thing == spec?.thing) {
             spec = newSpec
@@ -194,6 +224,7 @@ class AtomScene {
         labels.reset()
         val next = Entity()
         thingHolder = null
+        thingGlow = null
         if (newSpec.thing != null) {
             // The model arrives from ThingModels (async); the holder turns it slowly so every side is seen.
             val holder = orbiting(speed = 0.35f, tiltX = 0f, tiltZ = 0f)
@@ -210,6 +241,22 @@ class AtomScene {
             AtomViewMode.NUCLEUS -> newSpec.nucleus?.let { next.addChild(nucleus(it, 0.62f)) }
             AtomViewMode.CLOUD -> newSpec.orbital?.let { buildOrbital(next, it) } ?: buildCloud(next, newSpec)
             AtomViewMode.ALLOTROPE -> newSpec.lattice?.let { buildLattice(next, it) }
+        }
+        // v1.9.2: when the charge changes, one gold electron visibly flies off, or flies in from outside.
+        if (before != null && before.thing == null && before.view == AtomViewMode.SHELL && newSpec.view == AtomViewMode.SHELL && before.charge != newSpec.charge) {
+            val shells = if (newSpec.charge > before.charge) before.shells else newSpec.shells
+            val count = shells.size
+            val outer = if (count <= 1) 0.6f else 0.92f
+            val edge = Vec3(outer * 0.7f, outer * 0.7f, 0f)
+            val away = Vec3(0.55f, 1.15f, 0.2f)
+            val removed = newSpec.charge > before.charge
+            val electron = ModelEntity(sphere(), glow(ElementColors.ElectronTransferred))
+            electron.components[TransformComponent::class.java]?.apply {
+                setPosition((if (removed) edge else away).toVector3())
+                setScaleVector(Vector3(0.06f))
+            }
+            electron.components.set(FlyComponent(if (removed) edge else away, if (removed) away else edge, leaves = removed))
+            next.addChild(electron)
         }
         root.addChild(next)
         content = next
@@ -236,6 +283,23 @@ class AtomScene {
         fitted.addChild(model)
         if (spec?.thingFloats == true) fitted.components.set(BobComponent(0.06f, 0.9f))
         holder.addChild(fitted)
+        if (spec?.thingGlows == true) {
+            val warm = Color4(1f, 0.82f, 0.5f, 1f)
+            ThingModels.lit(fitted, Color4(0.9f, 0.62f, 0.25f, 1f))
+            val halo = ModelEntity(MeshResource.createPlane(1f, 1f, 0f), UnlitMaterial.create(BlendingMode.ADD).apply { setBaseColor(warm); setBaseColorTexture(TextureResource(LabScene.glowBitmap())) })
+            halo.components[TransformComponent::class.java]?.apply {
+                setPosition(Vector3(0f, 0.18f, 0f))
+                setScaleVector(Vector3(2.6f))
+                setQuaternion(billboard)
+            }
+            // Outside the turning holder so it keeps facing the viewer.
+            content?.addChild(halo)
+            thingGlow = halo
+            val lamp = Entity()
+            lamp.components[TransformComponent::class.java]?.setPosition(Vector3(0f, 0.2f, 0.3f))
+            lamp.components.set(PointLightComponent(warm, 900f, 1.8f))
+            content?.addChild(lamp)
+        }
     }
 
     fun destroy() {
@@ -492,6 +556,7 @@ class AtomScene {
             if (registered) return
             registerComponent<OrbitComponent>()
             registerComponent<BobComponent>()
+            registerComponent<FlyComponent>()
             registerSystem<OrbitSystem>()
             registered = true
         }

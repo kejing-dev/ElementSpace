@@ -26,4 +26,6 @@ data class EverydayThing(
     val floats: Boolean = false,
     /** The model is glassware: drawn with a clear glass material instead of its own (untextured) one. */
     val glass: Boolean = false,
+    /** Gives off light (the bulb is shown switched on). */
+    val glows: Boolean = false,
 )

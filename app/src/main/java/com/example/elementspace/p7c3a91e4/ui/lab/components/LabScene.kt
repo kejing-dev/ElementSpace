@@ -481,6 +481,9 @@ class LabScene {
             registered = true
         }
 
+        /** The additive glow sprite, for other scenes that need one (the lit bulb). */
+        fun glowBitmap(): Bitmap = bitmap(Sprite.GLOW)
+
         /** White sprites, tinted by the material: a soft round glow, or a thin ring for a bubble. */
         private fun bitmap(sprite: Sprite): Bitmap {
             val n = 64

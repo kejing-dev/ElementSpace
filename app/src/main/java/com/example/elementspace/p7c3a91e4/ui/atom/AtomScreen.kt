@@ -131,6 +131,7 @@ internal fun AtomContent(
                     thing = state.thing?.id,
                     thingFloats = state.thing?.floats == true,
                     thingGlass = state.thing?.glass == true,
+                    thingGlows = state.thing?.glows == true,
                     charge = state.charge,
                     ionLabel = if (state.charge != 0) AtomLabelText.ion(state.element.symbol, state.charge) else null,
                 ),
