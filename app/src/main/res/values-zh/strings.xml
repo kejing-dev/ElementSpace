@@ -241,4 +241,7 @@
     <string name="first_how">所有操作都是：看着它，捏一下手指；或者用手柄指着，扣扳机。</string>
     <string name="first_free">自己看看</string>
     <string name="first_guided">跟我学：为什么钠遇水会炸</string>
+    <string name="tab_life">生活里</string>
+    <string name="thing_show">看 3D</string>
+    <string name="thing_back">回到原子</string>
 </resources>

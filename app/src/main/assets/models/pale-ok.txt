@@ -1,0 +1,7 @@
+jar.glb clear glass jar; every material is replaced in code by clear tinted glass (ThingModels.glass), so it never shows as a white model.
+bulb.glb a frosted light bulb is white glass with a brass base.
+can.glb bare aluminium drink can, silver with a blue stripe.
+salt.glb table salt is white.
+ice.glb ice is colourless.
+egg.glb eggshell.
+diamond.glb colourless gem with a mirror-like PBR material.

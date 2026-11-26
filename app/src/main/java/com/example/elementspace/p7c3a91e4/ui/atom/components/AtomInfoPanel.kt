@@ -37,6 +37,7 @@ import com.example.elementspace.p7c3a91e4.domain.model.Element
 import com.example.elementspace.p7c3a91e4.domain.model.Isotope
 import com.example.elementspace.p7c3a91e4.domain.model.Subshell
 import com.example.elementspace.p7c3a91e4.domain.model.LearningLevel
+import com.example.elementspace.p7c3a91e4.domain.model.ThingInside
 import com.example.elementspace.p7c3a91e4.domain.model.SchoolStage
 import com.example.elementspace.p7c3a91e4.domain.usecase.ElementSummary
 import com.example.elementspace.p7c3a91e4.domain.usecase.IonText
@@ -48,6 +49,7 @@ import com.example.elementspace.p7c3a91e4.ui.reaction.components.TypeTags
 import com.example.elementspace.p7c3a91e4.ui.table.components.labelRes
 import com.example.elementspace.p7c3a91e4.ui.theme.ElementColors
 import com.example.elementspace.p7c3a91e4.ui.theme.str
+import com.pico.spatial.ui.design.Button
 import com.pico.spatial.ui.design.Icon
 import com.pico.spatial.ui.design.IconButton
 import com.pico.spatial.ui.design.ListItem
@@ -92,6 +94,7 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
             // Every element has this page (M5): its reactions, or why it has none.
             add(AtomPage.REACTIONS)
             if (state.molecules.isNotEmpty()) add(AtomPage.MOLECULES)
+            if (state.things.isNotEmpty()) add(AtomPage.LIFE)
             add(AtomPage.PROPERTIES)
         }
     val tabs =
@@ -102,6 +105,7 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
                 AtomPage.REACTIONS -> if (state.reactions.isEmpty()) str(R.string.tab_reactions_plain) else str(R.string.tab_reactions, reactionsFor(state).size)
                 AtomPage.MOLECULES -> str(R.string.tab_molecules, state.molecules.size)
                 AtomPage.PROPERTIES -> str(R.string.tab_properties)
+                AtomPage.LIFE -> str(R.string.tab_life)
             }
         }
     val reactions = reactionsFor(state)
@@ -123,6 +127,58 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
                 MoleculesSection(state, onEvent)
             }
             AtomPage.PROPERTIES -> Section(str(R.string.properties)) { PropertyTable(element) }
+            AtomPage.LIFE -> LifePage(state, onEvent)
+        }
+    }
+}
+
+/**
+ * "生活里" (v1.8.0): everyday things that contain this element. One tap shows the thing's model in the
+ * Volume; the selected row also offers "看里面" (the molecule, lattice or reaction behind it) and the
+ * way back to the atom.
+ */
+@Composable
+private fun LifePage(state: AtomUiState, onEvent: (AtomEvent) -> Unit) {
+    val language = state.language
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        state.things.forEach { thing ->
+            val selected = state.thing?.id == thing.id
+            Column(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(if (selected) ElementColors.ConditionChip else PicoTheme.colorScheme.fillTertiary)
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                val ink = if (selected) Color(0xFF1D2127) else PicoTheme.colorScheme.labelPrimary
+                Text(thing.name.get(language), style = PicoTheme.typography.titleLarge, color = ink)
+                Text(thing.line.get(language), style = PicoTheme.typography.bodyLargeMultiline, color = ink)
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    if (!selected) {
+                        Button(onClick = { onEvent(AtomEvent.ThingSelected(thing.id)) }, modifier = NoFocus.height(56.dp)) {
+                            Icon(painterResource(R.drawable.ic_player_play), contentDescription = null, modifier = Modifier.size(22.dp))
+                            Text(str(R.string.thing_show), maxLines = 1)
+                        }
+                    } else {
+                        val inside = thing.inside
+                        val label = thing.insideLabel
+                        if (inside != null && label != null) {
+                            Button(
+                                onClick = {
+                                    when (inside) {
+                                        is ThingInside.Molecule -> onEvent(AtomEvent.MoleculeOpened(inside.id))
+                                        is ThingInside.Reaction -> onEvent(AtomEvent.ReactionOpened(inside.id))
+                                        is ThingInside.Allotrope -> onEvent(AtomEvent.ThingAllotropeOpened(inside.index))
+                                    }
+                                },
+                                modifier = NoFocus.height(56.dp),
+                            ) { Text(label.get(language), maxLines = 1) }
+                        }
+                        Button(onClick = { onEvent(AtomEvent.ThingSelected(null)) }, modifier = NoFocus.height(56.dp)) { Text(str(R.string.thing_back), maxLines = 1) }
+                    }
+                }
+            }
         }
     }
 }
@@ -145,7 +201,7 @@ private fun reactionsFor(state: AtomUiState): List<com.example.elementspace.p7c3
     }
 }
 
-private enum class AtomPage { ORBITALS, STRUCTURE, REACTIONS, MOLECULES, PROPERTIES }
+private enum class AtomPage { ORBITALS, STRUCTURE, REACTIONS, MOLECULES, LIFE, PROPERTIES }
 
 /** What the atom is made of; the sections follow the selected view. */
 @Composable

@@ -9,6 +9,8 @@ import com.example.elementspace.p7c3a91e4.domain.model.OrbitalCloud
 import com.example.elementspace.p7c3a91e4.domain.model.Vec3
 import com.example.elementspace.p7c3a91e4.domain.usecase.NodalSurface
 import com.example.elementspace.p7c3a91e4.domain.usecase.OrbitalSample
+import com.example.elementspace.p7c3a91e4.ui.common.ModelBox
+import com.example.elementspace.p7c3a91e4.ui.common.ThingModels
 import com.example.elementspace.p7c3a91e4.ui.common.SceneLabels
 import com.example.elementspace.p7c3a91e4.ui.theme.ElementColors
 import com.pico.spatial.core.ecs.CollisionComponent
@@ -54,6 +56,10 @@ data class AtomSceneSpec(
     /** Net charge of the atom (v1.6.0): a tinted halo and the ion's symbol in the shell view. */
     val charge: Int = 0,
     val ionLabel: String? = null,
+    /** Everyday thing shown instead of the atom (v1.8.0): model id in assets/models/things, and whether it floats. */
+    val thing: String? = null,
+    val thingFloats: Boolean = false,
+    val thingGlass: Boolean = false,
 )
 
 /** One orbital in the cloud view: sampled points, where ψ = 0, and what to draw. */
@@ -76,6 +82,13 @@ class OrbitComponent(val speed: Float = 0f, val tiltX: Float = 0f, val tiltZ: Fl
     override fun clone(): Component = OrbitComponent(speed, tiltX, tiltZ)
 }
 
+/** Moves an entity gently up and down (a balloon on its string). */
+class BobComponent(val amplitude: Float = 0f, val speed: Float = 1f) : Component() {
+    var time: Float = 0f
+
+    override fun clone(): Component = BobComponent(amplitude, speed)
+}
+
 /** Advances every [OrbitComponent] each frame, so motion never depends on recomposition. */
 class OrbitSystem : System() {
     override fun update(context: SceneUpdateContext) {
@@ -86,6 +99,11 @@ class OrbitSystem : System() {
             if (orbit.paused) continue
             orbit.angle = (orbit.angle + orbit.speed * context.deltaTime) % TWO_PI
             entity.components[TransformComponent::class.java]?.setQuaternion(orbit.rotation())
+        }
+        for (entity in context.scene.queryEntity(EntityQueryCondition.hasComponent(BobComponent::class.java))) {
+            val bob = entity.components[BobComponent::class.java] ?: continue
+            bob.time += context.deltaTime
+            entity.components[TransformComponent::class.java]?.setPosition(Vector3(0f, bob.amplitude * sin(bob.time * bob.speed), 0f))
         }
     }
 }
@@ -116,6 +134,8 @@ class AtomScene {
     private var paused: Boolean = false
     private val orbits = ArrayList<OrbitComponent>()
     private val labels = SceneLabels()
+    private var thingHolder: Entity? = null
+    private var pendingThing: Triple<String, Entity, ModelBox?>? = null
     private var planeMesh: MeshResource? = null
 
     // Meshes are created per rebuild, never kept across rebuilds: destroying the previous content
@@ -159,6 +179,11 @@ class AtomScene {
 
     fun render(newSpec: AtomSceneSpec) {
         if (newSpec == spec) return
+        // The thing view depends on nothing else in the spec; rebuilding would throw its model away.
+        if (newSpec.thing != null && newSpec.thing == spec?.thing) {
+            spec = newSpec
+            return
+        }
         spec = newSpec
         content?.destroy(true)
         orbits.clear()
@@ -168,6 +193,18 @@ class AtomScene {
         planeMesh = null
         labels.reset()
         val next = Entity()
+        thingHolder = null
+        if (newSpec.thing != null) {
+            // The model arrives from ThingModels (async); the holder turns it slowly so every side is seen.
+            val holder = orbiting(speed = 0.35f, tiltX = 0f, tiltZ = 0f)
+            next.addChild(holder)
+            thingHolder = holder
+            root.addChild(next)
+            content = next
+            setPaused(paused)
+            attachThing()
+            return
+        }
         when (newSpec.view) {
             AtomViewMode.SHELL -> buildShells(next, newSpec)
             AtomViewMode.NUCLEUS -> newSpec.nucleus?.let { next.addChild(nucleus(it, 0.62f)) }
@@ -177,6 +214,28 @@ class AtomScene {
         root.addChild(next)
         content = next
         setPaused(paused)
+    }
+
+    /** Hands over a fresh copy of the model for [id]; it is shown if that thing is still the one wanted. */
+    fun showThing(id: String, model: Entity, box: ModelBox?) {
+        pendingThing = Triple(id, model, box)
+        attachThing()
+    }
+
+    private fun attachThing() {
+        val holder = thingHolder ?: return
+        val (id, model, box) = pendingThing ?: return
+        if (spec?.thing != id) return
+        pendingThing = null
+        // Fit the largest side to 1.1 scene units and put the box centre on the origin.
+        val scale = 1.1f / (box?.largest ?: 1f).coerceAtLeast(1e-4f)
+        val fitted = Entity()
+        fitted.components[TransformComponent::class.java]?.setScaleVector(Vector3(scale))
+        model.components[TransformComponent::class.java]?.setPosition(Vector3(-(box?.cx ?: 0f), -(box?.cy ?: 0f), -(box?.cz ?: 0f)))
+        if (spec?.thingGlass == true) ThingModels.glass(model)
+        fitted.addChild(model)
+        if (spec?.thingFloats == true) fitted.components.set(BobComponent(0.06f, 0.9f))
+        holder.addChild(fitted)
     }
 
     fun destroy() {
@@ -432,6 +491,7 @@ class AtomScene {
         fun ensureRegistered() {
             if (registered) return
             registerComponent<OrbitComponent>()
+            registerComponent<BobComponent>()
             registerSystem<OrbitSystem>()
             registered = true
         }

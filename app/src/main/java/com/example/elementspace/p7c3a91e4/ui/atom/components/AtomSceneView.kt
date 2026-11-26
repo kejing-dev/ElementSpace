@@ -1,5 +1,6 @@
 package com.example.elementspace.p7c3a91e4.ui.atom.components
 
+import com.example.elementspace.p7c3a91e4.ui.common.ThingModels
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -58,6 +59,11 @@ fun AtomSceneView(
         zoom = 1f
     }
     DisposableEffect(scene) { onDispose { scene.destroy() } }
+    // Everyday thing (v1.8.0): load its model off the main thread, then hand a copy to the scene.
+    LaunchedEffect(spec.thing) {
+        val id = spec.thing ?: return@LaunchedEffect
+        ThingModels.copy(context, "things", id)?.let { scene.showThing(id, it, ThingModels.bounds(context, "things", id)) }
+    }
 
     BoxWithConstraints(modifier = modifier) {
         // Scene radius 1 maps to a little under half of the smaller side of the Volume.

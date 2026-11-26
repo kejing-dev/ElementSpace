@@ -5,6 +5,7 @@ import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
 import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
 import com.example.elementspace.p7c3a91e4.domain.model.ElectronConfiguration
 import com.example.elementspace.p7c3a91e4.domain.model.Element
+import com.example.elementspace.p7c3a91e4.domain.model.EverydayThing
 import com.example.elementspace.p7c3a91e4.domain.model.Isotope
 import com.example.elementspace.p7c3a91e4.domain.model.Lattice
 import com.example.elementspace.p7c3a91e4.domain.model.LearningLevel
@@ -48,6 +49,9 @@ data class AtomUiState(
     val orbitalSample: OrbitalSample? = null,
     /** Common reactions that contain this element (info card section). */
     val reactions: List<Reaction> = emptyList(),
+    /** Everyday things that contain this element (v1.8.0), and the one shown in the Volume instead of the atom. */
+    val things: List<EverydayThing> = emptyList(),
+    val thing: EverydayThing? = null,
     /** Molecules that contain this element, grouped by carbon skeleton on the card. */
     val molecules: List<Molecule> = emptyList(),
 ) {
@@ -88,6 +92,12 @@ sealed interface AtomEvent {
     data class AllotropeSelected(val index: Int) : AtomEvent
 
     data class SubshellToggled(val label: String) : AtomEvent
+
+    /** Shows an everyday thing in the Volume; null goes back to the atom. */
+    data class ThingSelected(val id: String?) : AtomEvent
+
+    /** "看里面" for a thing whose inside is one of this element's allotropes. */
+    data class ThingAllotropeOpened(val index: Int) : AtomEvent
 
     data class CloudModeSelected(val single: Boolean) : AtomEvent
 

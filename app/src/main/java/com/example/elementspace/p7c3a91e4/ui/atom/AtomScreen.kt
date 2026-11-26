@@ -73,6 +73,7 @@ fun AtomScreen(atomicNumber: Int, modifier: Modifier = Modifier) {
                 if (view.advanced && !viewModel.state.value.advancedExpanded) viewModel.onEvent(AtomEvent.AdvancedToggled)
                 viewModel.onEvent(AtomEvent.ViewSelected(view))
             }
+            "thing" -> viewModel.onEvent(AtomEvent.ThingSelected(command.arg?.takeIf { it != "none" }))
             "charge" -> command.number?.let { viewModel.onEvent(AtomEvent.ChargeStepped(it)) }
             "cloud" -> viewModel.onEvent(AtomEvent.CloudModeSelected(command.arg != "whole"))
             // "orbital 3d:0" = n, l letter, index into the real orbitals of that subshell.
@@ -127,6 +128,9 @@ internal fun AtomContent(
                     hiddenSubshells = state.hiddenSubshells,
                     lattice = state.lattice,
                     orbital = orbitalView,
+                    thing = state.thing?.id,
+                    thingFloats = state.thing?.floats == true,
+                    thingGlass = state.thing?.glass == true,
                     charge = state.charge,
                     ionLabel = if (state.charge != 0) AtomLabelText.ion(state.element.symbol, state.charge) else null,
                 ),

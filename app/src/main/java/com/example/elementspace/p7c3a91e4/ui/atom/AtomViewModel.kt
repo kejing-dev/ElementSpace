@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.elementspace.p7c3a91e4.data.repository.BundledMoleculeRepository
 import com.example.elementspace.p7c3a91e4.data.repository.ElementRepository
+import com.example.elementspace.p7c3a91e4.data.repository.EverydayThings
 import com.example.elementspace.p7c3a91e4.data.repository.MoleculeRepository
 import com.example.elementspace.p7c3a91e4.data.repository.ReactionRepository
 import com.example.elementspace.p7c3a91e4.data.repository.SessionRepository
@@ -54,6 +55,7 @@ class AtomViewModel(
                         minCharge = minCharge(element.category, valence, atomicNumber),
                         reactions = reactionRepository.forSymbol(element.symbol),
                         molecules = moleculeRepository.forSymbol(element.symbol),
+                        things = EverydayThings.forSymbol(element.symbol),
                     )
                 )
         }
@@ -79,7 +81,7 @@ class AtomViewModel(
 
     fun onEvent(event: AtomEvent) {
         when (event) {
-            is AtomEvent.ViewSelected -> change { it.copy(view = event.view) }
+            is AtomEvent.ViewSelected -> change { it.copy(view = event.view, thing = null) }
             AtomEvent.AdvancedToggled -> toggleAdvanced()
             is AtomEvent.IsotopeSelected ->
                 change { if (event.index in it.isotopes.indices) it.copy(isotopeIndex = event.index) else it }
@@ -104,6 +106,15 @@ class AtomViewModel(
             is AtomEvent.MoleculeOpened -> {
                 sessionRepository.touchAtom(atomicNumber)
                 sessionRepository.showMolecule(event.id)
+            }
+            is AtomEvent.ThingSelected -> {
+                sessionRepository.touchAtom(atomicNumber)
+                _state.update { s -> s.copy(thing = event.id?.let { id -> s.things.firstOrNull { it.id == id } }) }
+            }
+            is AtomEvent.ThingAllotropeOpened -> {
+                _state.update { it.copy(thing = null) }
+                show(AtomViewMode.ALLOTROPE)
+                onEvent(AtomEvent.AllotropeSelected(event.index))
             }
             is AtomEvent.CloudModeSelected -> change { it.copy(singleOrbital = event.single) }
             is AtomEvent.OrbitalSelected -> change { it.copy(singleOrbital = true, orbital = event.ref) }

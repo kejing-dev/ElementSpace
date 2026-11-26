@@ -241,4 +241,7 @@
     <string name="first_how">Everything works the same way: look at it and pinch, or point the controller and pull the trigger.</string>
     <string name="first_free">Explore freely</string>
     <string name="first_guided">Learn: why sodium explodes in water</string>
+    <string name="tab_life">Everyday</string>
+    <string name="thing_show">Show in 3D</string>
+    <string name="thing_back">Back to the atom</string>
 </resources>
