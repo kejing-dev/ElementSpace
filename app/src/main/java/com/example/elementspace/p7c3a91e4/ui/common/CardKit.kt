@@ -94,7 +94,8 @@ fun CardTabs(tabs: List<String>, selected: Int, onSelect: (Int) -> Unit) {
                 Text(
                     label,
                     style = PicoTheme.typography.titleSmall,
-                    color = if (on) PicoTheme.colorScheme.labelPrimary else PicoTheme.colorScheme.labelSecondary,
+                    // The selected pill is dark, so its label is white (v1.5.0 headset: dark text vanished on it).
+                    color = if (on) Color.White else PicoTheme.colorScheme.labelSecondary,
                     maxLines = 1,
                     textAlign = TextAlign.Center,
                 )
