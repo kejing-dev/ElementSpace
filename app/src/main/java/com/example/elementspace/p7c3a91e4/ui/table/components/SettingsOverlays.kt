@@ -27,6 +27,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.elementspace.p7c3a91e4.R
+import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
+import com.example.elementspace.p7c3a91e4.domain.usecase.CollideResult
+import com.example.elementspace.p7c3a91e4.ui.reaction.components.EquationLine
+import com.example.elementspace.p7c3a91e4.ui.table.CollideOutcome
+import com.example.elementspace.p7c3a91e4.ui.table.PeriodicTableEvent
 import com.example.elementspace.p7c3a91e4.ui.theme.ElementColors
 import com.example.elementspace.p7c3a91e4.ui.theme.str
 import com.pico.spatial.ui.design.Button
@@ -143,6 +148,83 @@ fun ExitConfirmOverlay(onCancel: () -> Unit, onExit: () -> Unit) {
                     Icon(painterResource(R.drawable.ic_exit), contentDescription = null, modifier = Modifier.size(24.dp), tint = PicoTheme.colorScheme.alert)
                     Text(str(R.string.exit_yes), maxLines = 1, color = PicoTheme.colorScheme.alert)
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Result of 碰一碰 (v1.6.0): the two elements, whether they react, why, and what to do next.
+ * Everything is a single tap: ▶ opens the 3D reaction, the other buttons close or open an element.
+ */
+@Composable
+fun CollideOverlay(outcome: CollideOutcome, language: AppLanguage, onEvent: (PeriodicTableEvent) -> Unit) {
+    val close = { onEvent(PeriodicTableEvent.CollideDismissed) }
+    Scrim(onDismiss = close) {
+        Card(width = 760.dp) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(
+                    "${outcome.a.symbol} ${outcome.a.name(language)}  +  ${outcome.b.symbol} ${outcome.b.name(language)}",
+                    style = PicoTheme.typography.headlineSmall,
+                    color = PicoTheme.colorScheme.labelPrimary,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                )
+                val (label, ink, chip) =
+                    when (outcome.result) {
+                        is CollideResult.Reacts -> Triple(R.string.collide_yes, Color(0xFF1F9D55), Color(0xFFE3F6EA))
+                        is CollideResult.NoReaction -> Triple(R.string.collide_no, Color(0xFFD03A2F), Color(0xFFFDE8E6))
+                        is CollideResult.NoExperiment -> Triple(R.string.collide_no_experiment, Color(0xFF5B6370), Color(0xFFECEEF1))
+                        CollideResult.NoCommonReaction -> Triple(R.string.collide_unknown, Color(0xFF5B6370), Color(0xFFECEEF1))
+                    }
+                Text(
+                    str(label),
+                    style = PicoTheme.typography.titleMedium,
+                    color = ink,
+                    modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(chip).padding(horizontal = 14.dp, vertical = 4.dp),
+                    maxLines = 1,
+                )
+            }
+            when (val result = outcome.result) {
+                is CollideResult.Reacts -> {
+                    Text(str(R.string.collide_why), style = PicoTheme.typography.titleMedium, color = PicoTheme.colorScheme.labelSecondary)
+                    Text(result.why.get(language), style = PicoTheme.typography.bodyLargeMultiline, color = PicoTheme.colorScheme.labelPrimary)
+                    result.reactions.take(3).forEach { reaction ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(PicoTheme.colorScheme.fillTertiary).padding(start = 20.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            // gate:allow button-gap equation and its phenomenon line belong together; the only button is the trailing one
+                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                EquationLine(reaction, language, big = false)
+                                Text(reaction.phenomenon.get(language), style = PicoTheme.typography.bodyLarge, color = PicoTheme.colorScheme.labelSecondary, maxLines = 2)
+                            }
+                            Button(onClick = { onEvent(PeriodicTableEvent.CollideReactionOpened(reaction.id)) }, modifier = NoFocus.height(64.dp)) {
+                                Icon(painterResource(R.drawable.ic_player_play), contentDescription = null, modifier = Modifier.size(24.dp))
+                                Text(str(R.string.collide_watch), maxLines = 1)
+                            }
+                        }
+                    }
+                }
+                is CollideResult.NoReaction -> {
+                    Text(str(R.string.collide_why), style = PicoTheme.typography.titleMedium, color = PicoTheme.colorScheme.labelSecondary)
+                    Text(result.why.get(language), style = PicoTheme.typography.bodyLargeMultiline, color = PicoTheme.colorScheme.labelPrimary)
+                }
+                is CollideResult.NoExperiment -> Text(result.why.get(language), style = PicoTheme.typography.bodyLargeMultiline, color = PicoTheme.colorScheme.labelPrimary)
+                CollideResult.NoCommonReaction -> {
+                    Text(str(R.string.collide_unknown_line), style = PicoTheme.typography.bodyLargeMultiline, color = PicoTheme.colorScheme.labelPrimary)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        listOf(outcome.a, outcome.b).forEach { element ->
+                            Button(onClick = { onEvent(PeriodicTableEvent.CollideElementOpened(element.atomicNumber)) }, modifier = NoFocus.weight(1f).height(64.dp)) {
+                                Text(str(R.string.collide_see, element.name(language)), maxLines = 1)
+                            }
+                        }
+                    }
+                }
+            }
+            Button(onClick = close, modifier = NoFocus.fillMaxWidth().padding(top = 8.dp).height(64.dp)) {
+                Text(str(R.string.collide_again), maxLines = 1, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             }
         }
     }

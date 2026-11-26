@@ -211,4 +211,18 @@
     <string name="orb_source">Sources: PEP High-school Chemistry, Structure of Matter Ch. 1 §1 (shells, subshells, orbitals, Pauli, Hund, Aufbau); Inorganic Chemistry (Beijing Normal Univ. et al., Higher Education Press), atomic structure; Atkins\' Physical Chemistry, \"Hydrogenic atomic orbitals\"; J. C. Slater, Phys. Rev. 36, 57 (1930).</string>
     <string name="rx_schematic">Schematic: the 3D shows how the atoms regroup and that they are conserved, not the real structure of the molecules or crystals.</string>
     <string name="tab_reactions_plain">Reactions</string>
+    <string name="collide">Collide</string>
+    <string name="collide_hint">Collide: tap two elements to see whether they react</string>
+    <string name="collide_hint_one">%1$s picked; tap another element</string>
+    <string name="collide_yes">They react</string>
+    <string name="collide_no">No reaction</string>
+    <string name="collide_no_experiment">No experiment possible</string>
+    <string name="collide_unknown">No common direct reaction</string>
+    <string name="collide_why">Why</string>
+    <string name="collide_watch">Watch in 3D</string>
+    <string name="collide_again">Try another pair</string>
+    <string name="collide_see">%1$s reactions</string>
+    <string name="collide_unknown_line">Textbooks and the usual references list no common direct reaction between these two elements. See what each of them commonly reacts with.</string>
+    <string name="ion_remove">Remove an electron</string>
+    <string name="ion_add">Add an electron</string>
 </resources>

@@ -38,6 +38,9 @@ fun RowScope.AtomToolbarContent(
     paused: Boolean,
     singleOrbital: Boolean,
     onCloudMode: (Boolean) -> Unit,
+    canRemoveElectron: Boolean,
+    canAddElectron: Boolean,
+    onCharge: (Int) -> Unit,
     onViewSelected: (AtomViewMode) -> Unit,
     onAdvancedToggle: () -> Unit,
     onPauseToggle: () -> Unit,
@@ -64,6 +67,18 @@ fun RowScope.AtomToolbarContent(
         VerticalDivider(modifier = Modifier.size(width = 1.dp, height = 32.dp))
         ToggleButton(checked = !singleOrbital, onCheckedChange = { onCloudMode(false) }) { Text(str(R.string.cloud_whole), maxLines = 1) }
         ToggleButton(checked = singleOrbital, onCheckedChange = { onCloudMode(true) }) { Text(str(R.string.cloud_single), maxLines = 1) }
+    }
+    // Atom -> ion (v1.6.0): always under the model, one tap each; greyed out when the element has no such common ion.
+    if (view == AtomViewMode.SHELL) {
+        VerticalDivider(modifier = Modifier.size(width = 1.dp, height = 32.dp))
+        Button(onClick = { onCharge(1) }, enabled = canRemoveElectron) {
+            Icon(painterResource(R.drawable.ic_minus), contentDescription = null, modifier = Modifier.size(20.dp))
+            Text(str(R.string.ion_remove), maxLines = 1)
+        }
+        Button(onClick = { onCharge(-1) }, enabled = canAddElectron) {
+            Icon(painterResource(R.drawable.ic_plus), contentDescription = null, modifier = Modifier.size(20.dp))
+            Text(str(R.string.ion_add), maxLines = 1)
+        }
     }
     VerticalDivider(modifier = Modifier.size(width = 1.dp, height = 32.dp))
     IconButton(onClick = onPauseToggle) {

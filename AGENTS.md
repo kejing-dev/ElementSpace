@@ -199,3 +199,20 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
   Conditions: ign → IGNITE, light → LIGHT, heat/high/hot → HEAT, catalysts → CATALYST tag, the rest
   (discharge, pressure, −196 ℃ …) → `ConditionKind.NOTE` tag. Card adds 「示意…」 under the legend.
 - `forSymbol` sorts junior, senior, then reference-book reactions.
+
+## v1.6.0 polish (2026-11-25): atom -> ion, collide two elements
+
+- Every interaction is a single tap (gaze + pinch or controller trigger): no grabbing, no dragging.
+- Atom toolbar (shell view): [拿走一个电子] [加一个电子], greyed out outside the element's common ions
+  (`minCharge` / `maxCharge`). 3D: tinted halo (red = lost, blue = gained) and an ion tag under the
+  model; card: `IonText.explain` (charge, new shell counts, the noble gas it now matches). The charge
+  no longer resets when "advanced" collapses.
+- Table title bar: [碰一碰] toggle. In the mode a tile tap picks instead of opening; the second pick
+  runs `CollideElementsUseCase` and shows `CollideOverlay`. Rules in order: a library reaction whose
+  two reactants are exactly the two simple substances (why = who loses / gains, or shared pairs
+  leaning to the more electronegative atom); elements in `ElementReactions.NOTES` other than He/Ne/Ar
+  -> no experiment; noble gas -> full shell; two metals -> alloy, no reaction; else "no common direct
+  reaction" with buttons to each element. It never invents a product.
+- 46 element + element reactions appended to the factory data file (`EXTRA` block; appended so
+  earlier ids keep their numbers). Library: 232 reactions.
+- Debug: `collide 11,17` / `collide off`, `charge 1|-1`.

@@ -211,4 +211,18 @@
     <string name="orb_source">来源：人教版高中化学 选择性必修2 第一章第一节「原子结构」（能层、能级、原子轨道、泡利原理、洪特规则、构造原理）；《无机化学》（北京师范大学等编，高等教育出版社）原子结构一章；Atkins\' Physical Chemistry「Hydrogenic atomic orbitals」；J. C. Slater, Phys. Rev. 36, 57 (1930)。</string>
     <string name="rx_schematic">示意：3D 表示原子怎样重新组合、个数守恒，不表示分子或晶体的真实结构。</string>
     <string name="tab_reactions_plain">化学式</string>
+    <string name="collide">碰一碰</string>
+    <string name="collide_hint">碰一碰：点两个元素，看它们会不会反应</string>
+    <string name="collide_hint_one">已选 %1$s，再点一个元素</string>
+    <string name="collide_yes">会反应</string>
+    <string name="collide_no">不反应</string>
+    <string name="collide_no_experiment">没法做实验</string>
+    <string name="collide_unknown">没有常见的直接反应</string>
+    <string name="collide_why">为什么</string>
+    <string name="collide_watch">看 3D 反应</string>
+    <string name="collide_again">再碰一次</string>
+    <string name="collide_see">看%1$s的反应</string>
+    <string name="collide_unknown_line">课本和常用资料里，这两种单质没有常见的直接反应。可以看看它们各自常见的反应。</string>
+    <string name="ion_remove">拿走一个电子</string>
+    <string name="ion_add">加一个电子</string>
 </resources>

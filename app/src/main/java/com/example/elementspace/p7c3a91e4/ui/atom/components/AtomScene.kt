@@ -51,6 +51,9 @@ data class AtomSceneSpec(
     val lattice: Lattice?,
     /** Cloud view showing one orbital instead of the whole cloud. */
     val orbital: OrbitalView? = null,
+    /** Net charge of the atom (v1.6.0): a tinted halo and the ion's symbol in the shell view. */
+    val charge: Int = 0,
+    val ionLabel: String? = null,
 )
 
 /** One orbital in the cloud view: sampled points, where ψ = 0, and what to draw. */
@@ -185,6 +188,14 @@ class AtomScene {
 
     private fun buildShells(parent: Entity, spec: AtomSceneSpec) {
         spec.nucleus?.let { parent.addChild(nucleus(it, 0.14f)) }
+        if (spec.charge != 0) {
+            // Same colours as the ions of the reaction Volume: red = lost electrons, blue = gained.
+            val tint = if (spec.charge > 0) ElementColors.IonPositive else ElementColors.IonNegative
+            val halo = ModelEntity(sphere(), UnlitMaterial.create(BlendingMode.TRANSPARENT).apply { setBaseColor(tint.toColor4(0.10f)) })
+            halo.components[TransformComponent::class.java]?.setScaleVector(Vector3(0.97f))
+            parent.addChild(halo)
+            spec.ionLabel?.let { parent.addChild(labels.label(it, Vec3(0f, -1.08f, 0f), height = 0.13f, lift = 0.1f, style = SceneLabels.Style.TAG)) }
+        }
         val count = spec.shells.size
         spec.shells.forEachIndexed { index, electrons ->
             if (electrons == 0) return@forEachIndexed

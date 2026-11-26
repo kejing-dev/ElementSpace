@@ -6,6 +6,9 @@ import com.example.elementspace.p7c3a91e4.data.repository.ElementRepository
 import com.example.elementspace.p7c3a91e4.data.repository.InMemorySessionRepository
 import com.example.elementspace.p7c3a91e4.data.repository.SessionRepository
 import com.example.elementspace.p7c3a91e4.domain.model.TrendProperty
+import com.example.elementspace.p7c3a91e4.data.repository.BundledReactionRepository
+import com.example.elementspace.p7c3a91e4.data.repository.ElementReactions
+import com.example.elementspace.p7c3a91e4.domain.usecase.CollideElementsUseCase
 import com.example.elementspace.p7c3a91e4.domain.usecase.FilterElementsUseCase
 import com.example.elementspace.p7c3a91e4.domain.usecase.TrendScaleUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +22,7 @@ class PeriodicTableViewModel(
     private val sessionRepository: SessionRepository,
     private val filterElements: FilterElementsUseCase,
     private val trendScale: TrendScaleUseCase,
+    private val collide: CollideElementsUseCase = CollideElementsUseCase(BundledReactionRepository.shared.all(), ElementReactions.NOTES),
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PeriodicTableUiState())
@@ -47,7 +51,14 @@ class PeriodicTableViewModel(
             is PeriodicTableEvent.CategoryToggled ->
                 refilter { it.copy(category = if (it.category == event.category) null else event.category) }
             is PeriodicTableEvent.TrendSelected -> selectTrend(event.trend)
-            is PeriodicTableEvent.ElementSelected -> openAtom(event.atomicNumber)
+            is PeriodicTableEvent.ElementSelected -> if (_state.value.collideMode) pick(event.atomicNumber) else openAtom(event.atomicNumber)
+            PeriodicTableEvent.CollideToggled -> _state.update { it.copy(collideMode = !it.collideMode, collidePicks = emptyList(), collideOutcome = null, languageMenuOpen = false) }
+            PeriodicTableEvent.CollideDismissed -> _state.update { it.copy(collidePicks = emptyList(), collideOutcome = null) }
+            is PeriodicTableEvent.CollideReactionOpened -> sessionRepository.showReaction(event.id)
+            is PeriodicTableEvent.CollideElementOpened -> {
+                _state.update { it.copy(collideMode = false, collidePicks = emptyList(), collideOutcome = null) }
+                openAtom(event.atomicNumber)
+            }
             is PeriodicTableEvent.LanguageMenuVisible ->
                 _state.update { it.copy(languageMenuOpen = event.visible) }
             is PeriodicTableEvent.LanguageSelected -> {
@@ -61,6 +72,7 @@ class PeriodicTableViewModel(
             PeriodicTableEvent.BackPressed ->
                 _state.update {
                     when {
+                        it.collideOutcome != null -> it.copy(collidePicks = emptyList(), collideOutcome = null)
                         it.exitConfirmOpen -> it.copy(exitConfirmOpen = false)
                         it.howToOpen -> it.copy(howToOpen = false)
                         it.languageMenuOpen -> it.copy(languageMenuOpen = false)
@@ -69,6 +81,23 @@ class PeriodicTableViewModel(
                 }
             PeriodicTableEvent.WindowRequestHandled -> _state.update { it.copy(windowRequest = null) }
             PeriodicTableEvent.ReplacedNoticeShown -> _state.update { it.copy(replacedNotice = null) }
+        }
+    }
+
+    /** First tap picks, tapping it again unpicks, the second element shows the result. */
+    private fun pick(atomicNumber: Int) {
+        _state.update { current ->
+            val picks = current.collidePicks
+            when {
+                atomicNumber in picks -> current.copy(collidePicks = picks - atomicNumber)
+                picks.isEmpty() -> current.copy(collidePicks = listOf(atomicNumber))
+                else -> {
+                    val a = elementRepository.element(picks.first())
+                    val b = elementRepository.element(atomicNumber)
+                    if (a == null || b == null) current
+                    else current.copy(collidePicks = listOf(a.atomicNumber, b.atomicNumber), collideOutcome = CollideOutcome(a, b, collide(a, b)))
+                }
+            }
         }
     }
 

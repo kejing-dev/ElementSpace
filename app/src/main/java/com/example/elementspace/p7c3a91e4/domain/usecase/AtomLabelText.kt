@@ -8,6 +8,9 @@ object AtomLabelText {
     private const val SUPERSCRIPT_DIGITS = "⁰¹²³⁴⁵⁶⁷⁸⁹"
     private const val SUBSCRIPT_DIGITS = "₀₁₂₃₄₅₆₇₈₉"
 
+    /** "Na⁺", "O²⁻". */
+    fun ion(symbol: String, value: Int): String = symbol + charge(value)
+
     fun charge(value: Int): String {
         if (value == 0) return ""
         val n = kotlin.math.abs(value)

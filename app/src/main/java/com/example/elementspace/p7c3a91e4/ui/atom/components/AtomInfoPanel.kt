@@ -36,6 +36,7 @@ import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
 import com.example.elementspace.p7c3a91e4.domain.model.Element
 import com.example.elementspace.p7c3a91e4.domain.model.Isotope
 import com.example.elementspace.p7c3a91e4.domain.model.Subshell
+import com.example.elementspace.p7c3a91e4.domain.usecase.IonText
 import com.example.elementspace.p7c3a91e4.ui.atom.AtomEvent
 import com.example.elementspace.p7c3a91e4.ui.atom.AtomUiState
 import com.example.elementspace.p7c3a91e4.ui.molecule.components.formulaLine
@@ -124,6 +125,16 @@ private enum class AtomPage { ORBITALS, STRUCTURE, REACTIONS, MOLECULES, PROPERT
 @Composable
 private fun StructurePage(state: AtomUiState, element: Element, onEvent: (AtomEvent) -> Unit) {
     ViewNote(state)
+    if (state.charge != 0) {
+        // v1.6.0: what the atom has just become, in one or two plain sentences.
+        Column(
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(ElementColors.ConditionChip).padding(horizontal = 20.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(str(R.string.ion, ionSymbol(element.symbol, state.charge)), style = PicoTheme.typography.titleLarge, color = Color(0xFF1D2127))
+            Text(IonText.explain(element, state.charge, state.configuration?.shells.orEmpty()).get(state.language), style = PicoTheme.typography.bodyLargeMultiline, color = Color(0xFF1D2127))
+        }
+    }
     when (state.view) {
         AtomViewMode.SHELL -> {
             Section(str(R.string.particles)) { ParticleCounts(state) }

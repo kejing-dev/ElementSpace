@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
+import com.example.elementspace.p7c3a91e4.domain.usecase.AtomLabelText
 import com.example.elementspace.p7c3a91e4.domain.usecase.NodalSurface
 import com.example.elementspace.p7c3a91e4.domain.usecase.OrbitalRef
 import com.example.elementspace.p7c3a91e4.domain.usecase.Orbitals
@@ -72,6 +73,7 @@ fun AtomScreen(atomicNumber: Int, modifier: Modifier = Modifier) {
                 if (view.advanced && !viewModel.state.value.advancedExpanded) viewModel.onEvent(AtomEvent.AdvancedToggled)
                 viewModel.onEvent(AtomEvent.ViewSelected(view))
             }
+            "charge" -> command.number?.let { viewModel.onEvent(AtomEvent.ChargeStepped(it)) }
             "cloud" -> viewModel.onEvent(AtomEvent.CloudModeSelected(command.arg != "whole"))
             // "orbital 3d:0" = n, l letter, index into the real orbitals of that subshell.
             "orbital" -> command.arg?.let { arg ->
@@ -125,6 +127,8 @@ internal fun AtomContent(
                     hiddenSubshells = state.hiddenSubshells,
                     lattice = state.lattice,
                     orbital = orbitalView,
+                    charge = state.charge,
+                    ionLabel = if (state.charge != 0) AtomLabelText.ion(state.element.symbol, state.charge) else null,
                 ),
             paused = state.paused,
             resetToken = state.resetToken,
@@ -139,6 +143,9 @@ internal fun AtomContent(
                 advancedExpanded = state.advancedExpanded,
                 allotropeAvailable = state.allotropes.isNotEmpty(),
                 paused = state.paused,
+                canRemoveElectron = state.charge < state.maxCharge,
+                canAddElectron = state.charge > state.minCharge,
+                onCharge = { onEvent(AtomEvent.ChargeStepped(it)) },
                 singleOrbital = state.singleOrbital,
                 onCloudMode = { onEvent(AtomEvent.CloudModeSelected(it)) },
                 onViewSelected = { onEvent(AtomEvent.ViewSelected(it)) },

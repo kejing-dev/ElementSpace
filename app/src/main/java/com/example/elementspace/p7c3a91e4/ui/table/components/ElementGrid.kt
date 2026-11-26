@@ -57,6 +57,8 @@ fun ElementGrid(
     onCategoryToggle: (ElementCategory) -> Unit,
     onElementClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    /** Elements picked in 碰一碰 mode; drawn raised like an open element. */
+    picked: List<Int> = emptyList(),
 ) {
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.TopCenter) {
         val byWidth = (maxWidth - Gap * (COLUMNS - 1)) / COLUMNS
@@ -98,7 +100,7 @@ fun ElementGrid(
                         fullName = element.name(language),
                         tint = if (normalized != null) ElementColors.trend(normalized) else ElementColors.category(element.category),
                         matched = !filtering || element.atomicNumber in matches,
-                        opened = element.atomicNumber in openAtoms,
+                        opened = element.atomicNumber in openAtoms || element.atomicNumber in picked,
                         height = if (trendScale != null) normalized else null,
                         noData = trendScale != null && normalized == null,
                     )

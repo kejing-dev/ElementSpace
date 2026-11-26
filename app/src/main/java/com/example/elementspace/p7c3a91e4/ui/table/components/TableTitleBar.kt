@@ -19,6 +19,7 @@ import com.pico.spatial.ui.design.Icon
 import com.pico.spatial.ui.design.PicoTheme
 import com.pico.spatial.ui.design.SearchField
 import com.pico.spatial.ui.design.Text
+import com.pico.spatial.ui.design.ToggleButton
 import com.pico.spatial.ui.design.TitleBar
 import com.pico.spatial.ui.design.menu.Menu
 import com.pico.spatial.ui.design.menu.MenuItem
@@ -35,6 +36,8 @@ fun TableTitleBar(
     onHowTo: () -> Unit,
     onExit: () -> Unit,
     modifier: Modifier = Modifier,
+    collideMode: Boolean = false,
+    onCollideToggle: () -> Unit = {},
 ) {
     TitleBar(
         modifier = modifier,
@@ -49,6 +52,9 @@ fun TableTitleBar(
             }
         },
         trailingActions = {
+            ToggleButton(checked = collideMode, onCheckedChange = { onCollideToggle() }, modifier = Modifier.focusProperties { canFocus = false }) {
+                Text(str(R.string.collide), maxLines = 1)
+            }
             SearchField(
                 value = query,
                 onValueChange = onQueryChange,

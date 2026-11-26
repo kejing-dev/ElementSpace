@@ -4,6 +4,7 @@ import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
 import com.example.elementspace.p7c3a91e4.domain.model.Element
 import com.example.elementspace.p7c3a91e4.domain.model.ElementCategory
 import com.example.elementspace.p7c3a91e4.domain.model.TrendProperty
+import com.example.elementspace.p7c3a91e4.domain.usecase.CollideResult
 import com.example.elementspace.p7c3a91e4.domain.usecase.TrendScale
 
 /** A window operation the screen must perform once, then acknowledge. */
@@ -12,6 +13,9 @@ data class AtomWindowRequest(
     /** Volume to close first because the limit was reached, or null. */
     val close: Int?,
 )
+
+/** Two picked elements and what happens when they meet. */
+data class CollideOutcome(val a: Element, val b: Element, val result: CollideResult)
 
 data class PeriodicTableUiState(
     val elements: List<Element> = emptyList(),
@@ -32,12 +36,16 @@ data class PeriodicTableUiState(
     val windowRequest: AtomWindowRequest? = null,
     /** Element whose Volume was just replaced, shown once as a snackbar. */
     val replacedNotice: Element? = null,
+    /** 碰一碰 (v1.6.0): tapping tiles picks two elements instead of opening an atom. */
+    val collideMode: Boolean = false,
+    val collidePicks: List<Int> = emptyList(),
+    val collideOutcome: CollideOutcome? = null,
 ) {
     val filtering: Boolean
         get() = query.isNotBlank() || category != null
 
     val overlayOpen: Boolean
-        get() = howToOpen || exitConfirmOpen
+        get() = howToOpen || exitConfirmOpen || collideOutcome != null
 
     val noMatch: Boolean
         get() = filtering && matches.isEmpty()
@@ -62,6 +70,17 @@ sealed interface PeriodicTableEvent {
 
     /** BACK / controller B: closes the topmost overlay or menu; never leaves the app. */
     data object BackPressed : PeriodicTableEvent
+
+    data object CollideToggled : PeriodicTableEvent
+
+    /** Closes the result card; the mode stays on for another try. */
+    data object CollideDismissed : PeriodicTableEvent
+
+    /** ▶ on the result card; the screen opens the reaction Volume. */
+    data class CollideReactionOpened(val id: String) : PeriodicTableEvent
+
+    /** "See this element" on the result card: leaves the mode and opens its atom. */
+    data class CollideElementOpened(val atomicNumber: Int) : PeriodicTableEvent
 
     data object WindowRequestHandled : PeriodicTableEvent
 

@@ -26,6 +26,9 @@ import com.example.elementspace.p7c3a91e4.ui.table.components.ExitConfirmOverlay
 import com.example.elementspace.p7c3a91e4.ui.table.components.HowToOverlay
 import com.example.elementspace.p7c3a91e4.ui.navigation.WindowIds
 import com.example.elementspace.p7c3a91e4.ui.table.components.ColourControl
+import com.example.elementspace.p7c3a91e4.ui.table.components.CollideOverlay
+import com.pico.spatial.ui.design.PicoTheme
+import com.pico.spatial.ui.design.Text
 import com.example.elementspace.p7c3a91e4.ui.table.components.ElementGrid
 import com.example.elementspace.p7c3a91e4.ui.table.components.StatusRow
 import com.example.elementspace.p7c3a91e4.ui.table.components.TableTitleBar
@@ -69,6 +72,14 @@ fun PeriodicTableScreen(modifier: Modifier = Modifier) {
     DebugBus.Collect { command ->
         when (command.cmd) {
             "atom" -> command.number?.let { viewModel.onEvent(PeriodicTableEvent.ElementSelected(it)) }
+            // "collide 11,17": turn the mode on and pick both; "collide off" leaves it.
+            "collide" -> {
+                if (viewModel.state.value.collideMode) viewModel.onEvent(PeriodicTableEvent.CollideToggled)
+                if (command.arg != "off") {
+                    viewModel.onEvent(PeriodicTableEvent.CollideToggled)
+                    command.arg?.split(",")?.mapNotNull { it.trim().toIntOrNull() }?.forEach { viewModel.onEvent(PeriodicTableEvent.ElementSelected(it)) }
+                }
+            }
             "reaction" ->
                 command.arg?.let { id ->
                     InMemorySessionRepository.shared.showReaction(id)
@@ -94,7 +105,12 @@ fun PeriodicTableScreen(modifier: Modifier = Modifier) {
         SnackbarHost {
             PeriodicTableContent(
                 state = state,
-                onEvent = viewModel::onEvent,
+                onEvent = { event ->
+                    viewModel.onEvent(event)
+                    if (event is PeriodicTableEvent.CollideReactionOpened) {
+                        runCatching { navigator.openWindowContainer(WindowIds.REACTION_VOLUME, tag = WindowIds.REACTION_TAG) }
+                    }
+                },
                 onExit = { AppExit.exit(context, navigator) },
                 modifier = modifier,
             )
@@ -130,15 +146,26 @@ internal fun PeriodicTableContent(
             onLanguageSelected = { onEvent(PeriodicTableEvent.LanguageSelected(it)) },
             onHowTo = { onEvent(PeriodicTableEvent.HowToVisible(true)) },
             onExit = { onEvent(PeriodicTableEvent.ExitConfirmVisible(true)) },
+            collideMode = state.collideMode,
+            onCollideToggle = { onEvent(PeriodicTableEvent.CollideToggled) },
         )
         Column(
             modifier = Modifier.fillMaxSize().padding(start = 32.dp, end = 32.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ColourControl(
-                selected = state.trend,
-                onSelect = { onEvent(PeriodicTableEvent.TrendSelected(it)) },
-            )
+            if (state.collideMode) {
+                val first = state.collidePicks.firstOrNull()?.let { z -> state.elements.getOrNull(z - 1) }
+                Text(
+                    text = if (first == null) str(R.string.collide_hint) else str(R.string.collide_hint_one, "${first.symbol} ${first.name(state.language)}"),
+                    style = PicoTheme.typography.titleMedium,
+                    color = PicoTheme.colorScheme.labelPrimary,
+                )
+            } else {
+                ColourControl(
+                    selected = state.trend,
+                    onSelect = { onEvent(PeriodicTableEvent.TrendSelected(it)) },
+                )
+            }
             ElementGrid(
                 elements = state.elements,
                 language = state.language,
@@ -151,6 +178,8 @@ internal fun PeriodicTableContent(
                 onCategoryToggle = { onEvent(PeriodicTableEvent.CategoryToggled(it)) },
                 onElementClick = { onEvent(PeriodicTableEvent.ElementSelected(it)) },
                 modifier = Modifier.fillMaxWidth().weight(1f),
+                // Raised tiles would poke through the result card, so they drop back while it is open.
+                picked = if (state.collideOutcome == null) state.collidePicks else emptyList(),
             )
             StatusRow(
                 openElements = state.openAtoms.mapNotNull { z -> state.elements.getOrNull(z - 1) },
@@ -162,6 +191,7 @@ internal fun PeriodicTableContent(
             )
         }
     }
+    state.collideOutcome?.let { CollideOverlay(it, state.language, onEvent) }
     if (state.howToOpen) HowToOverlay(onClose = { onEvent(PeriodicTableEvent.HowToVisible(false)) })
     if (state.exitConfirmOpen) ExitConfirmOverlay(onCancel = { onEvent(PeriodicTableEvent.ExitConfirmVisible(false)) }, onExit = onExit)
     }

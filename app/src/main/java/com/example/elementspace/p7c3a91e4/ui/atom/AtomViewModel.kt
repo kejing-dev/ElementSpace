@@ -109,11 +109,10 @@ class AtomViewModel(
     private fun toggleAdvanced() {
         change { current ->
             if (current.advancedExpanded) {
-                // Collapsing leaves the advanced views and returns to a neutral atom.
+                // Collapsing leaves the advanced views; the charge stays (v1.6.0: making ions is a basic action).
                 current.copy(
                     advancedExpanded = false,
                     view = if (current.view.advanced) AtomViewMode.SHELL else current.view,
-                    charge = 0,
                 )
             } else {
                 current.copy(advancedExpanded = true)
