@@ -53,6 +53,8 @@ data class LabSceneSpec(
     val flameTint: LabColor?,
     /** 0.6 / 1 / 1.5: small, medium, large. */
     val power: Float,
+    /** Shown instead of the stage's own effects (the picked choice of step 1). */
+    val override: List<LabEffect>? = null,
 )
 
 /** Calls [tick] every frame; the lab's particles, liquids and moving solids all advance from it. */
@@ -190,12 +192,14 @@ class LabScene(private val embedded: Boolean = false) {
         val layer = Entity()
         layer.components[TransformComponent::class.java]?.setPosition(Vector3(0f, if (embedded) 0f else BENCH_Y, 0f))
         val experiment = newSpec.experiment
-        val effects = if (newSpec.stage == 0) experiment.start else experiment.steps.getOrNull(newSpec.stage - 1)?.effects.orEmpty()
+        val effects = newSpec.override ?: if (newSpec.stage == 0) experiment.start else experiment.steps.getOrNull(newSpec.stage - 1)?.effects.orEmpty()
         // v1.13.0: when a step has just been done, things move: a wire is lowered, a lump is dropped in.
         val stepped = previous != null && previous.experiment.id == experiment.id && newSpec.stage == previous.stage + 1
         movedFrom =
             if (!stepped) null
             else (if (newSpec.stage == 1) experiment.start else experiment.steps[newSpec.stage - 2].effects).filterIsInstance<LabEffect.Solid>()
+        // Picking another choice puts a new thing in: nothing was there a moment ago, so whatever is marked as dropped falls in.
+        if (previous != null && previous.experiment.id == experiment.id && previous.stage == newSpec.stage && previous.override != newSpec.override && newSpec.override != null) movedFrom = emptyList()
         effects.forEach { build(layer, it, newSpec) }
         stage.addChild(layer)
         effectsLayer = layer

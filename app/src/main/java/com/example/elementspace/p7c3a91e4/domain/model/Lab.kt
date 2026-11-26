@@ -54,8 +54,12 @@ sealed interface LabEffect {
 /** One tap: [button] is what you do, [observe] what the textbook says you then see. */
 data class LabStep(val button: L10n, val observe: L10n, val effects: List<LabEffect>)
 
-/** A reagent to swap in (the salts of the flame test): changes the tint of every flame. */
-data class LabChoice(val label: L10n, val note: L10n, val flame: LabColor)
+/**
+ * Something to pick after the first step. Either a reagent that tints every flame (the salts of the
+ * flame test), or, with [effects], what the bench shows instead of the step's own effects (which
+ * metal goes into the acid, which solution meets the indicator). Choices apply to step 1 only.
+ */
+data class LabChoice(val label: L10n, val note: L10n, val flame: LabColor? = null, val effects: List<LabEffect>? = null)
 
 data class Experiment(
     val id: String,
@@ -67,6 +71,8 @@ data class Experiment(
     val start: List<LabEffect>,
     val steps: List<LabStep>,
     val choices: List<LabChoice> = emptyList(),
+    /** Heading over the choices; null = "换一种盐". */
+    val choiceTitle: L10n? = null,
     /** Label of the small / medium / large control, or null when nothing is adjustable. */
     val adjust: L10n? = null,
     /** Reaction in the library for "看微观". */

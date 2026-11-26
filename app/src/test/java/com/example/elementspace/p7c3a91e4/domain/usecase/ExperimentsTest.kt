@@ -16,8 +16,8 @@ class ExperimentsTest {
     fun `twelve experiments, each with steps, both languages, a source and existing equipment`() {
         val index = File(models, "index.json").readText()
         assertTrue(File(models, "bench.glb").length() > 1000)
-        assertEquals(17, Experiments.ALL.size)
-        assertEquals(17, Experiments.ALL.map { it.id }.toSet().size)
+        assertEquals(19, Experiments.ALL.size)
+        assertEquals(19, Experiments.ALL.map { it.id }.toSet().size)
         Experiments.ALL.forEach { e ->
             assertTrue(e.id, e.steps.size in 1..4)
             assertTrue(e.id, e.name.zh.isNotBlank() && e.name.en.isNotBlank() && e.setup.zh.isNotBlank() && e.setup.en.isNotBlank())
@@ -39,7 +39,7 @@ class ExperimentsTest {
                 "mg_burn" to "2Mg + O₂", "fe_o2" to "3Fe + 2O₂", "na_water" to "2Na + 2H₂O", "cu_agno3" to "Cu + 2AgNO₃",
                 "cuso4_naoh" to "CuSO₄ + 2NaOH", "h2o2" to "2H₂O₂", "thermite" to "2Al + Fe₂O₃",
                 "fe_cuso4" to "Fe + CuSO₄", "zn_h2so4" to "Zn + H₂SO₄", "caco3_hcl" to "CaCO₃ + 2HCl", "limewater_co2" to "Ca(OH)₂ + CO₂",
-                "s_burn" to "S + O₂", "cu_hno3" to "Cu + 4HNO₃",
+                "s_burn" to "S + O₂", "cu_hno3" to "Cu + 4HNO₃", "metal_acid" to "Fe + 2HCl",
             )
         Experiments.ALL.forEach { e ->
             val id = e.reactionId ?: return@forEach
@@ -75,5 +75,13 @@ class ExperimentsTest {
         Experiments.ELEMENTS.forEach { (id, list) -> assertTrue(id, list.isNotEmpty() && symbols.containsAll(list)) }
         assertTrue(Experiments.forSymbol("Fe").map { it.id }.containsAll(listOf("fe_o2", "thermite", "fe_cuso4")))
         assertEquals("fe_o2", Experiments.forReaction("fe_1")?.id)
+    }
+
+    @Test
+    fun `a choice either tints the flame or shows its own effects, and the metals bubble in order of activity`() {
+        Experiments.ALL.forEach { e -> e.choices.forEach { c -> assertTrue(e.id, (c.flame != null) != (c.effects != null)) } }
+        val rates = Experiments.experiment("metal_acid")!!.choices.map { c -> c.effects!!.filterIsInstance<LabEffect.Bubbles>().sumOf { it.rate.toDouble() } }
+        // Mg > Zn > Fe > Cu (none)
+        assertTrue(rates[0] > rates[1] && rates[1] > rates[2] && rates[2] > 0.0 && rates[3] == 0.0)
     }
 }

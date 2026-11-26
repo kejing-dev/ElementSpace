@@ -593,6 +593,83 @@ object Experiments {
                 reactionId = "n_5",
                 source = S2_52,
             ),
+            // v1.15.0: experiments where you pick what goes in and compare.
+            Experiment(
+                id = "metal_acid",
+                name = L10n("四种金属和稀盐酸", "Four metals in dilute hydrochloric acid"),
+                setup = L10n("烧杯里是稀盐酸。旁边有镁条、锌粒、铁钉和铜片。", "A beaker of dilute hydrochloric acid. Beside it: magnesium ribbon, zinc, an iron nail and a piece of copper."),
+                props = listOf(beaker()),
+                start = listOf(liquid(WATER)),
+                steps =
+                    listOf(
+                        LabStep(
+                            L10n("开始：选一种金属", "Start: pick a metal"),
+                            L10n("选一种金属放进稀盐酸，看气泡冒得快不快。再换一种比一比。", "Pick a metal and drop it into the acid; see how fast the bubbles come. Then try another and compare."),
+                            listOf(liquid(WATER)),
+                        ),
+                        LabStep(
+                            L10n("比出了什么", "What the comparison shows"),
+                            L10n("气泡越快，金属越活泼：镁 > 锌 > 铁 >（氢）> 铜。排在氢前面的金属能把酸里的氢置换出来，铜排在氢后面，所以不反应。", "The faster the bubbles, the more reactive the metal: magnesium > zinc > iron > (hydrogen) > copper. Metals ahead of hydrogen displace it from the acid; copper comes after hydrogen, so it does not react."),
+                            listOf(liquid(WATER)),
+                        ),
+                    ),
+                choices =
+                    listOf(
+                        LabChoice(
+                            L10n("镁 Mg", "Magnesium Mg"),
+                            L10n("镁：反应剧烈，产生大量气泡，镁条很快变小，烧杯发热。Mg + 2HCl = MgCl₂ + H₂↑", "Magnesium: a vigorous reaction with masses of bubbles; the ribbon quickly shrinks and the beaker warms. Mg + 2HCl = MgCl₂ + H₂↑"),
+                            effects = listOf(liquid(WATER), LabEffect.Solid(v(0f, 0.03f), Vec3(0.12f, 0.008f, 0.03f), SILVER, metal = true, drops = true), LabEffect.Bubbles(v(0f, 0.04f), LEVEL, 75f, 0.1f)),
+                        ),
+                        LabChoice(
+                            L10n("锌 Zn", "Zinc Zn"),
+                            L10n("锌：反应比较剧烈，产生较多气泡。Zn + 2HCl = ZnCl₂ + H₂↑", "Zinc: a fairly vigorous reaction with plenty of bubbles. Zn + 2HCl = ZnCl₂ + H₂↑"),
+                            effects = listOf(liquid(WATER), LabEffect.Solid(v(0f, 0.035f), Vec3(0.055f, 0.045f, 0.055f), c(0.6f, 0.62f, 0.66f), round = true, metal = true, drops = true), LabEffect.Bubbles(v(0f, 0.06f), LEVEL, 38f, 0.06f)),
+                        ),
+                        LabChoice(
+                            L10n("铁 Fe", "Iron Fe"),
+                            L10n("铁：反应缓慢，只有少量气泡，溶液慢慢变成浅绿色。Fe + 2HCl = FeCl₂ + H₂↑", "Iron: a slow reaction with only a few bubbles; the solution slowly turns pale green. Fe + 2HCl = FeCl₂ + H₂↑"),
+                            effects = listOf(liquid(c(0.66f, 0.9f, 0.7f, 0.42f), seconds = 9f), LabEffect.Solid(v(0f, 0.03f), Vec3(0.14f, 0.014f, 0.014f), c(0.45f, 0.46f, 0.5f), metal = true, drops = true), LabEffect.Bubbles(v(0f, 0.04f), LEVEL, 9f, 0.07f)),
+                        ),
+                        LabChoice(
+                            L10n("铜 Cu", "Copper Cu"),
+                            L10n("铜：没有明显现象。铜排在氢的后面，不和稀盐酸反应。", "Copper: nothing visible happens. Copper comes after hydrogen and does not react with dilute hydrochloric acid."),
+                            effects = listOf(liquid(WATER), LabEffect.Solid(v(0f, 0.03f), Vec3(0.09f, 0.008f, 0.06f), COPPER, metal = true, drops = true)),
+                        ),
+                    ),
+                choiceTitle = L10n("放哪种金属", "Which metal"),
+                reactionId = "fe_2",
+                source = J8,
+            ),
+            Experiment(
+                id = "indicator",
+                name = L10n("石蕊遇到酸和碱", "Litmus with acids and alkalis"),
+                setup = L10n("烧杯里是紫色的石蕊溶液。旁边有稀盐酸、白醋、食盐水、氢氧化钠溶液和石灰水。", "A beaker of purple litmus solution. Beside it: dilute hydrochloric acid, white vinegar, salt water, sodium hydroxide solution and limewater."),
+                props = listOf(beaker()),
+                start = listOf(liquid(c(0.52f, 0.3f, 0.78f, 0.5f))),
+                steps =
+                    listOf(
+                        LabStep(
+                            L10n("开始：选一种溶液", "Start: pick a solution"),
+                            L10n("选一种溶液滴进石蕊里，看它变成什么颜色。再换一种。", "Pick a solution, add it to the litmus and see what colour it turns. Then try another."),
+                            listOf(liquid(c(0.52f, 0.3f, 0.78f, 0.5f))),
+                        ),
+                        LabStep(
+                            L10n("规律是什么", "What the pattern is"),
+                            L10n("紫色石蕊溶液遇到酸性溶液变红，遇到碱性溶液变蓝，遇到中性溶液不变色。用它可以分辨溶液是酸性还是碱性。另一种指示剂酚酞：遇酸不变色，遇碱变红。", "Purple litmus turns red in an acidic solution, blue in an alkaline one, and stays purple in a neutral one, so it tells acids from alkalis. Another indicator, phenolphthalein, stays colourless in acid and turns red in alkali."),
+                            listOf(liquid(c(0.52f, 0.3f, 0.78f, 0.5f))),
+                        ),
+                    ),
+                choices =
+                    listOf(
+                        LabChoice(L10n("稀盐酸", "Hydrochloric acid"), L10n("稀盐酸：石蕊变红。盐酸是酸性的。", "Dilute hydrochloric acid: the litmus turns red. It is acidic."), effects = listOf(liquid(c(0.92f, 0.2f, 0.24f, 0.52f), seconds = 2.5f))),
+                        LabChoice(L10n("白醋", "Vinegar"), L10n("白醋：石蕊变红。醋里有醋酸，也是酸性的。", "White vinegar: the litmus turns red. Vinegar contains acetic acid, so it is acidic too."), effects = listOf(liquid(c(0.92f, 0.25f, 0.3f, 0.5f), seconds = 2.5f))),
+                        LabChoice(L10n("食盐水", "Salt water"), L10n("食盐水：石蕊不变色，还是紫色。食盐水是中性的。", "Salt water: the litmus stays purple. Salt water is neutral."), effects = listOf(liquid(c(0.52f, 0.3f, 0.78f, 0.5f), seconds = 1.5f))),
+                        LabChoice(L10n("氢氧化钠溶液", "Sodium hydroxide"), L10n("氢氧化钠溶液：石蕊变蓝。它是碱性的。", "Sodium hydroxide solution: the litmus turns blue. It is alkaline."), effects = listOf(liquid(c(0.18f, 0.34f, 0.92f, 0.52f), seconds = 2.5f))),
+                        LabChoice(L10n("石灰水", "Limewater"), L10n("石灰水：石蕊变蓝。石灰水（氢氧化钙溶液）也是碱性的。", "Limewater: the litmus turns blue. Limewater (calcium hydroxide solution) is alkaline as well."), effects = listOf(liquid(c(0.22f, 0.4f, 0.9f, 0.5f), seconds = 2.5f))),
+                    ),
+                choiceTitle = L10n("滴哪种溶液", "Which solution"),
+                source = J10,
+            ),
         )
 
     fun experiment(id: String): Experiment? = ALL.firstOrNull { it.id == id }
@@ -617,6 +694,8 @@ object Experiments {
             "candle_co2" to listOf("C"),
             "neutral" to listOf("Na", "Cl"),
             "cu_hno3" to listOf("Cu", "N"),
+            "metal_acid" to listOf("Mg", "Zn", "Fe", "Cu", "H"),
+            "indicator" to listOf("H"),
         )
 
     fun forSymbol(symbol: String): List<Experiment> = ALL.filter { symbol in ELEMENTS[it.id].orEmpty() }

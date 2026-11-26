@@ -104,7 +104,8 @@ fun LabScreen(modifier: Modifier = Modifier) {
     var soundOn by remember { mutableStateOf(prefs.getBoolean("sound", true)) }
     val sound = remember { LabSound(context.applicationContext) }
     DisposableEffect(Unit) { onDispose { sound.release() } }
-    val heard = state.experiment?.let { e -> if (state.stage == 0) e.start else e.steps.getOrNull(state.stage - 1)?.effects.orEmpty() }.orEmpty()
+    val picked = state.choice?.takeIf { state.stage == 1 }?.let { state.experiment?.choices?.getOrNull(it) }
+    val heard = picked?.effects ?: state.experiment?.let { e -> if (state.stage == 0) e.start else e.steps.getOrNull(state.stage - 1)?.effects.orEmpty() }.orEmpty()
     var volume by remember { mutableIntStateOf(prefs.getInt("volume", 1).coerceIn(0, 2)) }
     // v1.13.1: silent while the app is in the background (home button, headset taken off).
     var foreground by remember { mutableStateOf(true) }
@@ -137,7 +138,7 @@ fun LabScreen(modifier: Modifier = Modifier) {
                 return@Box
             }
             LabSceneView(
-                spec = LabSceneSpec(experiment, state.stage, state.choice?.takeIf { state.stage > 0 }?.let { experiment.choices[it].flame }, state.powerFactor),
+                spec = LabSceneSpec(experiment, state.stage, picked?.flame, state.powerFactor, picked?.effects),
                 resetToken = state.resetToken,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -205,7 +206,7 @@ private fun LabCard(state: LabUiState, experiment: Experiment, volume: Int, onVo
             }
         }
         val observation = if (state.stage == 0) experiment.setup else experiment.steps[state.stage - 1].observe
-        val choiceNote = state.choice?.takeIf { state.stage > 0 }?.let { experiment.choices[it].note }
+        val choiceNote = state.choice?.takeIf { state.stage == 1 }?.let { experiment.choices[it].note }
         Column(
             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(ElementColors.ConditionChip).padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -219,8 +220,8 @@ private fun LabCard(state: LabUiState, experiment: Experiment, volume: Int, onVo
                 Text(next.button.get(language), maxLines = 1)
             }
         }
-        if (experiment.choices.isNotEmpty() && state.stage > 0) {
-            CardSection(str(R.string.lab_choices)) {
+        if (experiment.choices.isNotEmpty() && state.stage == 1) {
+            CardSection(experiment.choiceTitle?.get(language) ?: str(R.string.lab_choices)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     experiment.choices.forEachIndexed { i, choice ->
                         ToggleButton(checked = state.choice == i, onCheckedChange = { onEvent(LabEvent.ChoiceSelected(i)) }, modifier = NoFocus.height(56.dp)) {

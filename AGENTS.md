@@ -327,3 +327,8 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
 - Thing actions: `EverydayThing.action = ThingAction(on, off, effects, switch)`. One button on the selected thing's row (`AtomEvent.ThingActionToggled`, state `thingActive`): match = flame, cola = bubbles, bulb = switch its glow. Debug `tact`.
 - The flame and bubbles are the lab's own particles: `LabScene(embedded = true)` hangs under the atom scene's content (no bench offset, no stage scale, no collider) and renders a throwaway Experiment whose `start` is the thing's effects. Effect positions are in thing-view units (model about 1.1 tall, centred).
 - `AmbientLabSound(effects)` plays the matching loop outside the bench, with the lab's sound switch and volume; it creates no SoundPool until something sounds.
+
+## v1.15.0 (2026-11-26)
+
+- Pick-and-compare experiments (19): `metal_acid` (Mg / Zn / Fe / Cu in dilute HCl; bubble rate follows the activity series) and `indicator` (litmus with five solutions).
+- `LabChoice(label, note, flame = null, effects = null)`: a choice now either tints flames or carries its own effects, shown instead of step 1's (`LabSceneSpec.override`). Choices apply to step 1 only, so a later step can state the conclusion. `Experiment.choiceTitle` heads the choice buttons. Picking another choice makes its `drops` solids fall in.
