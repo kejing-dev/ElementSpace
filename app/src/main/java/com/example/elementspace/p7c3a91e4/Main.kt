@@ -3,6 +3,7 @@ package com.example.elementspace.p7c3a91e4
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.elementspace.p7c3a91e4.ui.atom.AtomScreen
+import com.example.elementspace.p7c3a91e4.ui.lab.LabScreen
 import com.example.elementspace.p7c3a91e4.ui.molecule.MoleculeScreen
 import com.example.elementspace.p7c3a91e4.ui.navigation.WindowIds
 import com.example.elementspace.p7c3a91e4.ui.reaction.ReactionScreen
@@ -64,5 +65,18 @@ fun mainApp(scope: SpatialAppScope) =
             val bounds =
                 Modifier.windowConstraints(minWidth = 960.dp, minHeight = 960.dp, minDepth = 960.dp, maxWidth = 2700.dp, maxHeight = 2700.dp, maxDepth = 2700.dp)
             PicoTheme { MoleculeScreen(bounds) }
+        }
+
+        // The lab bench Volume (one at a time): equipment on a bench and the reaction's visible phenomena.
+        WindowContainer(
+            id = WindowIds.LAB_VOLUME,
+            form = Form.Volumetric,
+            defaultSize = WindowContainerSize(width = 1600.dp, height = 1600.dp, depth = 1600.dp),
+            enableMaterialBackground = false,
+            worldScale = WorldScale.Dynamic,
+        ) {
+            val bounds =
+                Modifier.windowConstraints(minWidth = 960.dp, minHeight = 960.dp, minDepth = 960.dp, maxWidth = 2700.dp, maxHeight = 2700.dp, maxDepth = 2700.dp)
+            PicoTheme { LabScreen(bounds) }
         }
     }

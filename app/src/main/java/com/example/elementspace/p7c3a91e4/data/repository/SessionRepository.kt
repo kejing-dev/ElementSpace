@@ -59,6 +59,13 @@ interface SessionRepository {
 
     fun closeMolecule()
 
+    /** Id of the experiment on the lab bench (v1.9.0), or null when the lab Volume is closed. */
+    val openExperiment: StateFlow<String?>
+
+    fun showExperiment(id: String)
+
+    fun closeExperiment()
+
     /** How much the cards show (v1.7.0); beginner by default. */
     val level: StateFlow<LearningLevel>
 
@@ -106,6 +113,18 @@ class InMemorySessionRepository(initialLanguage: AppLanguage = AppLanguage.ZH) :
         _openAtoms.value = emptyList()
         _openReaction.value = null
         _openMolecule.value = null
+        _openExperiment.value = null
+    }
+
+    private val _openExperiment = MutableStateFlow<String?>(null)
+    override val openExperiment: StateFlow<String?> = _openExperiment.asStateFlow()
+
+    override fun showExperiment(id: String) {
+        _openExperiment.value = id
+    }
+
+    override fun closeExperiment() {
+        _openExperiment.value = null
     }
 
     private val _level = MutableStateFlow(LearningLevel.BASIC)

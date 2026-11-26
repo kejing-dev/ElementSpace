@@ -42,6 +42,7 @@ fun TableTitleBar(
     level: LearningLevel = LearningLevel.BASIC,
     onLevelSelected: (LearningLevel) -> Unit = {},
     onGuide: () -> Unit = {},
+    onLab: () -> Unit = {},
 ) {
     TitleBar(
         modifier = modifier,
@@ -57,6 +58,7 @@ fun TableTitleBar(
         },
         trailingActions = {
             Button(onClick = onGuide, modifier = Modifier.focusProperties { canFocus = false }) { Text(str(R.string.guide), maxLines = 1) }
+            Button(onClick = onLab, modifier = Modifier.focusProperties { canFocus = false }) { Text(str(R.string.lab), maxLines = 1) }
             ToggleButton(checked = collideMode, onCheckedChange = { onCollideToggle() }, modifier = Modifier.focusProperties { canFocus = false }) {
                 Text(str(R.string.collide), maxLines = 1)
             }
@@ -64,7 +66,7 @@ fun TableTitleBar(
                 value = query,
                 onValueChange = onQueryChange,
                 onSearch = onQueryChange,
-                modifier = Modifier.width(420.dp),
+                modifier = Modifier.width(320.dp),
                 placeholder = { Text(str(R.string.search_placeholder), style = PicoTheme.typography.bodyLarge, maxLines = 1) },
             )
             SettingsMenu(

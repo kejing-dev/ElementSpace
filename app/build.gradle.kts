@@ -12,8 +12,8 @@ android {
         applicationId = "com.example.elementspace.p7c3a91e4"
         minSdk = 35
         targetSdk = 35
-        versionCode = 13
-        versionName = "1.8.0"
+        versionCode = 14
+        versionName = "1.9.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk { abiFilters.add("arm64-v8a") }

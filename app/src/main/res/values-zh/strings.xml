@@ -234,7 +234,7 @@
     <string name="guide_exit">退出</string>
     <string name="level_item">内容深度：%1$s</string>
     <string name="level_more">还有 %1$d 条更深的反应：在「设置」里把内容深度调高就能看到。</string>
-    <string name="first_title">三件可以试的事</string>
+    <string name="first_title">四件可以试的事</string>
     <string name="first_1">点一个元素，打开它的原子；捏住转一转。</string>
     <string name="first_2">打开「碰一碰」，点两个元素，看它们会不会反应。</string>
     <string name="first_3">点「跟我学」，一步一步弄懂一个问题。</string>
@@ -244,4 +244,19 @@
     <string name="tab_life">生活里</string>
     <string name="thing_show">看 3D</string>
     <string name="thing_back">回到原子</string>
+    <string name="lab">实验台</string>
+    <string name="lab_empty">从周期表上方的「实验台」打开一个实验。</string>
+    <string name="lab_restart">重来</string>
+    <string name="lab_small">小</string>
+    <string name="lab_medium">中</string>
+    <string name="lab_large">大</string>
+    <string name="lab_tab_now">这个实验</string>
+    <string name="lab_tab_all">换实验 %1$d</string>
+    <string name="lab_on_bench">台上有什么</string>
+    <string name="lab_you_see">你看到的</string>
+    <string name="lab_choices">换一种盐</string>
+    <string name="lab_micro_title">微观上发生了什么</string>
+    <string name="lab_micro">看原子怎样重新组合</string>
+    <string name="lab_safety">这些实验有的很危险（钠、铝热、镁条的强光），真实操作必须在老师指导下、做好防护。</string>
+    <string name="first_4">点「实验台」，亲手做几个现象最漂亮的实验。</string>
 </resources>

@@ -16,7 +16,7 @@ data class AtomWindowRequest(
     val close: Int?,
 )
 
-enum class AuxWindow { REACTION, MOLECULE }
+enum class AuxWindow { REACTION, MOLECULE, LAB }
 
 /** [step] is the next step to do; equal to the number of steps when the path is finished. */
 data class GuideProgress(val path: GuidePath, val step: Int = 0) {
@@ -101,6 +101,9 @@ sealed interface PeriodicTableEvent {
     data object GuideExit : PeriodicTableEvent
 
     data class FirstRunVisible(val visible: Boolean) : PeriodicTableEvent
+
+    /** Opens the lab bench on [id], or on the experiment last shown (the first one when none). */
+    data class LabOpened(val id: String? = null) : PeriodicTableEvent
 
     data object AuxWindowHandled : PeriodicTableEvent
 

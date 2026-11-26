@@ -97,7 +97,7 @@ fun FirstRunOverlay(onEvent: (PeriodicTableEvent) -> Unit) {
     Scrim(onDismiss = close) {
         Card(width = 760.dp) {
             Text(str(R.string.first_title), style = PicoTheme.typography.headlineSmall, color = PicoTheme.colorScheme.labelPrimary)
-            listOf(R.string.first_1, R.string.first_2, R.string.first_3).forEachIndexed { i, line ->
+            listOf(R.string.first_1, R.string.first_2, R.string.first_3, R.string.first_4).forEachIndexed { i, line ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Box(modifier = Modifier.size(44.dp).clip(CircleShape).background(PicoTheme.colorScheme.fillTertiary), contentAlignment = Alignment.Center) {
                         Text("${i + 1}", style = PicoTheme.typography.titleMedium, color = PicoTheme.colorScheme.labelPrimary)

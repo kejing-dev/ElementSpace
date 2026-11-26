@@ -65,6 +65,7 @@ fun PeriodicTableScreen(modifier: Modifier = Modifier) {
             when (aux) {
                 AuxWindow.REACTION -> navigator.openWindowContainer(WindowIds.REACTION_VOLUME, tag = WindowIds.REACTION_TAG)
                 AuxWindow.MOLECULE -> navigator.openWindowContainer(WindowIds.MOLECULE_VOLUME, tag = WindowIds.MOLECULE_TAG)
+                AuxWindow.LAB -> navigator.openWindowContainer(WindowIds.LAB_VOLUME, tag = WindowIds.LAB_TAG)
             }
         }
         viewModel.onEvent(PeriodicTableEvent.AuxWindowHandled)
@@ -96,6 +97,7 @@ fun PeriodicTableScreen(modifier: Modifier = Modifier) {
     // QA screenshots: see DebugBus / AGENTS.md.
     DebugBus.Collect { command ->
         when (command.cmd) {
+            "lab" -> viewModel.onEvent(PeriodicTableEvent.LabOpened(command.arg))
             "guide" -> if (command.arg == null) viewModel.onEvent(PeriodicTableEvent.GuideListVisible(true)) else viewModel.onEvent(PeriodicTableEvent.GuideStarted(command.arg))
             "gnext" -> viewModel.onEvent(PeriodicTableEvent.GuideNext)
             "gexit" -> viewModel.onEvent(PeriodicTableEvent.GuideExit)
@@ -179,6 +181,7 @@ internal fun PeriodicTableContent(
             level = state.level,
             onLevelSelected = { onEvent(PeriodicTableEvent.LevelSelected(it)) },
             onGuide = { onEvent(PeriodicTableEvent.GuideListVisible(true)) },
+            onLab = { onEvent(PeriodicTableEvent.LabOpened()) },
             collideMode = state.collideMode,
             onCollideToggle = { onEvent(PeriodicTableEvent.CollideToggled) },
         )

@@ -5,3 +5,6 @@ salt.glb table salt is white.
 ice.glb ice is colourless.
 egg.glb eggshell.
 diamond.glb colourless gem with a mirror-like PBR material.
+beaker.glb clear glass beaker; every material is replaced in code by clear tinted glass (ThingModels.glass).
+gasjar.glb clear glass gas jar; drawn with the same glass material in code.
+crucible.glb white porcelain crucible on a black iron tripod.

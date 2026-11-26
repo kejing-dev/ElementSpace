@@ -8,6 +8,7 @@ import com.example.elementspace.p7c3a91e4.data.repository.SessionRepository
 import com.example.elementspace.p7c3a91e4.domain.model.TrendProperty
 import com.example.elementspace.p7c3a91e4.data.repository.BundledReactionRepository
 import com.example.elementspace.p7c3a91e4.data.repository.ElementReactions
+import com.example.elementspace.p7c3a91e4.data.repository.Experiments
 import com.example.elementspace.p7c3a91e4.data.repository.GuidePaths
 import com.example.elementspace.p7c3a91e4.domain.model.AtomCommand
 import com.example.elementspace.p7c3a91e4.domain.model.GuideAction
@@ -67,6 +68,11 @@ class PeriodicTableViewModel(
                 }
             PeriodicTableEvent.GuideNext -> guideNext()
             PeriodicTableEvent.GuideExit -> _state.update { it.copy(guide = null) }
+            is PeriodicTableEvent.LabOpened -> {
+                val id = event.id?.takeIf { Experiments.experiment(it) != null } ?: sessionRepository.openExperiment.value ?: Experiments.ALL.first().id
+                sessionRepository.showExperiment(id)
+                _state.update { it.copy(auxWindow = AuxWindow.LAB, languageMenuOpen = false) }
+            }
             is PeriodicTableEvent.FirstRunVisible -> _state.update { it.copy(firstRunOpen = event.visible) }
             PeriodicTableEvent.AuxWindowHandled -> _state.update { it.copy(auxWindow = null) }
             PeriodicTableEvent.CollideToggled -> _state.update { it.copy(collideMode = !it.collideMode, collidePicks = emptyList(), collideOutcome = null, languageMenuOpen = false) }

@@ -16,5 +16,9 @@ object WindowIds {
     const val MOLECULE_VOLUME = "MoleculeVolume"
     const val MOLECULE_TAG = "molecule"
 
+    /** The single lab bench Volume; what it shows comes from SessionRepository.openExperiment. */
+    const val LAB_VOLUME = "LabVolume"
+    const val LAB_TAG = "lab"
+
     fun atomTag(atomicNumber: Int): String = "atom_$atomicNumber"
 }

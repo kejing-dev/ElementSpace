@@ -24,6 +24,7 @@ object AppExit {
             session.openAtoms.value.forEach { navigator?.closeWindowContainer(WindowIds.ATOM_VOLUME, WindowIds.atomTag(it)) }
             navigator?.closeWindowContainer(WindowIds.REACTION_VOLUME, WindowIds.REACTION_TAG)
             navigator?.closeWindowContainer(WindowIds.MOLECULE_VOLUME, WindowIds.MOLECULE_TAG)
+            navigator?.closeWindowContainer(WindowIds.LAB_VOLUME, WindowIds.LAB_TAG)
         }
         session.closeAll()
         runCatching {
