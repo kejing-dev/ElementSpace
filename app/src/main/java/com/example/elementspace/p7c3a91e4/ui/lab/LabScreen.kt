@@ -21,6 +21,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -92,6 +93,19 @@ fun LabScreen(modifier: Modifier = Modifier) {
         }
     }
 
+    // v1.10.0: sound follows what is on the bench; the switch is remembered.
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("element_space", android.content.Context.MODE_PRIVATE) }
+    var soundOn by remember { mutableStateOf(prefs.getBoolean("sound", true)) }
+    val sound = remember { LabSound(context.applicationContext) }
+    DisposableEffect(Unit) { onDispose { sound.release() } }
+    val heard = state.experiment?.let { e -> if (state.stage == 0) e.start else e.steps.getOrNull(state.stage - 1)?.effects.orEmpty() }.orEmpty()
+    LaunchedEffect(heard, state.powerFactor, soundOn) { sound.set(if (soundOn) LabMix.of(heard, state.powerFactor) else LabMix()) }
+    val onSound: (Boolean) -> Unit = { on ->
+        soundOn = on
+        prefs.edit().putBoolean("sound", on).apply()
+    }
+
     AppLocale(state.language) {
         Box(modifier = modifier.fillMaxSize()) {
             val experiment = state.experiment
@@ -104,7 +118,7 @@ fun LabScreen(modifier: Modifier = Modifier) {
                 resetToken = state.resetToken,
                 modifier = Modifier.fillMaxSize(),
             )
-            Toolbar { LabToolbar(state, experiment, onEvent) }
+            Toolbar { LabToolbar(state, experiment, soundOn, onSound, onEvent) }
             SideCard { LabCard(state, experiment, onEvent) }
         }
     }
@@ -112,7 +126,7 @@ fun LabScreen(modifier: Modifier = Modifier) {
 
 /** Under the bench: the next step as one big button, start over, and the small / medium / large control. */
 @Composable
-private fun RowScope.LabToolbar(state: LabUiState, experiment: Experiment, onEvent: (LabEvent) -> Unit) {
+private fun RowScope.LabToolbar(state: LabUiState, experiment: Experiment, soundOn: Boolean, onSound: (Boolean) -> Unit, onEvent: (LabEvent) -> Unit) {
     val next = experiment.steps.getOrNull(state.stage)
     if (next != null) {
         Button(onClick = { onEvent(LabEvent.Next) }, modifier = NoFocus) {
@@ -129,6 +143,7 @@ private fun RowScope.LabToolbar(state: LabUiState, experiment: Experiment, onEve
         }
     }
     VerticalDivider(modifier = Modifier.size(width = 1.dp, height = 32.dp))
+    ToggleButton(checked = soundOn, onCheckedChange = onSound, modifier = NoFocus) { Text(str(R.string.lab_sound), maxLines = 1) }
     IconButton(onClick = { onEvent(LabEvent.ResetView) }, modifier = NoFocus) {
         Icon(painter = painterResource(R.drawable.ic_rotate), contentDescription = str(R.string.reset_view))
     }

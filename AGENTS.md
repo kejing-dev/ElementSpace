@@ -287,3 +287,10 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
 - Three more everyday things (Tripo, textured): `nail` (Fe, rusting), `chip` (Si), `match` (P, S). 17 things in all; `things/index.json` regenerated with scratchpad `glb_index.py`.
 - Making an ion now shows the electron: `FlyComponent` in AtomScene moves one gold electron from the outer shell away (charge up) or in from outside (charge down), 1.6 s, driven by the existing orbit system. Only in the shell view.
 - `EverydayThing.glows`: the bulb is drawn switched on (`ThingModels.lit` sets emissive on its materials, plus an additive halo using `LabScene.glowBitmap()` and one point light).
+
+## v1.10.0 (2026-11-26)
+
+- Lab sound: `ui/lab/LabSound.kt`. `LabMix.of(effects, power)` turns the visible effects into three loop volumes (flame, sparks, fizz); `LabSound` plays them with SoundPool and fires `lab_ignite` once when a flame first appears. Clips in `res/raw/lab_*.wav` are synthesized noise: regenerate with factory `apps/element-space/polish/M10-sounds.py <res/raw>`. No recordings, nothing to license.
+- Toolbar toggle 声音, remembered in SharedPreferences `element_space/sound` (default on).
+- Guide paths `iron_rust` and `chip_sand` (8 paths). New `AtomAction.Thing(id)` shows an everyday thing from a guide step.
+- Tests: LabMixTest; GuidePathsTest checks Thing ids belong to the element.

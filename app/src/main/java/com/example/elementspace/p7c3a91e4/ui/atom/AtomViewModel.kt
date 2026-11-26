@@ -70,6 +70,7 @@ class AtomViewModel(
                 when (val action = command.action) {
                     is AtomAction.Charge -> onEvent(AtomEvent.ChargeStepped(action.delta))
                     is AtomAction.View -> show(action.view)
+                    is AtomAction.Thing -> onEvent(AtomEvent.ThingSelected(action.id))
                     is AtomAction.Allotrope -> {
                         show(AtomViewMode.ALLOTROPE)
                         onEvent(AtomEvent.AllotropeSelected(action.index))

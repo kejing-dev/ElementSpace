@@ -15,6 +15,9 @@ sealed interface AtomAction {
 
     /** Shows the allotrope view on allotrope [index]. */
     data class Allotrope(val index: Int) : AtomAction
+
+    /** Shows an everyday thing (EverydayThings id) in place of the atom. */
+    data class Thing(val id: String) : AtomAction
 }
 
 data class AtomCommand(val atomicNumber: Int, val action: AtomAction)

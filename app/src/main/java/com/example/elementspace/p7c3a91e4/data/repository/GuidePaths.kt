@@ -9,7 +9,7 @@ import com.example.elementspace.p7c3a91e4.domain.model.L10n
 
 /**
  * "跟我学" (v1.7.0): short paths, one sentence and one tap per step. Facts follow the PEP textbooks
- * (九年级 units 3, 4, 6; 必修第一册 ch. 2, 4). Reaction and molecule ids must exist in the libraries
+ * (九年级 units 3, 4, 6, 8; 必修第一册 ch. 2, 4; 必修第二册 ch. 5 §3). Reaction and molecule ids must exist in the libraries
  * (GuidePathsTest checks).
  */
 object GuidePaths {
@@ -80,6 +80,29 @@ object GuidePaths {
                     step("绿色的焰火里常有钡或铜。再看看铜。", "Green fireworks usually contain barium or copper. Now look at copper.", "打开铜", "Open copper", GuideAction.OpenAtom(29)),
                 ),
                 L10n("金属原子受热时，电子吸收能量跳到离核更远的地方，再跳回来时把能量变成光放出来。每种元素的电子能量不同，放出的光颜色就不同。", "When a metal atom is heated its electrons absorb energy and jump further from the nucleus; falling back, they give the energy out as light. Each element's electrons have their own energies, so each gives its own colour."),
+            ),
+            // v1.10.0
+            GuidePath(
+                "iron_rust",
+                L10n("铁为什么会生锈", "Why iron rusts"),
+                listOf(
+                    step("铁原子有 26 个电子，最外层只有 2 个，容易失去。", "An iron atom has 26 electrons with only two in its outer shell, easily lost.", "打开铁", "Open iron", GuideAction.OpenAtom(26)),
+                    step("铁和空气里的氧气、水一起作用，就慢慢生锈。铁锈是红棕色的，很疏松。", "With oxygen and water from the air acting together, iron slowly rusts. Rust is red-brown and crumbly.", "看生锈的铁钉", "See a rusty nail", GuideAction.Atom(26, AtomAction.Thing("nail"))),
+                    step("生锈很慢。让铁和氧直接碰一碰，看它们会不会反应。", "Rusting is slow. Bring iron and oxygen together directly and see whether they react.", "铁和氧碰一碰", "Collide iron and oxygen", GuideAction.Collide(26, 8)),
+                    step("在纯氧里，烧红的铁丝会剧烈燃烧，火星四射。到实验台上看。", "In pure oxygen a red-hot iron wire burns fiercely, throwing sparks. See it on the bench.", "做铁丝燃烧实验", "Burn iron wire", GuideAction.Lab("fe_o2")),
+                ),
+                L10n("生锈和燃烧都是铁和氧气反应，一个很慢，一个很剧烈。刷油漆、涂油、镀上别的金属，把氧气和水隔开，铁就不容易生锈。", "Rusting and burning are both iron reacting with oxygen: one slow, one violent. Paint, oil or a coating of another metal keeps oxygen and water away, so the iron does not rust."),
+            ),
+            GuidePath(
+                "chip_sand",
+                L10n("芯片为什么说是沙子做的", "Why chips are said to be made of sand"),
+                listOf(
+                    step("硅原子最外层有 4 个电子，和碳在同一族。", "A silicon atom has four outer electrons and sits in the same group as carbon.", "打开硅", "Open silicon", GuideAction.OpenAtom(14)),
+                    step("高纯度的硅是半导体，导电能力在导体和绝缘体之间，芯片就是用它做的。", "Very pure silicon is a semiconductor, conducting between a conductor and an insulator. Chips are made from it.", "看电脑芯片", "See a computer chip", GuideAction.Atom(14, AtomAction.Thing("chip"))),
+                    step("硅从哪来？沙子的主要成分是二氧化硅，在高温下用碳把氧夺走，就得到硅。", "Where does it come from? Sand is mostly silicon dioxide; at high temperature carbon takes the oxygen away, leaving silicon.", "看沙子变成硅", "See sand become silicon", GuideAction.Reaction("si_2")),
+                    step("玻璃的主要成分也是二氧化硅。", "Glass is mainly silicon dioxide too.", "看玻璃瓶", "See a glass jar", GuideAction.Atom(14, AtomAction.Thing("jar"))),
+                ),
+                L10n("硅在地壳里的含量仅次于氧，排第二。沙子、玻璃、芯片里都有它。", "Silicon is the second most abundant element in the Earth's crust, after oxygen. It is in sand, glass and chips."),
             ),
         )
 

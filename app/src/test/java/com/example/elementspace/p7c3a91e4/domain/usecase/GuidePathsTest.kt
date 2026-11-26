@@ -18,7 +18,7 @@ class GuidePathsTest {
 
     @Test
     fun `every step points at something that exists and has both languages`() {
-        assertTrue(GuidePaths.ALL.size >= 5)
+        assertTrue(GuidePaths.ALL.size >= 8)
         GuidePaths.ALL.forEach { path ->
             assertTrue(path.id, path.steps.size in 3..5)
             assertTrue(path.done.zh.isNotBlank() && path.done.en.isNotBlank())
@@ -28,6 +28,11 @@ class GuidePathsTest {
                     is GuideAction.OpenAtom -> assertNotNull(path.id, elements.element(a.atomicNumber))
                     is GuideAction.Atom -> {
                         assertNotNull(elements.element(a.atomicNumber))
+                        (a.action as? AtomAction.Thing)?.let { t ->
+                            val thing = com.example.elementspace.p7c3a91e4.data.repository.EverydayThings.thing(t.id)
+                            assertNotNull("${path.id} ${t.id}", thing)
+                            assertTrue(path.id, elements.element(a.atomicNumber)!!.symbol in thing!!.symbols)
+                        }
                         (a.action as? AtomAction.Allotrope)?.let { assertTrue(path.id, it.index in elements.allotropes(a.atomicNumber).indices) }
                     }
                     is GuideAction.Reaction -> assertNotNull("${path.id} ${a.id}", reactions.reaction(a.id))

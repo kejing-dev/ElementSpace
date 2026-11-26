@@ -247,6 +247,7 @@
     <string name="lab">Lab</string>
     <string name="lab_empty">Open an experiment from Lab above the periodic table.</string>
     <string name="lab_restart">Start over</string>
+    <string name="lab_sound">Sound</string>
     <string name="lab_small">Low</string>
     <string name="lab_medium">Mid</string>
     <string name="lab_large">High</string>

@@ -247,6 +247,7 @@
     <string name="lab">实验台</string>
     <string name="lab_empty">从周期表上方的「实验台」打开一个实验。</string>
     <string name="lab_restart">重来</string>
+    <string name="lab_sound">声音</string>
     <string name="lab_small">小</string>
     <string name="lab_medium">中</string>
     <string name="lab_large">大</string>
