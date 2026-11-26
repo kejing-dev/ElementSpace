@@ -209,4 +209,6 @@
     <string name="orb_peak">最可能半径 ≈ %1$s a₀</string>
     <string name="orb_axis_r">横轴：离核距离 r（a₀，类氢 Z = 1）　紫点：径向节点</string>
     <string name="orb_source">来源：人教版高中化学 选择性必修2 第一章第一节「原子结构」（能层、能级、原子轨道、泡利原理、洪特规则、构造原理）；《无机化学》（北京师范大学等编，高等教育出版社）原子结构一章；Atkins\' Physical Chemistry「Hydrogenic atomic orbitals」；J. C. Slater, Phys. Rev. 36, 57 (1930)。</string>
+    <string name="rx_schematic">示意：3D 表示原子怎样重新组合、个数守恒，不表示分子或晶体的真实结构。</string>
+    <string name="tab_reactions_plain">化学式</string>
 </resources>

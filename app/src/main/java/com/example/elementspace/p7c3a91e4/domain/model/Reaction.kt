@@ -98,6 +98,8 @@ data class ReactionFrame(
     /** Ball-and-stick atoms and bonds ([ReactionKind.BONDS]); positions in scene units. */
     val atoms: List<FrameAtom> = emptyList(),
     val bonds: List<FrameBond> = emptyList(),
+    /** Scene units per ångström for ball sizes; 0.13 for the hand-made reactions, less when an auto picture shrinks to fit. */
+    val atomScale: Float = 0.13f,
 )
 
 /** What a reaction condition looks like in the Volume (v1.3.0). */
@@ -110,6 +112,8 @@ enum class ConditionKind(val icon: String) {
     IGNITE("🔥"),
     /** A label only: a catalyst is not a reactant and is not counted. */
     CATALYST("⚗"),
+    /** A label only, for conditions that are not drawn: electric discharge, pressure, −196 ℃ … */
+    NOTE("ℹ"),
 }
 
 data class ConditionVisual(val kind: ConditionKind, val label: L10n)
@@ -144,6 +148,8 @@ data class Reaction(
     /** The [condition] drawn in the Volume; shown on [conditionSteps] (0-based), the steps it acts in. */
     val visuals: List<ConditionVisual> = emptyList(),
     val conditionSteps: Set<Int> = setOf(1, 2),
+    /** Built from the equation alone (M5): the 3D shows atoms regrouping, not real structure. */
+    val schematic: Boolean = false,
 ) {
     fun conditionsAt(step: Int): List<ConditionVisual> = if (step in conditionSteps) visuals else emptyList()
 }

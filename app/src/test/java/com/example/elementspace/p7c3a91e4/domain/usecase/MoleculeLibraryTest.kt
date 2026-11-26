@@ -127,7 +127,7 @@ class MoleculeLibraryTest {
 
     // ---- organic reaction frames ----------------------------------------------------------------
 
-    private val organic = reactions.filter { it.kind == ReactionKind.BONDS }
+    private val organic = BundledReactionRepository().all().filter { it.kind == ReactionKind.BONDS && !it.schematic }
 
     private fun counts(frame: ReactionFrame) = frame.atoms.groupingBy { it.symbol }.eachCount()
 

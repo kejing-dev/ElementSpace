@@ -44,7 +44,7 @@ class BundledReactionRepository : ReactionRepository {
     override fun forSymbol(symbol: String): List<Reaction> =
         LIBRARY.filter { reaction ->
             (reaction.reactants + reaction.products).any { symbol in ChemicalFormula.count(it.formula) }
-        }
+        }.sortedBy { it.rank() }
 
     companion object {
         val shared: ReactionRepository by lazy { BundledReactionRepository() }
@@ -396,6 +396,10 @@ class BundledReactionRepository : ReactionRepository {
                     ),
             )
 
-        val LIBRARY: List<Reaction> = listOf(NA_CL2, H2_O2, FE_CUSO4) + OrganicReactions.ALL
+        /** Hand-made reactions first, then one or more common reactions for every element (M5). */
+        val LIBRARY: List<Reaction> by lazy { listOf(NA_CL2, H2_O2, FE_CUSO4) + OrganicReactions.ALL + ElementReactions.ALL }
+
+        /** Junior school first, then senior, then the university reference. */
+        private fun Reaction.rank(): Int = when { SchoolStage.JUNIOR in stages -> 0; SchoolStage.SENIOR in stages -> 1; else -> 2 }
     }
 }

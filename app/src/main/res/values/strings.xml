@@ -209,4 +209,6 @@
     <string name="orb_peak">Most probable radius ≈ %1$s a₀</string>
     <string name="orb_axis_r">Horizontal: distance r from the nucleus (a₀, hydrogen-like Z = 1). Violet dots: radial nodes.</string>
     <string name="orb_source">Sources: PEP High-school Chemistry, Structure of Matter Ch. 1 §1 (shells, subshells, orbitals, Pauli, Hund, Aufbau); Inorganic Chemistry (Beijing Normal Univ. et al., Higher Education Press), atomic structure; Atkins\' Physical Chemistry, \"Hydrogenic atomic orbitals\"; J. C. Slater, Phys. Rev. 36, 57 (1930).</string>
+    <string name="rx_schematic">Schematic: the 3D shows how the atoms regroup and that they are conserved, not the real structure of the molecules or crystals.</string>
+    <string name="tab_reactions_plain">Reactions</string>
 </resources>

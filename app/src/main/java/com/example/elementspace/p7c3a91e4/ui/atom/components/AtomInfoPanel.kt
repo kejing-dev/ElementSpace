@@ -29,6 +29,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.elementspace.p7c3a91e4.R
 import com.example.elementspace.p7c3a91e4.ui.common.PagedCard
+import com.example.elementspace.p7c3a91e4.ui.common.CardBody
+import com.example.elementspace.p7c3a91e4.data.repository.ElementReactions
 import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
 import com.example.elementspace.p7c3a91e4.domain.model.AtomViewMode
 import com.example.elementspace.p7c3a91e4.domain.model.Element
@@ -82,7 +84,8 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
             // In the cloud view the orbital page comes first, so switching to the cloud shows it.
             if (state.view == AtomViewMode.CLOUD && state.configuration != null) add(AtomPage.ORBITALS)
             add(AtomPage.STRUCTURE)
-            if (state.reactions.isNotEmpty()) add(AtomPage.REACTIONS)
+            // Every element has this page (M5): its reactions, or why it has none.
+            add(AtomPage.REACTIONS)
             if (state.molecules.isNotEmpty()) add(AtomPage.MOLECULES)
             add(AtomPage.PROPERTIES)
         }
@@ -91,7 +94,7 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
             when (page) {
                 AtomPage.STRUCTURE -> str(R.string.tab_structure)
                 AtomPage.ORBITALS -> str(R.string.tab_orbitals)
-                AtomPage.REACTIONS -> str(R.string.tab_reactions, state.reactions.size)
+                AtomPage.REACTIONS -> if (state.reactions.isEmpty()) str(R.string.tab_reactions_plain) else str(R.string.tab_reactions, state.reactions.size)
                 AtomPage.MOLECULES -> str(R.string.tab_molecules, state.molecules.size)
                 AtomPage.PROPERTIES -> str(R.string.tab_properties)
             }
@@ -100,7 +103,12 @@ fun AtomInfoPanel(state: AtomUiState, onEvent: (AtomEvent) -> Unit, modifier: Mo
         when (pages[index]) {
             AtomPage.STRUCTURE -> StructurePage(state, element, onEvent)
             AtomPage.ORBITALS -> OrbitalPage(state, onEvent)
-            AtomPage.REACTIONS -> ReactionsSection(state, onEvent)
+            AtomPage.REACTIONS ->
+                if (state.reactions.isEmpty()) {
+                    ElementReactions.NOTES[element.symbol]?.let { note -> CardBody(note.get(state.language)) }
+                } else {
+                    ReactionsSection(state, onEvent)
+                }
             AtomPage.MOLECULES -> {
                 if (element.symbol == "C") CarbonBondingSection()
                 MoleculesSection(state, onEvent)

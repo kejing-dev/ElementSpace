@@ -181,3 +181,21 @@ Debug commands added: `molecule <id>`, `compare <id|none>`, `mmode ball|fill`, `
   group name are SceneLabels tags in 3D; 键角 / 官能团 buttons are greyed out when there is nothing to mark.
 - Debug: `aview shell|nucleus|cloud|allotrope`, `cloud whole|single`, `orbital 3d:2` (n, letter, index
   into `Orbitals.shapes[l]`), `phase`, `nodes`, `axes`.
+
+## v1.5.0 polish (2026-11-25): common reactions for every element
+
+- `data/repository/ElementReactions.kt` is GENERATED from the factory's
+  `apps/element-space/polish/M5-reactions-data.py` by `M5-gen-kotlin.py` (edit the data, regenerate).
+  179 equations, each with a source (人教版 J / S1 / S2 / X1, or Greenwood & Earnshaw by chapter for
+  elements the textbooks skip), condition key, types and a one-line phenomenon in both languages.
+  `NOTES` says why 28 elements (He, Ne, Ar, At, Fr, Cm–Og) have no common reaction; the atom card's
+  化学式 page shows that note instead of a list.
+- `AutoReaction` draws them from the equation alone (`Reaction.schematic = true`, kind BONDS, 4 steps:
+  reactants, old bonds break, atoms regroup, products with gold new bonds). Each formula unit is a
+  schematic cluster: a unique non-O centre (S in SO₄, preference list `CENTRES`) with O around it,
+  metals of a salt on an O, H on a free O (else on the centre), parenthesised groups as their own
+  little star; no unique centre → alternating ring. Units pack in rows of 3; the picture fits
+  |x| ≤ 0.7 (the side card starts at 0.8) via `ReactionFrame.atomScale` (≤ 0.13, the hand-made scale).
+  Conditions: ign → IGNITE, light → LIGHT, heat/high/hot → HEAT, catalysts → CATALYST tag, the rest
+  (discharge, pressure, −196 ℃ …) → `ConditionKind.NOTE` tag. Card adds 「示意…」 under the legend.
+- `forSymbol` sorts junior, senior, then reference-book reactions.

@@ -56,7 +56,10 @@ class ReactionLibraryTest {
     fun `every reaction has steps, both languages and a textbook source`() {
         library.forEach { reaction ->
             assertTrue(reaction.id, reaction.steps.size in 3..6)
-            assertTrue(reaction.id, reaction.source.zh.contains("人教版") && reaction.source.en.contains("PEP"))
+            // Textbook first; elements the textbooks skip cite Greenwood & Earnshaw (M5).
+            val textbook = reaction.source.zh.contains("人教版") && reaction.source.en.contains("PEP")
+            val reference = reaction.source.zh.contains("Greenwood") && reaction.source.en.contains("Greenwood")
+            assertTrue(reaction.id, textbook || reference)
             reaction.steps.forEach { step ->
                 assertTrue(step.title.zh.isNotBlank() && step.title.en.isNotBlank())
                 assertTrue(step.why.zh.isNotBlank() && step.why.en.isNotBlank())

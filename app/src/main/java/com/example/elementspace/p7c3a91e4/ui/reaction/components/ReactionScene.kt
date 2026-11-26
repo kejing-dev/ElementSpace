@@ -279,8 +279,8 @@ class ReactionScene {
      * have arrived. Red dashed = about to break, gold = newly formed.
      */
     private fun buildBonds(next: Entity, spec: ReactionSceneSpec, previous: ReactionFrame?) {
-        val s = OrganicReactions.SCALE
         val frame = spec.frame
+        val s = frame.atomScale
         val before = previous?.atoms?.associateBy { it.id }.orEmpty()
         val moved = frame.atoms.filter { a -> before[a.id]?.let { it.position != a.position } ?: false }.map { it.id }.toSet()
         frame.atoms.forEach { atom ->
@@ -339,7 +339,7 @@ class ReactionScene {
 
     /** Where the drawn particles are, with their radii, to place condition props around them. */
     private fun bodies(frame: ReactionFrame): List<Pair<Vec3, Float>> =
-        frame.atoms.map { it.position to BallStick.ball(it.symbol) * OrganicReactions.SCALE } +
+        frame.atoms.map { it.position to BallStick.ball(it.symbol) * frame.atomScale } +
             frame.particles.map { it.position to ReactionLayout.particleRadius(it) }
 
     private fun buildConditions(next: Entity, spec: ReactionSceneSpec) {
@@ -392,7 +392,7 @@ class ReactionScene {
                     next.addChild(sparks)
                     next.addChild(labels.label(text, Vec3(at.x + 0.24f, at.y + 0.04f, 0.05f), height = 0.07f, lift = 0.05f, style = SceneLabels.Style.TAG))
                 }
-                ConditionKind.CATALYST -> {
+                ConditionKind.CATALYST, ConditionKind.NOTE -> {
                     next.addChild(labels.label(text, Vec3((centre.x + 0.36f).coerceAtMost(right), tagY, 0f), height = 0.065f, lift = 0.05f, style = SceneLabels.Style.TAG))
                 }
             }

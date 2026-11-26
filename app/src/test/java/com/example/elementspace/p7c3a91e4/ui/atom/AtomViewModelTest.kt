@@ -161,7 +161,8 @@ class AtomViewModelTest {
     @Test
     fun `sodium lists its common reactions and opening one shows it in the reaction Volume`() = runTest {
         val vm = viewModel(11)
-        assertEquals(listOf("na_cl2"), vm.state.value.reactions.map { it.id })
+        val ids = vm.state.value.reactions.map { it.id }
+        assertTrue(ids.toString(), "na_cl2" in ids && ids.size >= 5)
         vm.onEvent(AtomEvent.ReactionOpened("na_cl2"))
         assertEquals("na_cl2", session.openReaction.value)
     }

@@ -27,7 +27,7 @@ class ConditionsAndLabelsTest {
                 "c2h4_br2" to emptyList(),
             )
         library.forEach { r ->
-            assertEquals(r.id, expected[r.id], r.visuals.map { it.kind })
+            if (!r.schematic) assertEquals(r.id, expected[r.id], r.visuals.map { it.kind })
             assertEquals("${r.id}: condition text and visuals go together", r.condition != null, r.visuals.isNotEmpty())
         }
     }
