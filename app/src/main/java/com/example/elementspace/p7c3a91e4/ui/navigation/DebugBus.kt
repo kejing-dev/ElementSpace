@@ -27,6 +27,7 @@ data class DebugCommand(val cmd: String, val arg: String?) {
             "prev" -> ReactionEvent.Previous
             "replay" -> ReactionEvent.Replay
             "play" -> ReactionEvent.PlayToggled
+            "rview" -> ReactionEvent.ViewToggled
             else -> null
         }
 }

@@ -175,6 +175,7 @@ private fun ColumnScope.About(reaction: Reaction, elements: Map<String, Element>
     }
     CardSection(str(R.string.rx_legend)) { Legend(reaction, elements, colors, language) }
     if (reaction.schematic) CardBody(str(R.string.rx_schematic), PicoTheme.colorScheme.labelSecondary)
+    if (reaction.sketch) CardBody(str(R.string.rx_sketch), PicoTheme.colorScheme.labelSecondary)
     CardSource(str(R.string.rx_source, reaction.source.get(language)))
 }
 

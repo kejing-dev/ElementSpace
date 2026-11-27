@@ -82,6 +82,7 @@ internal fun ReactionContent(
                 stepCount = state.stepCount,
                 playing = state.playing,
                 onEvent = onEvent,
+                showingElectrons = if (state.otherView != null) state.showingElectrons else null,
             )
         }
         SideCard { ReactionCard(state = state, elements = elements, colors = colors, onEvent = onEvent) }

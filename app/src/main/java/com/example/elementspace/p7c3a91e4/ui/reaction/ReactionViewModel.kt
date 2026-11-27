@@ -10,6 +10,7 @@ import com.example.elementspace.p7c3a91e4.data.repository.SessionRepository
 import com.example.elementspace.p7c3a91e4.domain.model.AppLanguage
 import com.example.elementspace.p7c3a91e4.domain.model.Reaction
 import com.example.elementspace.p7c3a91e4.domain.model.ReactionFrame
+import com.example.elementspace.p7c3a91e4.domain.usecase.ElectronView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +26,13 @@ data class ReactionUiState(
     val playing: Boolean = true,
     /** Bumped to ask the 3D view to return to its starting orientation and scale. */
     val resetToken: Int = 0,
+    /** Id of the other view of the same reaction (atoms regrouping ⇄ electrons), when there is one. */
+    val otherView: String? = null,
 ) {
+    /** The view on screen is the electron one. */
+    val showingElectrons: Boolean
+        get() = reaction?.sketch == true
+
     val stepCount: Int
         get() = reaction?.steps?.size ?: 0
 
@@ -48,6 +55,9 @@ sealed interface ReactionEvent {
     data class StepSelected(val step: Int) : ReactionEvent
 
     data object ResetView : ReactionEvent
+
+    /** Switches between "atoms regroup" and "electrons" for the same reaction. */
+    data object ViewToggled : ReactionEvent
 }
 
 /**
@@ -57,7 +67,7 @@ sealed interface ReactionEvent {
  */
 class ReactionViewModel(
     private val reactions: ReactionRepository,
-    sessionRepository: SessionRepository,
+    private val sessionRepository: SessionRepository,
     private val stepMillis: (Reaction, Int) -> Long = ::defaultStepMillis,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ReactionUiState())
@@ -69,7 +79,13 @@ class ReactionViewModel(
             sessionRepository.openReaction.collect { id ->
                 val reaction = id?.let { reactions.reaction(it) }
                 if (reaction?.id != _state.value.reaction?.id) {
-                    _state.update { it.copy(reaction = reaction, step = 0, playing = true, resetToken = it.resetToken + 1) }
+                    val other =
+                        when {
+                            reaction == null -> null
+                            reaction.sketch -> reaction.id.removeSuffix(ElectronView.SUFFIX)
+                            else -> reactions.electronView(reaction.id)?.id?.takeIf { it != reaction.id }
+                        }
+                    _state.update { it.copy(reaction = reaction, step = 0, playing = true, resetToken = it.resetToken + 1, otherView = other) }
                     restartTicker()
                 }
             }
@@ -93,6 +109,7 @@ class ReactionViewModel(
             is ReactionEvent.StepSelected ->
                 _state.update { if (event.step in 0 until it.stepCount) it.copy(step = event.step, playing = false) else it }
             ReactionEvent.ResetView -> _state.update { it.copy(resetToken = it.resetToken + 1) }
+            ReactionEvent.ViewToggled -> _state.value.otherView?.let { sessionRepository.showReaction(it) }
         }
         restartTicker()
     }

@@ -237,22 +237,24 @@ class ReactionScene {
         val frame = newSpec.frame
         val before = previous?.particles?.associateBy { it.id }.orEmpty()
         frame.particles.forEach { particle ->
-            next.addChild(particleEntity(particle, before[particle.id]?.position ?: particle.position, newSpec.nucleusColors))
+            val holder = particleEntity(particle, before[particle.id]?.position ?: particle.position, newSpec.nucleusColors)
+            if (frame.scale != 1f) holder.components[TransformComponent::class.java]?.setScaleVector(Vector3(frame.scale))
+            next.addChild(holder)
         }
         frame.pairs.forEachIndexed { index, pair ->
             val target = ReactionLayout.pairElectrons(frame, pair)
             val origin = previous?.let { prev -> ReactionLayout.pairElectrons(prev.copy(pairs = emptyList()), pair).takeIf { it.size == target.size } }
             target.forEachIndexed { i, p ->
-                next.addChild(gliding(bead("pair_${index}_$i", ElementColors.ElectronTransferred, ELECTRON), origin?.get(i) ?: p, p))
+                next.addChild(gliding(bead("pair_${index}_$i", ElementColors.ElectronTransferred, ELECTRON * frame.scale), origin?.get(i) ?: p, p))
             }
         }
         frame.flights.forEachIndexed { index, flight ->
             val (start, end) = ReactionLayout.flightEnds(frame, flight) ?: return@forEachIndexed
             repeat(flight.count) { k ->
-                val offset = Vec3(0f, k * 0.035f, 0.02f * k)
-                val component = FlightComponent(start + offset, end + offset, lift = 0.22f, delay = k * 0.25f)
-                val electron = bead("flight_${index}_$k", ElementColors.ElectronTransferred, ELECTRON * 1.25f)
-                electron.addChild(instanced("flight_halo_${index}_$k", sphere(), halo(ElementColors.ElectronTransferred, 0.35f), listOf(Vec3.ZERO), ELECTRON * 2.6f))
+                val offset = Vec3(0f, k * 0.035f, 0.02f * k) * frame.scale
+                val component = FlightComponent(start + offset, end + offset, lift = 0.22f * frame.scale.coerceAtLeast(0.6f), delay = k * 0.25f)
+                val electron = bead("flight_${index}_$k", ElementColors.ElectronTransferred, ELECTRON * 1.25f * frame.scale)
+                electron.addChild(instanced("flight_halo_${index}_$k", sphere(), halo(ElementColors.ElectronTransferred, 0.35f), listOf(Vec3.ZERO), ELECTRON * 2.6f * frame.scale))
                 electron.components.set(component)
                 electron.components[TransformComponent::class.java]?.setPosition(start.v3())
                 flights.add(component)

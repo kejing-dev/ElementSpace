@@ -28,7 +28,15 @@ fun RowScope.ReactionToolbarContent(
     stepCount: Int,
     playing: Boolean,
     onEvent: (ReactionEvent) -> Unit,
+    /** null: this reaction has one view only; true: the electron view is on screen. */
+    showingElectrons: Boolean? = null,
 ) {
+    if (showingElectrons != null) {
+        Button(onClick = { onEvent(ReactionEvent.ViewToggled) }, modifier = NoFocus) {
+            Text(str(if (showingElectrons) R.string.rx_view_atoms else R.string.rx_view_electrons), maxLines = 1)
+        }
+        VerticalDivider(modifier = Modifier.size(width = 1.dp, height = 32.dp))
+    }
     Button(onClick = { onEvent(ReactionEvent.Previous) }, enabled = step > 0, modifier = NoFocus) {
         Icon(painterResource(R.drawable.ic_arrow_left), contentDescription = null, modifier = Modifier.size(20.dp))
         Text(str(R.string.step_previous), maxLines = 1)

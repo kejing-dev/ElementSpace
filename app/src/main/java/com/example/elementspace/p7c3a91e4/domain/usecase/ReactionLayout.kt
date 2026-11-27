@@ -67,9 +67,12 @@ object ReactionLayout {
         val dir = d * (1f / length)
         val centre = a.position + d * pair.bias
         val normal = Vec3(-dir.y, dir.x, 0f)
-        val gap = 0.019f
+        val gap = 0.019f * frame.scale
         return if (pair.count <= 2) {
             listOf(centre + normal * gap, centre - normal * gap)
+        } else if (pair.count >= 6) {
+            // A triple bond: three pairs side by side along the bond.
+            listOf(-2f, 0f, 2f).flatMap { k -> listOf(centre + normal * gap + dir * (gap * k), centre - normal * gap + dir * (gap * k)) }
         } else {
             listOf(
                 centre + normal * gap + dir * gap,
@@ -85,9 +88,9 @@ object ReactionLayout {
         val from = frame.particles.firstOrNull { it.id == flight.from } ?: return null
         val to = frame.particles.firstOrNull { it.id == flight.to } ?: return null
         val angle = atan2(to.position.y - from.position.y, to.position.x - from.position.x)
-        val r = particleRadius(from)
+        val r = particleRadius(from) * frame.scale
         val start = from.position + Vec3(r * cos(angle), r * sin(angle), 0f)
-        val outer = shellRadius((to.shells.size - 1).coerceAtLeast(0))
+        val outer = shellRadius((to.shells.size - 1).coerceAtLeast(0)) * frame.scale
         // Landing slot 0 of the acceptor's outer ring (see [slots]).
         val end = to.position + Vec3(-outer, 0f, 0f)
         return start to end

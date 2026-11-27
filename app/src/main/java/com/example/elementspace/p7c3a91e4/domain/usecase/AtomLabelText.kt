@@ -25,9 +25,10 @@ object AtomLabelText {
      */
     fun particle(p: FrameParticle, atomicNumber: Int?): String {
         if (p.cluster.isNotEmpty()) return cluster(p)
+        p.label?.let { return it }
         val full = p.tint == ChargeTint.POSITIVE || p.tint == ChargeTint.NEGATIVE
         if (!full || atomicNumber == null) return p.symbol
-        return p.symbol + charge(atomicNumber - p.shells.sum())
+        return p.symbol + charge(atomicNumber - p.shells.sum() - p.hidden)
     }
 
     private fun cluster(p: FrameParticle): String {

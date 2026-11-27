@@ -12,7 +12,7 @@ data class LabMix(val flame: Float = 0f, val sparks: Float = 0f, val fizz: Float
 
     companion object {
         /** Master volume of the three stops: low, medium (default), high. */
-        val VOLUME = floatArrayOf(0.5f, 0.8f, 1f)
+        val VOLUME = floatArrayOf(0.5f, 0.9f, 1f)
 
         fun of(effects: List<LabEffect>, power: Float): LabMix {
             var flame = 0f

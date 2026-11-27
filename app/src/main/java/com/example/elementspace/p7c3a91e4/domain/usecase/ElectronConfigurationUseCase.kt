@@ -58,7 +58,10 @@ class ElectronConfigurationUseCase {
 
     private fun remove(occupancy: MutableMap<Pair<Int, Int>, Int>, count: Int) {
         var remaining = count
-        val outermostFirst = AUFBAU.sortedWith(compareBy({ -it.first }, { -it.second }))
+        // Outermost shell first, highest l first — except that the f electrons two shells in (4f of a
+        // lanthanide, 5f of an actinide) go before the full s and p of the shell outside them: Nd³⁺ is 4f³, not 5p⁵.
+        val top = occupancy.filterValues { it > 0 }.keys.maxOfOrNull { it.first } ?: 0
+        val outermostFirst = AUFBAU.sortedByDescending { (n, l) -> if (l == 3 && n == top - 2) (top - 1) * 10 + 1.5 else n * 10.0 + l }
         for (subshell in outermostFirst) {
             if (remaining == 0) break
             val current = occupancy[subshell] ?: 0

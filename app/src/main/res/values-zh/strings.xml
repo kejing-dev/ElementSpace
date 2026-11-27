@@ -219,7 +219,7 @@
     <string name="collide_no_experiment">没法做实验</string>
     <string name="collide_unknown">没有常见的直接反应</string>
     <string name="collide_why">为什么</string>
-    <string name="collide_watch">看 3D 反应</string>
+    <string name="collide_watch">看电子得失</string>
     <string name="collide_again">再碰一次</string>
     <string name="collide_see">看%1$s的反应</string>
     <string name="collide_unknown_line">课本和常用资料里，这两种单质没有常见的直接反应。可以看看它们各自常见的反应。</string>
@@ -266,4 +266,7 @@
     <string name="lab_micro">看原子怎样重新组合</string>
     <string name="lab_safety">这些实验有的很危险（钠、铝热、镁条的强光），真实操作必须在老师指导下、做好防护。</string>
     <string name="first_4">点「实验台」，亲手做几个现象最漂亮的实验。</string>
+    <string name="rx_view_electrons">看电子得失</string>
+    <string name="rx_view_atoms">看原子重组</string>
+    <string name="rx_sketch">电子图按化合价和最外层电子画出，是示意：原子的位置和远近不代表真实结构。</string>
 </resources>

@@ -346,3 +346,13 @@ Fixes from an independent review of v1.9.1..v1.15.1 (no crashes found):
 - A guide step that acts on an atom reopens the atom window if it was closed, then sends the command after 1.5 s.
 - The volume slider's position is no longer re-keyed on every stop during a drag.
 - Open, not fixed: `ThingModels.lit` may write emissive onto materials shared between clones; two windows showing the same bulb (W and Ar) could then switch together. Not confirmed.
+
+## v1.16.0 (2026-11-26)
+
+User: "碰一碰 Na + S 没有 Na + Cl 那么详细，都要有个显示电子的按钮……燃烧的音效有点难听".
+- `domain/usecase/ElectronView.kt` generates the four-step Bohr-model electron view (the hand-made Na + Cl₂ format) for every "element + element → one compound" reaction: 137 of them. Two pictures: TRANSFER (metal → non-metal, ions attract) and SHARE (shared pairs leaning to the stronger taker; also the molecular metal compounds in `MOLECULAR`). Special cases: peroxide / superoxide keep the O–O pair, mixed-valence oxides split the charges (Fe₃O₄ = 3, 3, 2), CO has a dative pair, As₄O₆ / Sb₄O₆ are drawn as cages, network solids say so. Only outer shells are drawn (`FrameParticle.hidden`); `ReactionFrame.scale` shrinks the models when many atoms must fit.
+- Its id is `<reaction id>~e`; `ReactionRepository.electronView(id)` returns it (or the reaction itself when hand-made). 碰一碰's button opens it; the reaction window's toolbar has a toggle between "看电子得失" and "看原子重组" (`ReactionEvent.ViewToggled`, debug command `rview`).
+- `ElectronViewTest` checks all 137: electrons conserved in every frame, atoms inside the picture and not overlapping, labels and models. It also writes `app/build/electron-views.txt` (every step's text and particles) for reading; an independent review of that file found the errors fixed before release.
+- `ElectronConfigurationUseCase`: cations of f-block elements now lose 4f / 5f electrons before the 5p / 6p shell outside them (Nd³⁺ is 4f³). This also corrects the atom window's ions for lanthanides and actinides.
+- Flame sound replaced: gas burner (freesound 569332, CC0) instead of the fireplace recording, which was 93 % below 300 Hz. Default volume stop is 0.9 (was 0.8) so the loudness evidence stays above −20 dBFS.
+- Not verified: anything on the headset; how the new flame sounds; the electron flights in motion.

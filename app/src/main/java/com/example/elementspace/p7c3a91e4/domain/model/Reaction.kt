@@ -67,6 +67,10 @@ data class FrameParticle(
     val vacancies: Int = 0,
     /** A grouped spectator ion such as SO4 2-, drawn as a small dim cluster without shells. */
     val cluster: List<String> = emptyList(),
+    /** Inner electrons that are not drawn (v1.16.0 electron views draw the outer shells only). */
+    val hidden: Int = 0,
+    /** Text printed on the atom instead of the computed one, e.g. "O⁻" in a peroxide. */
+    val label: String? = null,
 )
 
 /** A shared electron pair between two particles; [bias] 0.5 = centred, toward 1 = closer to [b]. */
@@ -100,6 +104,8 @@ data class ReactionFrame(
     val bonds: List<FrameBond> = emptyList(),
     /** Scene units per ångström for ball sizes; 0.13 for the hand-made reactions, less when an auto picture shrinks to fit. */
     val atomScale: Float = 0.13f,
+    /** Size of the Bohr models: below 1 when a generated electron view has many atoms to fit. */
+    val scale: Float = 1f,
 )
 
 /** What a reaction condition looks like in the Volume (v1.3.0). */
@@ -150,6 +156,8 @@ data class Reaction(
     val conditionSteps: Set<Int> = setOf(1, 2),
     /** Built from the equation alone (M5): the 3D shows atoms regrouping, not real structure. */
     val schematic: Boolean = false,
+    /** A generated electron view (v1.16.0): drawn from oxidation states and outer shells, not hand-made. */
+    val sketch: Boolean = false,
 ) {
     fun conditionsAt(step: Int): List<ConditionVisual> = if (step in conditionSteps) visuals else emptyList()
 }

@@ -219,7 +219,7 @@
     <string name="collide_no_experiment">No experiment possible</string>
     <string name="collide_unknown">No common direct reaction</string>
     <string name="collide_why">Why</string>
-    <string name="collide_watch">Watch in 3D</string>
+    <string name="collide_watch">Watch the electrons</string>
     <string name="collide_again">Try another pair</string>
     <string name="collide_see">%1$s reactions</string>
     <string name="collide_unknown_line">Textbooks and the usual references list no common direct reaction between these two elements. See what each of them commonly reacts with.</string>
@@ -266,4 +266,7 @@
     <string name="lab_micro">See the atoms regroup</string>
     <string name="lab_safety">Some of these are dangerous for real (sodium, thermite, the glare of magnesium): only with a teacher and proper protection.</string>
     <string name="first_4">Tap Lab to run a few of the most striking experiments yourself.</string>
+    <string name="rx_view_electrons">Show electrons</string>
+    <string name="rx_view_atoms">Show atoms</string>
+    <string name="rx_sketch">The electron picture is drawn from oxidation states and outer-shell electrons. It is a sketch: positions and distances are not the real structure.</string>
 </resources>

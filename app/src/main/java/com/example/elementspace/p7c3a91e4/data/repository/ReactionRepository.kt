@@ -15,7 +15,9 @@ import com.example.elementspace.p7c3a91e4.domain.model.SchoolStage
 import com.example.elementspace.p7c3a91e4.domain.model.SharedPair
 import com.example.elementspace.p7c3a91e4.domain.model.Term
 import com.example.elementspace.p7c3a91e4.domain.model.Vec3
+import com.example.elementspace.p7c3a91e4.domain.model.ReactionKind
 import com.example.elementspace.p7c3a91e4.domain.usecase.ChemicalFormula
+import com.example.elementspace.p7c3a91e4.domain.usecase.ElectronView
 
 /** Common school reactions, listed on the info card of every element they contain. */
 interface ReactionRepository {
@@ -25,6 +27,12 @@ interface ReactionRepository {
 
     /** Reactions whose equation contains [symbol], in library order. */
     fun forSymbol(symbol: String): List<Reaction>
+
+    /**
+     * The view of reaction [id] that shows electrons (v1.16.0): the reaction itself when it is
+     * hand-made with electrons, a generated one for "element + element", null when there is none.
+     */
+    fun electronView(id: String): Reaction? = null
 }
 
 /**
@@ -39,7 +47,14 @@ interface ReactionRepository {
 class BundledReactionRepository : ReactionRepository {
     override fun all(): List<Reaction> = LIBRARY
 
-    override fun reaction(id: String): Reaction? = LIBRARY.firstOrNull { it.id == id }
+    override fun reaction(id: String): Reaction? =
+        if (id.endsWith(ElectronView.SUFFIX)) electronView(id.removeSuffix(ElectronView.SUFFIX)) else LIBRARY.firstOrNull { it.id == id }
+
+    override fun electronView(id: String): Reaction? {
+        val base = LIBRARY.firstOrNull { it.id == id } ?: return null
+        if (base.kind == ReactionKind.ELECTRONS) return base
+        return GENERATED.getOrPut(id) { java.util.Optional.ofNullable(ELECTRON_VIEW.build(base)) }.orElse(null)
+    }
 
     override fun forSymbol(symbol: String): List<Reaction> =
         LIBRARY.filter { reaction ->
@@ -48,6 +63,9 @@ class BundledReactionRepository : ReactionRepository {
 
     companion object {
         val shared: ReactionRepository by lazy { BundledReactionRepository() }
+
+        private val ELECTRON_VIEW by lazy { ElectronView(BundledElementRepository().elements().associateBy { it.symbol }) }
+        private val GENERATED = java.util.concurrent.ConcurrentHashMap<String, java.util.Optional<Reaction>>()
 
         private fun v(x: Float, y: Float) = Vec3(x, y, 0f)
 

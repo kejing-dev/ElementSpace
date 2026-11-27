@@ -77,7 +77,8 @@ class PeriodicTableViewModel(
             PeriodicTableEvent.AuxWindowHandled -> _state.update { it.copy(auxWindow = null) }
             PeriodicTableEvent.CollideToggled -> _state.update { it.copy(collideMode = !it.collideMode, collidePicks = emptyList(), collideOutcome = null, languageMenuOpen = false) }
             PeriodicTableEvent.CollideDismissed -> _state.update { it.copy(collidePicks = emptyList(), collideOutcome = null) }
-            is PeriodicTableEvent.CollideReactionOpened -> sessionRepository.showReaction(event.id)
+            // 碰一碰 always opens the view that shows the electrons (v1.16.0).
+            is PeriodicTableEvent.CollideReactionOpened -> sessionRepository.showReaction(BundledReactionRepository.shared.electronView(event.id)?.id ?: event.id)
             is PeriodicTableEvent.CollideElementOpened -> {
                 _state.update { it.copy(collideMode = false, collidePicks = emptyList(), collideOutcome = null) }
                 openAtom(event.atomicNumber)
