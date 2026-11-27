@@ -608,8 +608,8 @@ class ElectronView(private val elements: Map<String, Element>, private val confi
                     network -> L10n("图里只画了一对：实际晶体里每个原子和周围 4 个原子各共用一对，连成一片。", " Only one pair is drawn: in the real crystal every atom shares a pair with each of 4 neighbours, forming a network.")
                     formula in NETWORK ->
                         L10n(
-                            "图里画成 2 对只是为了数电子：实际晶体里每个 $ds 和周围 $given 个 $ts 各共用 1 对，原子连成一片。",
-                            " Two pairs are drawn only to count the electrons: in the real crystal every $dE atom shares 1 pair with each of $given $tE atoms, forming a network.",
+                            "图里画成 ${orders.last()} 对只是为了数电子：实际晶体里每个 $ds 和周围 ${if (y >= x) given else need} 个 $ts 各共用 1 对，原子连成一片。",
+                            " ${orders.last()} pairs are drawn only to count the electrons: in the real crystal every $dE atom shares 1 pair with each of ${if (y >= x) given else need} $tE atoms, forming a network.",
                         )
                     cage -> L10n("${pretty(formula)} 是笼状分子：4 个 $ds 两两之间都隔着一个 O。", " ${pretty(formula)} is a cage: every two of the 4 $dE atoms are bridged by one O.")
                     d.element.category == ElementCategory.NOBLE_GAS -> L10n("$ds 的最外层本来已经排满，只有 F 这类得电子能力极强的元素才能和它共用电子。", " $dStart already has a full outer shell; only an extremely strong electron taker such as F can make it share.")
@@ -666,10 +666,14 @@ class ElectronView(private val elements: Map<String, Element>, private val confi
             )
 
         /** Metal compounds that are molecules held by covalent bonds, not ionic solids. */
-        val MOLECULAR = setOf("AlCl3", "AlBr3", "AlI3", "FeCl3", "FeBr3", "TiCl4", "SnCl4", "NbCl5", "AuCl3", "HgCl2", "BiCl3", "UF6", "OsO4", "Tc2O7", "Re2O7", "WC")
+        val MOLECULAR =
+            setOf(
+                "AlCl3", "AlBr3", "AlI3", "FeCl3", "FeBr3", "TiCl4", "SnCl4", "NbCl5", "AuCl3", "HgCl2", "BiCl3", "UF6", "OsO4", "Tc2O7", "Re2O7", "WC",
+                "BeF2", "BeCl2", "BeBr2", "BeI2", "VCl4", "ZrCl4", "HfCl4", "MoCl5", "WCl6", "TaCl5", "GaCl3", "SnBr4", "SnI4", "HgBr2", "HgI2", "PtCl2", "PtF6", "AuF3", "AlN", "ReCl5", "OsCl4",
+            )
 
         /** Covalent network solids, drawn as their simplest unit. */
-        private val NETWORK = setOf("SiO2", "B2O3", "GeO2", "TeO2")
+        private val NETWORK = setOf("SiO2", "B2O3", "GeO2", "TeO2", "BN", "AlN")
 
         private val CAGES = setOf("As4O6", "Sb4O6")
 

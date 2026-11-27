@@ -363,3 +363,13 @@ Lab bench looks (user: "实验很多也再打磨一下效果"), all in `LabScene
 - A flat round `LabEffect.Solid` (height under 12 % of its width) is a powder: a low heap of 150 grains instead of a black disc (MnO₂ in the H₂O₂ beaker).
 - A tall `Solid` with a square section is drawn as a round rod (candles, splints, the iron wire) instead of a square bar.
 - Bubbles: up to 140 at once (was 70), with varied rise speed and sideways drift.
+
+## v1.17.0 (2026-11-27)
+
+User: "每个元素都要检查一下，你确定都看完了吗". v1.16 had been checked by reaction, not by element.
+- `CollideAuditTest.writeAudit` writes `app/build/collide-audit.txt`: for each of the 118 elements, which partners react, do not react, have no experiment, or are unknown. It showed that many pairs that do combine directly answered "no common direct reaction" (K + S, Li + F, Ba + Cl, Mn + O …).
+- 122 element + element reactions added to the factory's `polish/M5-reactions-data.py` (block "v1.17.0", regenerated into `ElementReactions.kt`, 347 rows): alkali and alkaline-earth metals with every halogen, S, H₂ and N₂ where they react; lanthanides with Cl₂; common halides, sulfides and fluorides of the transition and main-group metals; BF₃, BCl₃, BN, CF₄, SiF₄, PBr₃, PI₃, ClF, ICl. Each cites the element's Greenwood & Earnshaw chapter. Colours are given only where well known.
+- 碰一碰 now has 259 reacting pairs, each with an electron view; `ElectronView.MOLECULAR` / `NETWORK` list the new molecular and network compounds.
+- `CollideElementsUseCase.NO_DIRECT`: Au, Pt, Ag with O₂ answer "does not react" with the textbook reason. Radium answers "no experiment" (radioactive, behaves like barium).
+- `commonPairsHaveAnAnswer` asserts the families above and that no pair lists the same product twice.
+- Every one of the 259 electron views was rendered on the emulator at step 4 and looked at as contact sheets (they all draw; the sheets are small, so this checks rendering, not fine detail).

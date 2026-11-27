@@ -53,6 +53,16 @@ class CollideElementsUseCase(
             return CollideResult.NoReaction(L10n(zh, en))
         }
 
+        NO_DIRECT[pair]?.let { return CollideResult.NoReaction(it) }
+        if ("Ra" in pair) {
+            return CollideResult.NoExperiment(
+                L10n(
+                    "镭有很强的放射性，全世界提炼出的金属镭也很少，一般不用它的单质做化合实验。它的化学性质和同族的钡相似。",
+                    "Radium is intensely radioactive and very little of the metal has ever been made, so it is not used for experiments like this. Chemically it behaves like barium, the element above it.",
+                )
+            )
+        }
+
         if (a.isMetal() && b.isMetal()) {
             return CollideResult.NoReaction(
                 L10n(
@@ -62,6 +72,16 @@ class CollideElementsUseCase(
             )
         }
         return CollideResult.NoCommonReaction
+    }
+
+    private companion object {
+        /** Well-known pairs that do not combine directly, with the textbook reason. */
+        val NO_DIRECT: Map<Set<String>, L10n> =
+            mapOf(
+                setOf("Au", "O") to L10n("金很不活泼，即使在高温下也不和氧气反应，所以说「真金不怕火炼」。", "Gold is very unreactive: it does not react with oxygen even at high temperature."),
+                setOf("Pt", "O") to L10n("铂很不活泼，在空气中加热也不被氧化，所以能做坩埚和电极。", "Platinum is very unreactive: heating in air does not oxidise it, which is why it is used for crucibles and electrodes."),
+                setOf("Ag", "O") to L10n("银不活泼，在空气中加热也不和氧气化合（氧化银受热反而分解）。银器变黑是因为生成了硫化银。", "Silver is unreactive: it does not combine with oxygen even when heated in air (silver oxide decomposes on heating). Silverware tarnishes because silver sulfide forms."),
+            )
     }
 
     private fun Element.isMetal(): Boolean =
