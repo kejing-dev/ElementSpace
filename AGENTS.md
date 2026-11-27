@@ -356,3 +356,10 @@ User: "碰一碰 Na + S 没有 Na + Cl 那么详细，都要有个显示电子�
 - `ElectronConfigurationUseCase`: cations of f-block elements now lose 4f / 5f electrons before the 5p / 6p shell outside them (Nd³⁺ is 4f³). This also corrects the atom window's ions for lanthanides and actinides.
 - Flame sound replaced: gas burner (freesound 569332, CC0) instead of the fireplace recording, which was 93 % below 300 Hz. Default volume stop is 0.9 (was 0.8) so the loudness evidence stays above −20 dBFS.
 - Not verified: anything on the headset; how the new flame sounds; the electron flights in motion.
+
+## v1.16.1 (2026-11-26)
+
+Lab bench looks (user: "实验很多也再打磨一下效果"), all in `LabScene.solid()` / the bubble emitter:
+- A flat round `LabEffect.Solid` (height under 12 % of its width) is a powder: a low heap of 150 grains instead of a black disc (MnO₂ in the H₂O₂ beaker).
+- A tall `Solid` with a square section is drawn as a round rod (candles, splints, the iron wire) instead of a square bar.
+- Bubbles: up to 140 at once (was 70), with varied rise speed and sideways drift.

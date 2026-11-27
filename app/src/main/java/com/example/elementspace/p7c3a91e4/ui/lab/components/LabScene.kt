@@ -278,11 +278,11 @@ class LabScene(private val embedded: Boolean = false) {
                 light(layer, effect.at, effect.color, 900f * effect.light, flicker = true)
             }
             is LabEffect.Bubbles ->
-                emit(layer, Sprite.RING, BlendingMode.TRANSPARENT, LabColor(1f, 1f, 1f, 0.85f), max = 70, rate = effect.rate, life = max(0.2f, (effect.top - effect.at.y) / 0.16f), size0 = 0.014f, size1 = 0.02f) { p ->
+                emit(layer, Sprite.RING, BlendingMode.TRANSPARENT, LabColor(1f, 1f, 1f, 0.85f), max = 140, rate = effect.rate, life = max(0.2f, (effect.top - effect.at.y) / 0.16f), size0 = 0.014f, size1 = 0.02f) { p ->
                     val a = random.nextFloat() * 2f * PI.toFloat()
                     val r = effect.spread * kotlin.math.sqrt(random.nextFloat())
                     p.p = effect.at + Vec3(cos(a) * r, 0f, sin(a) * r)
-                    p.v = Vec3(rnd(0.01f), 0.16f, rnd(0.01f))
+                    p.v = Vec3(rnd(0.025f), 0.13f + random.nextFloat() * 0.07f, rnd(0.025f))
                 }
             is LabEffect.Flakes ->
                 emit(layer, Sprite.SOFT, BlendingMode.TRANSPARENT, effect.color, max = 80, rate = effect.rate, life = max(0.5f, (effect.at.y - effect.bottom) / 0.035f), size0 = 0.02f, size1 = 0.034f) { p ->
@@ -403,8 +403,38 @@ class LabScene(private val embedded: Boolean = false) {
         // Reagents and products (a metal strip, a pellet, a lump of powder) are plain shapes; the equipment is Tripo models.
         val ball = { sphereMesh ?: MeshResource.createSphere(0.5f).also { sphereMesh = it } } // gate:allow geometry a pellet, crystal grain or lump of a reagent / product; all equipment is Tripo models. gate:allow primitive-hero same reason
         val slab = { boxMesh ?: MeshResource.createBox(Vector3(1f, 1f, 1f)).also { boxMesh = it } } // gate:allow geometry a metal strip, wire or splint of a reagent; all equipment is Tripo models. gate:allow primitive-hero same reason
-        val mesh = if (round) ball() else slab()
+        // A flat round patch is a powder (MnO₂ in the beaker): a low heap of grains, not a disc (v1.16.1).
+        if (round && size.y < size.x * 0.12f) {
+            val heap = Entity()
+            heap.components[TransformComponent::class.java]?.setPosition(at.v3())
+            val grains = java.util.Random(7)
+            repeat(150) {
+                val r = size.x * 0.42f * grains.nextFloat() * grains.nextFloat()
+                val angle = grains.nextFloat() * 6.2832f
+                val grain = size.x * (0.02f + 0.022f * grains.nextFloat())
+                // Higher in the middle, so it reads as a small pile.
+                val lift = (1f - r / (size.x * 0.5f)) * size.x * 0.07f * grains.nextFloat()
+                heap.addChild(ModelEntity(ball(), material).apply {
+                    components[TransformComponent::class.java]?.apply {
+                        setPosition(Vector3(r * kotlin.math.cos(angle), lift, r * kotlin.math.sin(angle) * size.z / size.x))
+                        setScaleVector(Vector3(grain, grain * 0.8f, grain))
+                    }
+                })
+            }
+            return heap
+        }
+        // A tall piece with a square section is a rod: a candle, a splint, a wire (v1.16.1; it was a square bar).
+        val rod = !round && size.x == size.z && size.y >= size.x * 2.5f
+        val stick = { cylinderMesh ?: MeshResource.createCylinder(1f, 1f).also { cylinderMesh = it } } // gate:allow geometry a candle, splint or wire of a reagent; all equipment is Tripo models. gate:allow primitive-hero same reason
+        val mesh = if (round) ball() else if (rod) stick() else slab()
         val entity = ModelEntity(mesh, material)
+        if (rod) {
+            entity.components[TransformComponent::class.java]?.apply {
+                setPosition(at.v3())
+                setScaleVector(Vector3(size.x * 0.5f, size.y, size.z * 0.5f))
+            }
+            return entity
+        }
         entity.components[TransformComponent::class.java]?.apply {
             setPosition(at.v3())
             setScaleVector(Vector3(size.x, size.y, size.z))
