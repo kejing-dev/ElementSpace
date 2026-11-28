@@ -164,7 +164,7 @@
     <string name="mol_compare_skeleton">Skeleton</string>
     <string name="mol_compare_difference">Difference</string>
     <string name="mol_isomers">Same formula, different structure: isomers</string>
-    <string name="rx_atoms">Atoms · left / right</string>
+    <string name="rx_atoms">Atoms · before / after</string>
     <string name="rx_legend_break">Red dashes: bond about to break</string>
     <string name="rx_legend_new">Gold: new bond</string>
     <string name="how_to_molecule">See a molecule</string>
@@ -269,4 +269,7 @@
     <string name="rx_view_electrons">Show electrons</string>
     <string name="rx_view_atoms">Show atoms</string>
     <string name="rx_sketch">The electron picture is drawn from oxidation states and outer-shell electrons. It is a sketch: positions and distances are not the real structure.</string>
+    <string name="rx_paper">On paper</string>
+    <string name="rx_paper_dots">Electron-dot formula: each dot is one outer electron; dots between two atoms are a shared pair.</string>
+    <string name="rx_paper_lines">Structural formula: one line is one shared pair.</string>
 </resources>

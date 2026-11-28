@@ -56,12 +56,12 @@ object AutoReaction {
         val conditionEn = spec.condition?.let { " Condition: ${it.en}." } ?: ""
         val steps =
             listOf(
-                ReactionStep(L10n("反应物", "Reactants"), L10n("左边：${leftCount.zh}。每个球是一个原子，标着元素符号。", "Left: ${leftCount.en}. Each ball is one atom, labelled with its symbol."), pictures[0], 0),
+                ReactionStep(L10n("反应物", "Reactants"), L10n("反应前：${leftCount.zh}。每个球是一个原子，标着元素符号。", "Before: ${leftCount.en}. Each ball is one atom, labelled with its symbol."), pictures[0], 0),
                 ReactionStep(L10n("旧键断开", "Old bonds break"), L10n("反应物里的化学键断开（红色虚线）。$conditionZh", "The bonds in the reactants break (red dashes).$conditionEn"), pictures[1], 0),
                 ReactionStep(L10n("原子重新组合", "Atoms regroup"), L10n("示意：原子分开，再按生成物的方式组合。", "Schematic: the atoms come apart and regroup as the products."), pictures[2], 0),
                 ReactionStep(
                     L10n("生成物", "Products"),
-                    L10n("右边：${rightCount.zh}。原子的种类和个数都没变，只是重新组合（金色是新键）。", "Right: ${rightCount.en}. Same kinds and numbers of atoms, only regrouped (gold = new bonds)."),
+                    L10n("反应后：${rightCount.zh}。原子的种类和个数都没变，只是重新组合（金色是新键）。", "After: ${rightCount.en}. Same kinds and numbers of atoms, only regrouped (gold = new bonds)."),
                     pictures[3],
                     0,
                 ),
@@ -112,8 +112,9 @@ object AutoReaction {
     private class Atom(val symbol: String, val group: Int, var p: Vec3 = Vec3.ZERO)
 
     private class Unit(val atoms: List<Atom>, val bonds: List<Pair<Int, Int>>) {
-        /** Room it needs, including step 3 where it spreads by APART. */
-        val radius: Float get() = atoms.maxOf { it.p.length() } * APART + 0.6f
+        /** Half the room it needs each way, including step 3 where it spreads by APART: a box, so flat molecules stack closely. */
+        val halfWidth: Float get() = atoms.maxOf { kotlin.math.abs(it.p.x) } * APART + PAD
+        val halfHeight: Float get() = atoms.maxOf { kotlin.math.abs(it.p.y) } * APART + PAD
     }
 
     private val NONMETALS = setOf("H", "He", "B", "C", "N", "O", "F", "Ne", "Si", "P", "S", "Cl", "Ar", "As", "Se", "Br", "Kr", "Te", "I", "Xe", "At", "Rn")
@@ -128,7 +129,10 @@ object AutoReaction {
     private const val APART = 1.3f
 
     /** Space between clusters, ångström; leaves room for step 3's spread. */
-    private const val GAP = 0.8f
+    private const val GAP = 0.5f
+
+    /** Room around a unit's outermost atom centres: a ball radius and a little air. */
+    private const val PAD = 0.55f
 
     /** Atoms of one formula unit in order, with an id per parenthesised group copy (0 = main). */
     private fun atoms(formula: String): List<Atom> {
@@ -268,40 +272,69 @@ object AutoReaction {
 
     private class Placed(val unit: Unit, val offset: Vec3)
 
-    /** Rows of at most three units, packed by radius; reactants left of x = 0, products right. */
-    private fun side(terms: List<Term>, sign: Float): List<Placed> {
+    /**
+     * Units in rows of [perRow], packed by radius and centred on the origin. Both sides of the
+     * equation are drawn in the same place (v1.18.0): the atoms regroup where they are, so the
+     * picture can be twice as large as when products stood beside the reactants.
+     */
+    private fun side(terms: List<Term>, perRow: Int): List<Placed> {
         val units = terms.flatMap { t -> List(t.coefficient) { unit(t.formula) } }
-        val rows = units.chunked(3)
-        val heights = rows.map { r -> 2f * r.maxOf { it.radius } + GAP }
-        val widths = rows.map { r -> r.sumOf { (2f * it.radius + GAP).toDouble() }.toFloat() - GAP }
-        val w = widths.max()
+        val rows = units.chunked(perRow)
+        val heights = rows.map { r -> 2f * r.maxOf { it.halfHeight } + GAP }
+        val widths = rows.map { r -> r.sumOf { (2f * it.halfWidth + GAP).toDouble() }.toFloat() - GAP }
         var y = heights.sum() / 2f
         val out = ArrayList<Placed>()
         rows.forEachIndexed { ri, r ->
-            var x = if (sign < 0) -1.4f - w + (w - widths[ri]) / 2f else 1.4f + (w - widths[ri]) / 2f
+            var x = -widths[ri] / 2f
             val cy = y - heights[ri] / 2f
             r.forEach { u ->
-                out += Placed(u, Vec3(x + u.radius, cy, 0f))
-                x += 2f * u.radius + GAP
+                out += Placed(u, Vec3(x + u.halfWidth, cy, 0f))
+                x += 2f * u.halfWidth + GAP
             }
             y -= heights[ri]
         }
         return out
     }
 
+    /** Width and height one side needs, with step 3's spread ([spread] = APART for reactants). */
+    private fun extent(placed: List<Placed>, spread: Float): Pair<Float, Float> {
+        val all = placed.flatMap { pl -> pl.unit.atoms.map { pl.offset + it.p * spread } }
+        return (all.maxOf { it.x } - all.minOf { it.x } + 2f * MARGIN) to (all.maxOf { it.y } - all.minOf { it.y } + 2f * MARGIN)
+    }
+
+    /** The row length that lets the side be drawn largest in the WIDTH x HEIGHT window. */
+    private fun bestSide(terms: List<Term>, spread: Float): List<Placed> {
+        val best = (1..4).map { side(terms, it) }.maxBy { placed -> extent(placed, spread).let { (w, h) -> min(WIDTH / w, HEIGHT / h) } }
+        // Centre on the atoms themselves: rows are packed by radius, which is not where the atoms end.
+        val all = best.flatMap { pl -> pl.unit.atoms.map { pl.offset + it.p * spread } }
+        val mid = Vec3((all.maxOf { it.x } + all.minOf { it.x }) / 2f, (all.maxOf { it.y } + all.minOf { it.y }) / 2f, 0f)
+        return best.map { Placed(it.unit, it.offset - mid) }
+    }
+
+    /** Room around the outermost atom centres, ångström (a ball radius and a little air). */
+    private const val MARGIN = 0.7f
+
+    /** The window the picture must fit, scene units. Half-width 0.7: the side card starts at x = 0.8. */
+    private const val WIDTH = 1.4f
+    private const val HEIGHT = 1.0f
+
+    /** Largest scene units per ångström: a two-atom picture should not fill the whole window. */
+    private const val SCALE_MAX = 0.2f
+
+    /** Balls are drawn this much larger than in real ball-and-stick models, so their symbols can be read. */
+    private const val BALLS = 1.35f
+
+    /** Ball radii in ångström, as the scene draws them (ui BallStick.ball); the overlap test checks the two agree. */
+    private fun ball(symbol: String): Float = when (symbol) { "C" -> 0.36f; "H" -> 0.24f; "O" -> 0.34f; "Cl" -> 0.44f; "Br" -> 0.48f; else -> 0.4f }
+
     /** The four frames, in scene units, with atom ids kept from reactants to products. */
     fun frames(left: List<Term>, right: List<Term>): List<ReactionFrame> {
-        val l = side(left, -1f)
-        val r = side(right, 1f)
-        val all = (l + r).flatMap { pl -> pl.unit.atoms.map { pl.offset + it.p } } + l.flatMap { pl -> pl.unit.atoms.map { pl.offset + it.p * APART } }
-        val minX = all.minOf { it.x } - 0.7f
-        val maxX = all.maxOf { it.x } + 0.7f
-        val minY = all.minOf { it.y } - 0.7f
-        val maxY = all.maxOf { it.y } + 0.7f
-        val shift = Vec3((minX + maxX) / 2f, (minY + maxY) / 2f, 0f)
-        // Same size as the hand-made organic reactions (0.13 per Å) unless the picture must shrink to fit.
-        // Half-width 0.7: the side card starts at x = 0.8 of the Volume and would hide anything further right.
-        val scale = min(0.13f, min(1.4f / (maxX - minX), 1.6f / (maxY - minY)))
+        val l = bestSide(left, APART)
+        val r = bestSide(right, 1f)
+        val (lw, lh) = extent(l, APART)
+        val (rw, rh) = extent(r, 1f)
+        val shift = Vec3.ZERO
+        val scale = min(SCALE_MAX, min(WIDTH / max(lw, rw), HEIGHT / max(lh, rh)))
 
         // Reactant atom ids: a<unit>_<atom>.
         data class Slot(val id: String, val symbol: String, val unit: Int, val start: Vec3, val centre: Vec3)
@@ -324,8 +357,18 @@ object AutoReaction {
             pl.unit.bonds.forEach { (i, j) -> endBonds += FrameBond(ids[i], ids[j], mark = BondMark.NEW) }
         }
 
+        // Balls as large as BALLS allows without two of them touching in any frame.
+        val layouts = listOf<(Slot) -> Vec3>({ it.start }, { it.centre + (it.start - it.centre) * APART }, { end.getValue(it.id) })
+        var balls = BALLS
+        layouts.forEach { positions ->
+            for (i in slots.indices) for (j in i + 1 until slots.size) {
+                val room = (positions(slots[i]) - positions(slots[j])).length() / (ball(slots[i].symbol) + ball(slots[j].symbol))
+                balls = min(balls, room * 0.96f)
+            }
+        }
+
         fun frame(positions: (Slot) -> Vec3, bonds: List<FrameBond>) =
-            ReactionFrame(atoms = slots.map { FrameAtom(it.id, it.symbol, (positions(it) - shift) * scale) }, bonds = bonds, atomScale = scale)
+            ReactionFrame(atoms = slots.map { FrameAtom(it.id, it.symbol, (positions(it) - shift) * scale) }, bonds = bonds, atomScale = scale, ballScale = balls)
 
         return listOf(
             frame({ it.start }, startBonds),

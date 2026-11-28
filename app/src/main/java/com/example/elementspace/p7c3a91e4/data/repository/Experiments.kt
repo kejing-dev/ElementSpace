@@ -47,6 +47,18 @@ object Experiments {
 
     private fun liquid(color: LabColor, seconds: Float = 0f) = LabEffect.Liquid(v(0f, 0.012f), BEAKER_R, LEVEL, color, seconds)
 
+    /** NO₂ filling the beaker above the acid: red-brown, denser than air, so it stays in the beaker. */
+    private fun brownGas(seconds: Float = 0f) = LabEffect.Liquid(v(0f, LEVEL + 0.016f), BEAKER_R * 0.97f, BEAKER - LEVEL - 0.04f, c(0.6f, 0.26f, 0.07f, 0.5f), seconds, gas = true)
+
+    /** The two candles of the stepped-candle experiment, each with its wick. */
+    private fun candles() =
+        listOf(
+            LabEffect.Solid(v(-0.06f, 0.05f), Vec3(0.03f, 0.08f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+            LabEffect.Solid(v(0.06f, 0.1f), Vec3(0.03f, 0.18f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+            LabEffect.Solid(v(-0.06f, 0.096f), Vec3(0.004f, 0.014f, 0.004f), BLACK),
+            LabEffect.Solid(v(0.06f, 0.196f), Vec3(0.004f, 0.014f, 0.004f), BLACK),
+        )
+
     private fun lampFlame(size: Float = 1f) = LabEffect.Flame(v(0f, WICK), LAMP_FLAME, size)
 
     val ALL: List<Experiment> =
@@ -229,7 +241,8 @@ object Experiments {
                             L10n("沉淀沉到杯底，是氢氧化铜 Cu(OH)₂；上层溶液颜色变浅。CuSO₄ + 2NaOH = Cu(OH)₂↓ + Na₂SO₄。", "The precipitate, copper hydroxide Cu(OH)₂, settles; the liquid above is paler. CuSO₄ + 2NaOH = Cu(OH)₂↓ + Na₂SO₄."),
                             listOf(
                                 liquid(c(0.7f, 0.85f, 1f, 0.34f), seconds = 4f),
-                                LabEffect.Solid(v(0f, 0.045f), Vec3(0.3f, 0.06f, 0.3f), c(0.16f, 0.42f, 1f), round = true),
+                                // A low heap of grains across the bottom, not one smooth lump: the precipitate is fluffy.
+                                LabEffect.Solid(v(0f, 0.022f), Vec3(0.3f, 0.034f, 0.3f), c(0.16f, 0.42f, 1f), round = true),
                             ),
                         ),
                     ),
@@ -503,8 +516,7 @@ object Experiments {
                 props = listOf(beaker()),
                 start =
                     listOf(
-                        LabEffect.Solid(v(-0.06f, 0.05f), Vec3(0.03f, 0.08f, 0.03f), c(0.96f, 0.94f, 0.86f)),
-                        LabEffect.Solid(v(0.06f, 0.1f), Vec3(0.03f, 0.18f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                        *candles().toTypedArray(),
                         LabEffect.Flame(v(-0.06f, 0.095f), LAMP_FLAME, 0.3f, 0.5f),
                         LabEffect.Flame(v(0.06f, 0.195f), LAMP_FLAME, 0.3f, 0.5f),
                     ),
@@ -514,8 +526,7 @@ object Experiments {
                             L10n("沿杯壁慢慢倒入二氧化碳", "Slowly pour carbon dioxide down the side"),
                             L10n("矮的蜡烛先熄灭了。", "The short candle goes out first."),
                             listOf(
-                                LabEffect.Solid(v(-0.06f, 0.05f), Vec3(0.03f, 0.08f, 0.03f), c(0.96f, 0.94f, 0.86f)),
-                                LabEffect.Solid(v(0.06f, 0.1f), Vec3(0.03f, 0.18f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                                *candles().toTypedArray(),
                                 LabEffect.Smoke(v(-0.06f, 0.1f), c(0.9f, 0.9f, 0.9f, 0.4f), 3f),
                                 LabEffect.Flame(v(0.06f, 0.195f), LAMP_FLAME, 0.3f, 0.5f),
                             ),
@@ -524,8 +535,7 @@ object Experiments {
                             L10n("继续倒", "Keep pouring"),
                             L10n("高的蜡烛随后也熄灭了。", "Then the tall candle goes out too."),
                             listOf(
-                                LabEffect.Solid(v(-0.06f, 0.05f), Vec3(0.03f, 0.08f, 0.03f), c(0.96f, 0.94f, 0.86f)),
-                                LabEffect.Solid(v(0.06f, 0.1f), Vec3(0.03f, 0.18f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                                *candles().toTypedArray(),
                                 LabEffect.Smoke(v(0.06f, 0.2f), c(0.9f, 0.9f, 0.9f, 0.4f), 3f),
                             ),
                         ),
@@ -533,8 +543,7 @@ object Experiments {
                             L10n("为什么矮的先灭", "Why the short one first"),
                             L10n("二氧化碳的密度比空气大，倒进去先沉在杯底，再慢慢升高；它不能燃烧，也不支持燃烧。所以二氧化碳可以用来灭火。", "Carbon dioxide is denser than air: it settles at the bottom and rises slowly. It neither burns nor supports burning, which is why it is used to put out fires."),
                             listOf(
-                                LabEffect.Solid(v(-0.06f, 0.05f), Vec3(0.03f, 0.08f, 0.03f), c(0.96f, 0.94f, 0.86f)),
-                                LabEffect.Solid(v(0.06f, 0.1f), Vec3(0.03f, 0.18f, 0.03f), c(0.96f, 0.94f, 0.86f)),
+                                *candles().toTypedArray(),
                             ),
                         ),
                     ),
@@ -581,13 +590,14 @@ object Experiments {
                                 liquid(c(0.25f, 0.68f, 0.42f, 0.55f), seconds = 7f),
                                 LabEffect.Solid(v(0f, 0.03f), Vec3(0.09f, 0.008f, 0.06f), COPPER, metal = true, drops = true),
                                 LabEffect.Bubbles(v(0f, 0.04f), LEVEL, 45f, 0.06f),
-                                LabEffect.Smoke(v(0f, LEVEL + 0.04f), c(0.72f, 0.36f, 0.14f, 0.6f), 9f),
+                                brownGas(seconds = 6f),
+                                LabEffect.Smoke(v(0f, BEAKER + 0.01f), c(0.72f, 0.36f, 0.14f, 0.5f), 4f),
                             ),
                         ),
                         LabStep(
                             L10n("红棕色的气体是什么", "What the red-brown gas is"),
                             L10n("是二氧化氮 NO₂，有毒。Cu + 4HNO₃（浓）= Cu(NO₃)₂ + 2NO₂↑ + 2H₂O。铜排在氢后面，不和稀盐酸反应，却能被硝酸氧化：硝酸有很强的氧化性。", "Nitrogen dioxide, NO₂, which is toxic. Cu + 4HNO₃ (conc.) = Cu(NO₃)₂ + 2NO₂↑ + 2H₂O. Copper sits below hydrogen and ignores dilute hydrochloric acid, yet nitric acid oxidises it: nitric acid is a strong oxidising agent."),
-                            listOf(liquid(c(0.25f, 0.68f, 0.42f, 0.55f)), LabEffect.Smoke(v(0f, LEVEL + 0.04f), c(0.72f, 0.36f, 0.14f, 0.5f), 3f)),
+                            listOf(liquid(c(0.25f, 0.68f, 0.42f, 0.55f)), brownGas(), LabEffect.Smoke(v(0f, BEAKER + 0.01f), c(0.72f, 0.36f, 0.14f, 0.45f), 2f)),
                         ),
                     ),
                 reactionId = "n_5",

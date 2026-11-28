@@ -292,15 +292,21 @@ class LabScene(private val embedded: Boolean = false) {
                     p.v = Vec3(rnd(0.006f), -0.035f, rnd(0.006f))
                 }
             is LabEffect.Liquid -> {
-                val from = lastLiquid?.takeIf { effect.seconds > 0f } ?: effect.color
-                val material = PhysicallyBasedMaterial.create().apply {
+                val from =
+                    if (effect.gas) effect.color.copy(a = if (effect.seconds > 0f) 0.03f else effect.color.a)
+                    else lastLiquid?.takeIf { effect.seconds > 0f } ?: effect.color
+                // A gas has no shiny surface and should not darken in the shade of the beaker: unlit.
+                val shiny = if (effect.gas) null else PhysicallyBasedMaterial.create().apply {
                     setBlendingMode(BlendingMode.TRANSPARENT)
                     setRoughness(0.08f)
                     setMetallic(0f)
                 }
+                val flat = if (effect.gas) UnlitMaterial.create(BlendingMode.TRANSPARENT) else null
+                val material: Material = shiny ?: flat!!
                 fun paint(c: LabColor) {
-                    material.setBaseColor(Color4(c.r, c.g, c.b, c.a))
-                    material.setOpacity(c.a)
+                    shiny?.setBaseColor(Color4(c.r, c.g, c.b, c.a))
+                    shiny?.setOpacity(c.a)
+                    flat?.setBaseColor(Color4(c.r, c.g, c.b, c.a))
                 }
                 paint(from)
                 val column = ModelEntity(cylinderMesh ?: MeshResource.createCylinder(1f, 1f).also { cylinderMesh = it }, material) // gate:allow geometry a liquid filling a round beaker is a plain column; the beaker itself is a Tripo model. gate:allow primitive-hero same reason
@@ -318,7 +324,7 @@ class LabScene(private val embedded: Boolean = false) {
                         }
                     }
                 }
-                lastLiquid = effect.color
+                if (!effect.gas) lastLiquid = effect.color
             }
             is LabEffect.Solid -> {
                 val entity = solid(effect.at, effect.size, effect.color, effect.round, effect.metal, effect.glowing)
@@ -408,10 +414,12 @@ class LabScene(private val embedded: Boolean = false) {
             val heap = Entity()
             heap.components[TransformComponent::class.java]?.setPosition(at.v3())
             val grains = java.util.Random(7)
-            repeat(150) {
-                val r = size.x * 0.42f * grains.nextFloat() * grains.nextFloat()
+            // A wide one is a layer of sediment across the bottom: even, dense, larger soft grains.
+            val layerOf = size.x > 0.2f
+            repeat(if (layerOf) 320 else 150) {
+                val r = if (layerOf) size.x * 0.47f * kotlin.math.sqrt(grains.nextFloat()) else size.x * 0.42f * grains.nextFloat() * grains.nextFloat()
                 val angle = grains.nextFloat() * 6.2832f
-                val grain = size.x * (0.02f + 0.022f * grains.nextFloat())
+                val grain = size.x * (if (layerOf) 0.045f + 0.045f * grains.nextFloat() else 0.02f + 0.022f * grains.nextFloat())
                 // Higher in the middle, so it reads as a small pile.
                 val lift = (1f - r / (size.x * 0.5f)) * size.x * 0.07f * grains.nextFloat()
                 heap.addChild(ModelEntity(ball(), material).apply {

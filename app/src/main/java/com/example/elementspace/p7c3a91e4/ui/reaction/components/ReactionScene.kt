@@ -236,8 +236,9 @@ class ReactionScene {
         if (newSpec.frame.atoms.isNotEmpty()) buildBonds(next, newSpec, previous)
         val frame = newSpec.frame
         val before = previous?.particles?.associateBy { it.id }.orEmpty()
+        val bondAngles = ReactionLayout.bondAngles(frame)
         frame.particles.forEach { particle ->
-            val holder = particleEntity(particle, before[particle.id]?.position ?: particle.position, newSpec.nucleusColors)
+            val holder = particleEntity(particle, before[particle.id]?.position ?: particle.position, newSpec.nucleusColors, bondAngles[particle.id].orEmpty())
             if (frame.scale != 1f) holder.components[TransformComponent::class.java]?.setScaleVector(Vector3(frame.scale))
             next.addChild(holder)
         }
@@ -288,10 +289,10 @@ class ReactionScene {
         frame.atoms.forEach { atom ->
             val color = spec.nucleusColors[atom.symbol] ?: Color.Gray
             val material = if (atom.faded) halo(color, 0.3f) else lit(color)
-            val radius = BallStick.ball(atom.symbol) * s
+            val radius = BallStick.ball(atom.symbol) * s * frame.ballScale
             val holder = Entity()
             holder.addChild(instanced("atom_${atom.id}", sphere(), material, listOf(Vec3.ZERO), radius))
-            if (!atom.faded) holder.addChild(labels.label(atom.symbol, Vec3.ZERO, height = radius * 1.15f, lift = radius * 1.04f))
+            if (!atom.faded) holder.addChild(labels.label(atom.symbol, Vec3.ZERO, height = radius * 1.25f, lift = radius * 1.04f))
             next.addChild(gliding(holder, before[atom.id]?.position ?: atom.position, atom.position))
         }
         val at = frame.atoms.associateBy { it.id }
@@ -341,7 +342,7 @@ class ReactionScene {
 
     /** Where the drawn particles are, with their radii, to place condition props around them. */
     private fun bodies(frame: ReactionFrame): List<Pair<Vec3, Float>> =
-        frame.atoms.map { it.position to BallStick.ball(it.symbol) * frame.atomScale } +
+        frame.atoms.map { it.position to BallStick.ball(it.symbol) * frame.atomScale * frame.ballScale } +
             frame.particles.map { it.position to ReactionLayout.particleRadius(it) }
 
     private fun buildConditions(next: Entity, spec: ReactionSceneSpec) {
@@ -436,7 +437,7 @@ class ReactionScene {
             setEmissiveColor(Color4(color.red * 0.6f, color.green * 0.6f, color.blue * 0.6f, 1f))
         }
 
-    private fun particleEntity(particle: FrameParticle, from: Vec3, colors: Map<String, Color>): Entity {
+    private fun particleEntity(particle: FrameParticle, from: Vec3, colors: Map<String, Color>, bonds: List<Float>): Entity {
         val holder = gliding(Entity(), from, particle.position)
         if (particle.cluster.isNotEmpty()) {
             buildCluster(holder, particle)
@@ -446,7 +447,7 @@ class ReactionScene {
         holder.addChild(instanced("nucleus_${particle.id}", sphere(), lit(nucleusColor), listOf(Vec3.ZERO), NUCLEUS))
         val outer = particle.shells.lastIndex
         particle.shells.forEachIndexed { shell, electrons ->
-            val radius = ReactionLayout.shellRadius(shell)
+            val radius = ReactionLayout.shellRadius(shell + particle.ring)
             val valence = shell == outer
             holder.addChild(
                 instanced(
@@ -459,7 +460,9 @@ class ReactionScene {
             )
             val vacancies = if (valence) particle.vacancies else 0
             val slots = ReactionLayout.slots(electrons, vacancies, particle.gold[shell] ?: 0, radius)
-            val plain = slots.filter { it.kind == ReactionLayout.SlotKind.ELECTRON }.map { it.position }
+            // A bonded atom's own outer electrons stand as lone pairs away from its bonds.
+            val paired = valence && bonds.isNotEmpty() && vacancies == 0 && (particle.gold[shell] ?: 0) == 0
+            val plain = if (paired) ReactionLayout.loneSlots(electrons, radius, bonds) else slots.filter { it.kind == ReactionLayout.SlotKind.ELECTRON }.map { it.position }
             val gold = slots.filter { it.kind == ReactionLayout.SlotKind.GOLD }.map { it.position }
             val empty = slots.filter { it.kind == ReactionLayout.SlotKind.VACANCY }.map { it.position }
             val size = if (valence) ELECTRON else ELECTRON * 0.75f

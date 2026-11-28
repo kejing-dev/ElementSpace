@@ -47,13 +47,13 @@ class ElementReactionsTest {
             r.steps.forEachIndexed { k, step ->
                 val f = step.frame
                 f.atoms.forEach { a ->
-                    val reach = BallStick.ball(a.symbol) * f.atomScale
+                    val reach = BallStick.ball(a.symbol) * f.atomScale * f.ballScale
                     assertTrue("${r.id} ${a.id}", abs(a.position.x) + reach < 0.75f && abs(a.position.y) + reach < 0.95f)
                 }
                 for (i in f.atoms.indices) for (j in i + 1 until f.atoms.size) {
                     val a = f.atoms[i]
                     val b = f.atoms[j]
-                    val gap = a.position.distanceTo(b.position) - (BallStick.ball(a.symbol) + BallStick.ball(b.symbol)) * f.atomScale
+                    val gap = a.position.distanceTo(b.position) - (BallStick.ball(a.symbol) + BallStick.ball(b.symbol)) * f.atomScale * f.ballScale
                     assertTrue("${r.id} step ${k + 1} ${a.symbol}${a.id}/${b.symbol}${b.id} gap $gap", gap > -1e-4f)
                 }
             }

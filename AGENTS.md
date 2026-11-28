@@ -373,3 +373,15 @@ User: "每个元素都要检查一下，你确定都看完了吗". v1.16 had bee
 - `CollideElementsUseCase.NO_DIRECT`: Au, Pt, Ag with O₂ answer "does not react" with the textbook reason. Radium answers "no experiment" (radioactive, behaves like barium).
 - `commonPairsHaveAnAnswer` asserts the families above and that no pair lists the same product twice.
 - Every one of the 259 electron views was rendered on the emulator at step 4 and looked at as contact sheets (they all draw; the sheets are small, so this checks rendering, not fine detail).
+
+## v1.18.0 (2026-11-28)
+
+User feedback: the hydrogen peroxide atom picture was too small to read; the C + S covalent picture was crowded, and should it not be written with dots or lines as on paper.
+
+- `AutoReaction` (all 347 schematic reactions): reactants and products are drawn in the same window (atoms regroup in place) instead of side by side, units are packed by box, rows chosen for the largest scale, balls up to 1.35x (`ReactionFrame.ballScale`, capped so none touch). H2O2 balls are about 3x larger.
+- `ElectronView` SHARE: only the outer shell is drawn, on ring 1 (`FrameParticle.ring`); a bonded atom's own electrons stand as lone pairs away from its bonds (`ReactionLayout.loneSlots / loneDirections / bondAngles`). X_MAX 0.84 -> 0.76 so pictures keep clear of the card.
+- New `PaperFormula` + `PaperFormulaView`: the card's "On paper" section draws the electron-dot formula of the current step and, for molecules, the structural formula. One of each species with a multiplier. Left out on purpose (frame.paper = false or > 8 electrons): network solids, expanded octets, transition-metal molecular halides - 40 of 259 products.
+- Lab: `LabEffect.Liquid(gas = true)` (unlit column) for NO2 over the acid; candle wicks; wide flat round solids are a dense sediment layer.
+- Tests: `PaperFormulaTest` (neutral in every frame, textbook examples; writes build/paper-formulas.txt).
+- Checked on the emulator: all 259 electron views at step 4 and 116 schematic reactions (every third) at steps 1 and 4. Not checked on the headset.
+- Known: dark squares at the base of candle flames on the emulator (sprite texture), unchanged.

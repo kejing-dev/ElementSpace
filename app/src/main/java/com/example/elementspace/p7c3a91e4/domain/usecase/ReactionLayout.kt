@@ -26,7 +26,7 @@ object ReactionLayout {
     fun shellRadius(shell: Int): Float = 0.06f + 0.052f * (shell + 1)
 
     fun particleRadius(particle: FrameParticle): Float =
-        if (particle.cluster.isNotEmpty()) 0.12f else shellRadius((particle.shells.size - 1).coerceAtLeast(0))
+        if (particle.cluster.isNotEmpty()) 0.12f else shellRadius((particle.shells.size - 1).coerceAtLeast(0) + particle.ring)
 
     fun ring(radius: Float, count: Int): List<Vec3> =
         (0 until count).map { i ->
@@ -67,19 +67,68 @@ object ReactionLayout {
         val dir = d * (1f / length)
         val centre = a.position + d * pair.bias
         val normal = Vec3(-dir.y, dir.x, 0f)
-        val gap = 0.019f * frame.scale
+        val gap = PAIR_GAP * frame.scale
+        val along = gap * 1.15f
         return if (pair.count <= 2) {
             listOf(centre + normal * gap, centre - normal * gap)
         } else if (pair.count >= 6) {
             // A triple bond: three pairs side by side along the bond.
-            listOf(-2f, 0f, 2f).flatMap { k -> listOf(centre + normal * gap + dir * (gap * k), centre - normal * gap + dir * (gap * k)) }
+            listOf(-2f, 0f, 2f).flatMap { k -> listOf(centre + normal * gap + dir * (along * k), centre - normal * gap + dir * (along * k)) }
         } else {
             listOf(
-                centre + normal * gap + dir * gap,
-                centre - normal * gap + dir * gap,
-                centre + normal * gap - dir * gap,
-                centre - normal * gap - dir * gap,
+                centre + normal * gap + dir * along,
+                centre - normal * gap + dir * along,
+                centre + normal * gap - dir * along,
+                centre - normal * gap - dir * along,
             )
+        }
+    }
+
+    /** Half the distance between the two electrons of a pair, scene units at scale 1. */
+    const val PAIR_GAP = 0.022f
+
+    /** Direction (radians) from each bonded particle toward every partner it shares a pair with. */
+    fun bondAngles(frame: ReactionFrame): Map<String, List<Float>> {
+        val at = frame.particles.associate { it.id to it.position }
+        val out = HashMap<String, MutableList<Float>>()
+        frame.pairs.forEach { pair ->
+            val a = at[pair.a] ?: return@forEach
+            val b = at[pair.b] ?: return@forEach
+            out.getOrPut(pair.a) { ArrayList() } += atan2(b.y - a.y, b.x - a.x)
+            out.getOrPut(pair.b) { ArrayList() } += atan2(a.y - b.y, a.x - b.x)
+        }
+        return out
+    }
+
+    /**
+     * Directions for [groups] lone pairs around an atom whose bonds point along [bonds] (v1.18.0):
+     * spread evenly through the gaps between the bonds, the widest gap first, the way an
+     * electron-dot formula is written. Without bonds they start at the top.
+     */
+    fun loneDirections(groups: Int, bonds: List<Float>): List<Float> {
+        if (groups <= 0) return emptyList()
+        val sorted = bonds.map { ((it % TWO_PI) + TWO_PI) % TWO_PI }.sorted().fold(ArrayList<Float>()) { acc, a -> if (acc.isEmpty() || a - acc.last() > 1e-3f) acc += a; acc }
+        if (sorted.isEmpty()) return (0 until groups).map { PI.toFloat() / 2f + TWO_PI * it / groups }
+        if (sorted.size == 1 && groups == 2) return listOf(sorted[0] + PI.toFloat() / 2f, sorted[0] - PI.toFloat() / 2f)
+        val gaps = sorted.indices.map { i -> if (i == sorted.lastIndex) sorted[0] + TWO_PI - sorted[i] else sorted[i + 1] - sorted[i] }
+        val counts = IntArray(sorted.size)
+        repeat(groups) {
+            val i = gaps.indices.maxBy { gaps[it] / (counts[it] + 1) }
+            counts[i]++
+        }
+        return sorted.indices.flatMap { i -> (1..counts[i]).map { k -> sorted[i] + gaps[i] * k / (counts[i] + 1) } }
+    }
+
+    /**
+     * Outer-ring electrons of a bonded atom, drawn as lone pairs that keep clear of its bonds, so
+     * the shared pairs between two atoms are not crowded by ring electrons.
+     */
+    fun loneSlots(electrons: Int, radius: Float, bonds: List<Float>): List<Vec3> {
+        val groups = (electrons + 1) / 2
+        val half = PAIR_GAP / radius
+        return loneDirections(groups, bonds).flatMapIndexed { g, a ->
+            val single = g == groups - 1 && electrons % 2 == 1
+            (if (single) listOf(a) else listOf(a - half, a + half)).map { Vec3(radius * cos(it), radius * sin(it), 0f) }
         }
     }
 
@@ -90,7 +139,7 @@ object ReactionLayout {
         val angle = atan2(to.position.y - from.position.y, to.position.x - from.position.x)
         val r = particleRadius(from) * frame.scale
         val start = from.position + Vec3(r * cos(angle), r * sin(angle), 0f)
-        val outer = shellRadius((to.shells.size - 1).coerceAtLeast(0)) * frame.scale
+        val outer = shellRadius((to.shells.size - 1).coerceAtLeast(0) + to.ring) * frame.scale
         // Landing slot 0 of the acceptor's outer ring (see [slots]).
         val end = to.position + Vec3(-outer, 0f, 0f)
         return start to end

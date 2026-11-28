@@ -164,7 +164,7 @@
     <string name="mol_compare_skeleton">碳骨架</string>
     <string name="mol_compare_difference">区别</string>
     <string name="mol_isomers">分子式相同、结构不同：互为同分异构体</string>
-    <string name="rx_atoms">原子个数 · 左 / 右</string>
+    <string name="rx_atoms">原子个数 · 反应前 / 反应后</string>
     <string name="rx_legend_break">红虚线：要断的键</string>
     <string name="rx_legend_new">金色：新形成的键</string>
     <string name="how_to_molecule">看分子</string>
@@ -269,4 +269,7 @@
     <string name="rx_view_electrons">看电子得失</string>
     <string name="rx_view_atoms">看原子重组</string>
     <string name="rx_sketch">电子图按化合价和最外层电子画出，是示意：原子的位置和远近不代表真实结构。</string>
+    <string name="rx_paper">纸上怎么写</string>
+    <string name="rx_paper_dots">电子式：一个点是一个最外层电子，两个原子中间的点是共用电子对。</string>
+    <string name="rx_paper_lines">结构式：一条线代表一对共用电子。</string>
 </resources>

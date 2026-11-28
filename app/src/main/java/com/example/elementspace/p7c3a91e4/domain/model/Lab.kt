@@ -35,7 +35,11 @@ sealed interface LabEffect {
     data class Flakes(val at: Vec3, val bottom: Float, val color: LabColor, val rate: Float, val spread: Float) : LabEffect
 
     /** A liquid in a container: a column of [radius] from [bottom] to [top], turning to [color] over [seconds]. */
-    data class Liquid(val at: Vec3, val radius: Float, val height: Float, val color: LabColor, val seconds: Float = 0f) : LabEffect
+    data class Liquid(
+        val at: Vec3, val radius: Float, val height: Float, val color: LabColor, val seconds: Float = 0f,
+        /** A coloured gas filling the space instead (NO₂ over the acid): it fades in from nothing over [seconds]. */
+        val gas: Boolean = false,
+    ) : LabEffect
 
     /** A small solid: a strip, pellet, wire or lump of the reactant or product. */
     data class Solid(

@@ -185,6 +185,9 @@ class ElectronView(private val elements: Map<String, Element>, private val confi
         }
 
         /** A network solid drawn as one unit with a single pair (SiC): each atom really has four neighbours. */
+        /** The product is a molecule a textbook writes with dots and lines: not a network solid, not a transition-metal compound. */
+        private val written: Boolean get() = !network && formula !in NETWORK && d.element.category !in setOf(ElementCategory.TRANSITION_METAL, ElementCategory.LANTHANIDE, ElementCategory.ACTINIDE)
+
         private val network: Boolean get() = model == Model.SHARE && formula != "CO" && x == 1 && y == 1 && charges[0] > 3
 
         // ---- shells --------------------------------------------------------------------------
@@ -196,22 +199,27 @@ class ElectronView(private val elements: Map<String, Element>, private val confi
         /** First shell that is drawn for the donor: the outer two, or more when an inner shell loses electrons. */
         private val dFirst: Int by lazy {
             val changed = charges.distinct().minOf { q -> val ion = donorIon(if (network) 1 else q); d.neutral.indices.first { d.neutral[it] != ion[it] } }
-            minOf(changed, d.neutral.lastIndex - 1).coerceAtLeast(0)
+            // Shared pairs (v1.18.0): only the shell that takes part, so inner electrons do not crowd the pairs.
+            if (model == Model.SHARE) changed else minOf(changed, d.neutral.lastIndex - 1).coerceAtLeast(0)
         }
-        private val tFirst: Int get() = (t.neutral.lastIndex - 1).coerceAtLeast(0)
+        private val tFirst: Int get() = if (model == Model.SHARE) t.neutral.lastIndex else (t.neutral.lastIndex - 1).coerceAtLeast(0)
+
+        /** A single drawn shell sits one ring further out, leaving room for the symbol and the lone pairs. */
+        private val dRing: Int get() = if (model == Model.SHARE && d.neutral.size - dFirst == 1) 1 else 0
+        private val tRing: Int get() = if (model == Model.SHARE) 1 else 0
 
         private fun donor(i: Int, shells: List<Int>, at: Vec3, tint: ChargeTint = ChargeTint.NONE, vacancies: Int = 0) =
-            FrameParticle("${d.symbol}${i + 1}", d.symbol, shells.drop(dFirst), at, tint, vacancies = vacancies, hidden = d.neutral.take(dFirst).sum())
+            FrameParticle("${d.symbol}${i + 1}", d.symbol, shells.drop(dFirst), at, tint, vacancies = vacancies, hidden = d.neutral.take(dFirst).sum(), ring = dRing)
 
         private fun taker(i: Int, outer: Int, at: Vec3, tint: ChargeTint = ChargeTint.NONE, vacancies: Int = 0, gold: Int = 0, label: String? = null): FrameParticle {
             val shells = t.neutral.dropLast(1) + outer
             return FrameParticle(
                 "${t.symbol}${i + 1}", t.symbol, shells.drop(tFirst), at, tint,
-                gold = if (gold > 0) mapOf(shells.lastIndex - tFirst to gold) else emptyMap(), vacancies = vacancies, hidden = t.neutral.take(tFirst).sum(), label = label,
+                gold = if (gold > 0) mapOf(shells.lastIndex - tFirst to gold) else emptyMap(), vacancies = vacancies, hidden = t.neutral.take(tFirst).sum(), label = label, ring = tRing,
             )
         }
 
-        private fun radius(side: Side, first: Int) = ReactionLayout.shellRadius(side.neutral.size - first - 1)
+        private fun radius(side: Side, first: Int) = ReactionLayout.shellRadius(side.neutral.size - first - 1 + if (side === d) dRing else tRing)
 
         // ---- frames --------------------------------------------------------------------------
 
@@ -302,7 +310,7 @@ class ElectronView(private val elements: Map<String, Element>, private val confi
                     (0 until units).flatMap { u ->
                         bonds.map { (di, ti, k) -> SharedPair(ds[u * x + di].id, ts[u * y + ti].id, bias = if (lean) 0.62f else 0.5f, count = 2 * k) }
                     }
-                return ReactionFrame(particles = ds + ts, pairs = pairs, scale = s)
+                return ReactionFrame(particles = ds + ts, pairs = pairs, scale = s, paper = written)
             }
             return listOf(first, second, product(false), product(true))
         }
@@ -646,10 +654,10 @@ class ElectronView(private val elements: Map<String, Element>, private val confi
         const val SUFFIX = "~e"
 
         /** Outer edge of the picture, in scene units (the hand-made frames stay inside the same box). */
-        const val X_MAX = 0.84f
+        const val X_MAX = 0.76f
         const val Y_MAX = 0.56f
         private const val SIDE_GAP = 0.12f
-        private const val SIDE_WIDTH = 0.66f
+        private const val SIDE_WIDTH = 0.58f
         private const val MAX_ATOMS = 10
 
         /** Centre distance of two bonded atoms, in units of their ring radii: rings overlap a little so the pair sits between them. */

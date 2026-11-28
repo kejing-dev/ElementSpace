@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +39,7 @@ import com.example.elementspace.p7c3a91e4.domain.model.Reaction
 import com.example.elementspace.p7c3a91e4.domain.model.ReactionKind
 import com.example.elementspace.p7c3a91e4.domain.model.ReactionType
 import com.example.elementspace.p7c3a91e4.domain.usecase.ChemicalFormula
+import com.example.elementspace.p7c3a91e4.domain.usecase.PaperFormula
 import com.example.elementspace.p7c3a91e4.ui.reaction.ReactionEvent
 import com.example.elementspace.p7c3a91e4.ui.reaction.ReactionUiState
 import com.example.elementspace.p7c3a91e4.ui.theme.ElementColors
@@ -106,12 +108,12 @@ fun ReactionCard(
             TypeTags(reaction, language)
         },
     ) { page ->
-        if (page == 0) ThisStep(state, reaction, onEvent) else About(reaction, elements, colors, language)
+        if (page == 0) ThisStep(state, reaction, elements, onEvent) else About(reaction, elements, colors, language)
     }
 }
 
 @Composable
-private fun ColumnScope.ThisStep(state: ReactionUiState, reaction: Reaction, onEvent: (ReactionEvent) -> Unit) {
+private fun ColumnScope.ThisStep(state: ReactionUiState, reaction: Reaction, elements: Map<String, Element>, onEvent: (ReactionEvent) -> Unit) {
     val language = state.language
     val step = reaction.steps[state.step]
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -157,6 +159,18 @@ private fun ColumnScope.ThisStep(state: ReactionUiState, reaction: Reaction, onE
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Counter(step.moved.toString(), reaction.loseLabel.get(language), Modifier.weight(1f))
                 Counter(step.moved.toString(), reaction.gainLabel.get(language), Modifier.weight(1f))
+            }
+        }
+        val numbers = remember(elements) { elements.mapValues { it.value.atomicNumber } }
+        remember(reaction.id, state.step) { PaperFormula.of(step.frame, numbers) }?.let { diagram ->
+            CardSection(str(R.string.rx_paper)) {
+                CardBody(str(R.string.rx_paper_dots), PicoTheme.colorScheme.labelSecondary)
+                PaperFormulaView(diagram, lines = false)
+                // Lines are for molecules; ions are written with dots, brackets and charges only.
+                if (diagram.bonds.isNotEmpty() && diagram.groups.isEmpty() && diagram.atoms.all { it.charge == 0 }) {
+                    CardBody(str(R.string.rx_paper_lines), PicoTheme.colorScheme.labelSecondary)
+                    PaperFormulaView(diagram, lines = true)
+                }
             }
         }
     }

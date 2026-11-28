@@ -71,6 +71,8 @@ data class FrameParticle(
     val hidden: Int = 0,
     /** Text printed on the atom instead of the computed one, e.g. "O⁻" in a peroxide. */
     val label: String? = null,
+    /** Ring the first drawn shell sits on: 1 when only the outer shell is drawn, so it keeps room for the symbol and lone pairs. */
+    val ring: Int = 0,
 )
 
 /** A shared electron pair between two particles; [bias] 0.5 = centred, toward 1 = closer to [b]. */
@@ -104,8 +106,12 @@ data class ReactionFrame(
     val bonds: List<FrameBond> = emptyList(),
     /** Scene units per ångström for ball sizes; 0.13 for the hand-made reactions, less when an auto picture shrinks to fit. */
     val atomScale: Float = 0.13f,
+    /** Ball radius factor: the schematic pictures draw larger balls so the symbols on them can be read. */
+    val ballScale: Float = 1f,
     /** Size of the Bohr models: below 1 when a generated electron view has many atoms to fit. */
     val scale: Float = 1f,
+    /** False when the frame is not something a textbook writes as a formula (a network solid drawn as one unit …). */
+    val paper: Boolean = true,
 )
 
 /** What a reaction condition looks like in the Volume (v1.3.0). */
